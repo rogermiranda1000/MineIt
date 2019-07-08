@@ -1,0 +1,12 @@
+name: MineIt
+main: com.rogermiranda1000.mineit.MineIt
+version: 0.1
+author: rogermiranda1000
+commands:
+  mineit:
+    description: Create portals
+    usage: /<command>
+permissions:
+  mineit.create:
+    description: Create mines
+    default: op
