@@ -16,7 +16,7 @@ public class Mines {
     public String[] loc() {
         List<String> l = new ArrayList<String>();
         for(Location b: bloques) l.add(b.world+","+String.valueOf(b.x)+","+String.valueOf(b.y)+","+String.valueOf(b.z));
-        return (String[]) l.toArray();
+        return l.toArray(new String[l.size()]);
     }
 }
 
