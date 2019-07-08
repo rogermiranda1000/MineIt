@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit;
 
 import com.rogermiranda1000.events.onBlockBreak;
+import com.rogermiranda1000.events.onClick;
 import com.rogermiranda1000.events.onInteract;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -8,32 +9,99 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 
 public class MineIt extends JavaPlugin {
     public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] ", prefix=clearPrefix+ChatColor.RED;
     public static ItemStack item;
     public static MineIt instance;
+    public static FileConfiguration config;
+
+    //Inv
+    public static Inventory inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
+    public static ItemStack item2;
 
     public List<Mines> minas = new ArrayList<Mines>();
     public HashMap<String, Location[]> bloques = new HashMap<>();
 
-    public int rango = 5;
-    public int delay = 70;
+    public int rango;
+    public int delay;
 
     public void onEnable() {
         getLogger().info("Plugin enabled.");
 
         instance = this;
+
+        //Config
+        HashMap<String,String> c = new HashMap<String, String>();
+        c.put("mine_creator_range", "5");
+        c.put("ore_delay", "20");
+        config = getConfig();
+        //Create/actualize config file
+        try {
+            if (!getDataFolder().exists()) getDataFolder().mkdirs();
+            File file = new File(getDataFolder(), "config.yml");
+            boolean need = false;
+
+            if (!file.exists()) {
+                getLogger().info("Creating config.yml...");
+                file.createNewFile();
+                need = true;
+            }
+
+            for(Map.Entry<String, String> entry : c.entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
+                if(!getConfig().isSet(key)) {
+                    if(value=="true") getConfig().set(key,Boolean.valueOf(true));
+                    else if(value=="false") getConfig().set(key,Boolean.valueOf(false));
+                    else if(value=="5") getConfig().set(key,Integer.valueOf(5));
+                    else if(value=="20") getConfig().set(key,Integer.valueOf(70));
+                    else getConfig().set(key,value);
+                    need = true;
+                }
+            }
+            if(need) saveConfig();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        rango = config.getInt("mine_creator_range");
+        delay = config.getInt("ore_delay");
+
+        //Minas
+        for(File archivo: getDataFolder().listFiles()) {
+            if(archivo.getName().equalsIgnoreCase("config.yml")) continue;
+
+            try {
+                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(archivo)));
+                String l;
+                Mines mina = new Mines();
+                l = br.readLine();
+                String[] args2 = l.split(";");
+                if(args2.length!=3) continue;
+                mina.name = args2[0].replace(".yml","");
+                List<String> stages = new ArrayList<>();
+                for(String s: args2[1].split(",")) stages.add(s);
+                mina.stages = stages.toArray(new String[stages.size()]);
+                String world = args2[2];
+                while ((l=br.readLine())!=null) {
+                    String[] args = l.split(",");
+                    if(args.length!=3) continue;
+                    mina.add(world,Double.valueOf(args[0]),Double.valueOf(args[1]),Double.valueOf(args[2]));
+                }
+                minas.add(mina);
+                br.close();
+            } catch (Exception e) { e.printStackTrace(); }
+        }
 
         //Crear herramienta
         item = new ItemStack(Material.STICK);
@@ -42,8 +110,18 @@ public class MineIt extends JavaPlugin {
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
+        //Inv
+        item2 = item.clone();
+        ItemMeta meta = item2.getItemMeta();
+        List<String> l = new ArrayList<String>();
+        l.add("Get the Mine creator");
+        meta.setLore(l);
+        item2.setItemMeta(meta);
+        inv.setItem(0, item2);
+
         getServer().getPluginManager().registerEvents(new onBlockBreak(), this);
         getServer().getPluginManager().registerEvents(new onInteract(), this);
+        getServer().getPluginManager().registerEvents(new onClick(), this);
 
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             public void run() {
@@ -67,6 +145,29 @@ public class MineIt extends JavaPlugin {
 
     public void onDisable() {
         getLogger().info("Plugin disabled.");
+
+        for (Mines mina : minas) {
+            try {
+                File file = new File(getDataFolder(), mina.name+".yml");
+                BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+
+                String txt = mina.name+";";
+                for(String st: mina.stages) txt += st+",";
+                bw.write(txt.substring(0, txt.length()-1)+";"+mina.loc()[0].split(",")[0]);
+                bw.newLine();
+
+                for (String n : mina.loc()) {
+                    String[] args = n.split(",");
+                    if(args.length!=4) continue;
+                    bw.write(args[1]+","+args[2]+","+args[3]);
+                    bw.newLine();
+                }
+                bw.flush();
+                bw.close();
+            } catch(IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -77,14 +178,15 @@ public class MineIt extends JavaPlugin {
                 sender.sendMessage("Don't use this command in console.");
                 return true;
             }
-            if(!player.hasPermission("mineit.create")) {
+            if(!player.hasPermission("mineit.open")) {
                 player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
                 return true;
             }
 
             if(args.length == 0) {
-                getLogger().info("Giving Mine creator to "+player.getName()+"...");
-                player.getInventory().addItem(item);
+                player.openInventory(MineIt.inv);
+                /*getLogger().info("Giving Mine creator to "+player.getName()+"...");
+                player.getInventory().addItem(item);*/
                 return true;
             }
 
@@ -93,8 +195,17 @@ public class MineIt extends JavaPlugin {
                     player.sendMessage(prefix+"Please, select the mine's blocks first.");
                     return true;
                 }
+                if(args.length!=2) {
+                    player.sendMessage(prefix+"Command error, use /mineit create [name].");
+                    return true;
+                }
+                if(new File(getDataFolder(), args[1]+".yml").exists()) {
+                    player.sendMessage(prefix+"There's already a mine named '"+args[1]+"'.");
+                    return true;
+                }
 
                 Mines m = new Mines();
+                m.name = args[1];
                 for(Location loc : bloques.get(player.getName())) {
                     m.add(loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
                     loc.getBlock().setType(Material.getMaterial(m.stages[0]));

@@ -5,7 +5,8 @@ import java.util.List;
 
 public class Mines {
     List<Location> bloques = new ArrayList<Location>();
-    public String[] stages = {"STONE", "DIAMOND_ORE"};
+    public String[] stages = {"BEDROCK", "STONE", "OBSIDIAN", "DIAMOND_ORE"};
+    public String name = "";
 
     Mines() { }
 

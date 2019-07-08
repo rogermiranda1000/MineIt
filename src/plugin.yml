@@ -10,3 +10,6 @@ permissions:
   mineit.create:
     description: Create mines
     default: op
+  mineit.open:
+    description: Open the MineIt inventory
+    default: op
