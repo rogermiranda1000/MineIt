@@ -2,6 +2,7 @@ package com.rogermiranda1000.mineit;
 
 import com.rogermiranda1000.eventos.onUse;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,12 +12,22 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 public class MineIt extends JavaPlugin {
     public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] ", prefix=clearPrefix+ChatColor.RED;
     public static ItemStack item;
+    public static MineIt instance;
+
+    public List<Mines> minas = new ArrayList<Mines>();
+    public HashMap<String, Location[]> bloques = new HashMap<>();
 
     public void onEnable() {
         getLogger().info("Plugin enabled.");
+
+        instance = this;
 
         //Crear herramienta
         item = new ItemStack(Material.STICK);
@@ -51,7 +62,22 @@ public class MineIt extends JavaPlugin {
                 return true;
             }
 
-            player.sendMessage("Under consatruction...");
+            if(args[0].equalsIgnoreCase("create")) {
+                if(!bloques.containsKey(player.getName())) {
+                    player.sendMessage(prefix+"Please, select the mine's blocks first.");
+                    return true;
+                }
+
+                Mines m = new Mines();
+                for(Location loc : bloques.get(player.getName())) {
+                    m.add(loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
+                }
+                minas.add(m);
+                bloques.remove(player);
+                return true;
+            }
+
+            //player.sendMessage("Under consatruction...");
             return true;
         }
         return false;

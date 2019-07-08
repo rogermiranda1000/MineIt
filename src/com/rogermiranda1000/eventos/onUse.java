@@ -12,36 +12,32 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class onUse implements Listener {
-    HashMap<String, Location[]> bloques = new HashMap<>();
-
     @EventHandler
     public void onPlayerUse(PlayerInteractEvent e) {
         Player ply = e.getPlayer();
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if(e.getItem()!=MineIt.item) return;
+        e.setCancelled(true);
 
         if(!ply.hasPermission("mineit.create")) {
             ply.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
             return;
         }
 
-        if(bloques.containsKey(ply.getName())) {
+        if(MineIt.instance.bloques.containsKey(ply.getName())) {
             List<Location> b = new ArrayList<>();
-            b.addAll(Arrays.asList(bloques.get(ply.getName())));
+            b.addAll(Arrays.asList(MineIt.instance.bloques.get(ply.getName())));
             b.addAll(Arrays.asList(newBlock(e.getClickedBlock(), 0)));
 
-            bloques.put(ply.getName(), (Location[]) b.toArray());
+            MineIt.instance.bloques.put(ply.getName(), (Location[]) b.toArray());
         }
-        else bloques.put(ply.getName(), newBlock(e.getClickedBlock(), 0));
+        else MineIt.instance.bloques.put(ply.getName(), newBlock(e.getClickedBlock(), 0));
 
-        ply.sendMessage(">"+String.valueOf(bloques.get(ply.getName())));
-        for(Location l : bloques.get(ply.getName())) l.getBlock().setType(Material.EMERALD_BLOCK);
-
-        e.setCancelled(true);
+        //ply.sendMessage(">"+String.valueOf(bloques.get(ply.getName())));
+        for(Location l : MineIt.instance.bloques.get(ply.getName())) l.getBlock().setType(Material.EMERALD_BLOCK);
     }
 
     Location[] newBlock(Block blk, int current) {
