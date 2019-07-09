@@ -29,6 +29,9 @@ public class MineIt extends JavaPlugin {
     //Inv
     public static Inventory inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
     public static ItemStack item2;
+    public static ItemStack crear;
+    public static ItemStack editar;
+    public static ItemStack anvil = new ItemStack(Material.ANVIL);
 
     public List<Mines> minas = new ArrayList<Mines>();
     public HashMap<String, Location[]> bloques = new HashMap<>();
@@ -44,7 +47,7 @@ public class MineIt extends JavaPlugin {
         //Config
         HashMap<String,String> c = new HashMap<String, String>();
         c.put("mine_creator_range", "5");
-        c.put("ore_delay", "20");
+        c.put("seconds_per_block", "80");
         config = getConfig();
         //Create/actualize config file
         try {
@@ -65,7 +68,7 @@ public class MineIt extends JavaPlugin {
                     if(value=="true") getConfig().set(key,Boolean.valueOf(true));
                     else if(value=="false") getConfig().set(key,Boolean.valueOf(false));
                     else if(value=="5") getConfig().set(key,Integer.valueOf(5));
-                    else if(value=="20") getConfig().set(key,Integer.valueOf(70));
+                    else if(value=="80") getConfig().set(key,Integer.valueOf(80));
                     else getConfig().set(key,value);
                     need = true;
                 }
@@ -75,7 +78,7 @@ public class MineIt extends JavaPlugin {
             e.printStackTrace();
         }
         rango = config.getInt("mine_creator_range");
-        delay = config.getInt("ore_delay");
+        delay = config.getInt("seconds_per_block");
 
         //Minas
         for(File archivo: getDataFolder().listFiles()) {
@@ -109,6 +112,9 @@ public class MineIt extends JavaPlugin {
         m.setDisplayName(ChatColor.GOLD+""+ChatColor.BOLD+"Mine creator");
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
+        m = anvil.getItemMeta();
+        m.setDisplayName(ChatColor.GREEN+"Go back");
+        anvil.setItemMeta(m);
 
         //Inv
         item2 = item.clone();
@@ -118,6 +124,22 @@ public class MineIt extends JavaPlugin {
         meta.setLore(l);
         item2.setItemMeta(meta);
         inv.setItem(0, item2);
+        crear = new ItemStack(Material.DIAMOND_ORE);
+        meta = crear.getItemMeta();
+        meta.setDisplayName(ChatColor.GREEN+"Create mine");
+        l.clear();
+        l.add("Create a new mine");
+        meta.setLore(l);
+        crear.setItemMeta(meta);
+        inv.setItem(4, crear);
+        editar = new ItemStack(Material.COMPASS);
+        meta = editar.getItemMeta();
+        meta.setDisplayName(ChatColor.GREEN+"Edit mine");
+        l.clear();
+        l.add("Edit current mines");
+        meta.setLore(l);
+        editar.setItemMeta(meta);
+        inv.setItem(8, editar);
 
         getServer().getPluginManager().registerEvents(new onBlockBreak(), this);
         getServer().getPluginManager().registerEvents(new onInteract(), this);
@@ -126,6 +148,10 @@ public class MineIt extends JavaPlugin {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             public void run() {
                 for(Mines m: minas) {
+                    m.currentTime++;
+                    if(m.currentTime<(double)(delay*20D)/m.bloques.size()) continue;
+
+                    m.currentTime=0;
                     Random r = new Random();
                     String l = m.loc()[r.nextInt(m.loc().length)];
                     Location loc = new Location(Bukkit.getWorld(l.split(",")[0]),Double.valueOf(l.split(",")[1]),
@@ -140,7 +166,7 @@ public class MineIt extends JavaPlugin {
                     if(fase!=-1 && m.stages.length>fase+1) loc.getBlock().setType(Material.getMaterial(m.stages[fase+1]));
                 }
             }
-        },delay,delay);
+        },1,1);
     }
 
     public void onDisable() {
