@@ -25,7 +25,7 @@ public class onClick implements Listener {
         ItemStack clicked = e.getCurrentItem();
         Inventory inventory = e.getInventory();
 
-        if(!inventory.getName().equals(MineIt.inv.getName()) && !inventory.getName().contains("§cEdit mine")) return;
+        if(!e.getView().getTitle()/*inventory.getName()*/.equalsIgnoreCase("§6§lMineIt") && !e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine")) return;
         e.setCancelled(true);
         if(!player.hasPermission("mineit.open")) {
             player.closeInventory();
@@ -50,10 +50,10 @@ public class onClick implements Listener {
         else if(clicked.equals(MineIt.editar)) editMine(player);
         else if(clicked.equals(MineIt.anvil)) {
             player.closeInventory();
-            if(inventory.getName().contains("§cEdit mine") && isEditing(inventory)) editMine(player);
+            if(e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine") && isEditing(inventory)) editMine(player);
             else player.openInventory(MineIt.inv);
         }
-        else if(inventory.getName().equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
+        else if(e.getView().getTitle()/*inventory.getName()*/.equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
             for (Mines mine: MineIt.instance.minas) {
                 if (mine.name.equalsIgnoreCase(clicked.getItemMeta().getDisplayName())) {player.closeInventory();
                     edintingMine(player, mine);
@@ -62,7 +62,7 @@ public class onClick implements Listener {
             }
         }
 
-        if(inventory.getName().contains("§cEdit mine") && isEditing(inventory)) {
+        if(e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine") && isEditing(inventory)) {
             for(int x = 0; x<9; x++) {
                 if(inventory.getItem(x)==null) break;
                 //if(player.getItemOnCursor().getType()==Material.AIR) break;
@@ -76,7 +76,7 @@ public class onClick implements Listener {
                 if(item.getType()!=Material.AIR && !item.getType().isBlock()) return;
 
                 for(Mines mine: MineIt.instance.minas) {
-                    if(!mine.name.equalsIgnoreCase(inventory.getName().substring(14))) continue;
+                    if(!mine.name.equalsIgnoreCase(e.getView().getTitle()/*inventory.getName()*/.substring(14))) continue;
                     if(item.getType()==Material.AIR) {
                         List<String> s = new ArrayList<String>();
                         s.addAll(Arrays.asList(mine.stages));
@@ -94,8 +94,26 @@ public class onClick implements Listener {
 
                     //item.setAmount(1);
                     ItemMeta m = item.getItemMeta();
-                    if (inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasLore())
+                    if (inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasLore()) {
                         m.setLore(inventory.getItem(x).getItemMeta().getLore());
+                        item.setItemMeta(m);
+
+                        List<String> s = new ArrayList<String>();
+                        s.addAll(Arrays.asList(mine.stages));
+                        if(s.contains(item.getType().name())) {
+                            player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
+                            return;
+                        }
+                        for (int y = 0; y<s.size(); y++) {
+                            if(s.get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
+                                s.set(y, item.getType().name());
+                                break;
+                            }
+                        }
+                        mine.stages = s.toArray(new String[s.size()]);
+                        inventory.setItem(x, item);
+                        return;
+                    }
                     else {
                         List<String> s = new ArrayList<String>();
                         s.add("Stage "+String.valueOf(mine.stages.length+1));
