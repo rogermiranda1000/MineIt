@@ -22,7 +22,10 @@ public class onInteract implements Listener {
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if(e.getClickedBlock().getType()!=Material.STONE) return;
         if(e.isCancelled()) return;
-        if(!ply.getInventory().getItemInMainHand().equals(MineIt.item) && !ply.getInventory().getItemInOffHand().equals(MineIt.item)) return;
+        //if(MineIt.instance.version=="1.8") {
+            if(!ply.getItemInHand().equals(MineIt.item)) return;
+        /*}
+        else if(!ply.getInventory().getItemInMainHand().equals(MineIt.item) && !ply.getInventory().getItemInOffHand().equals(MineIt.item)) return;*/
         e.setCancelled(true);
 
         if(!ply.hasPermission("mineit.create")) {

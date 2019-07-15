@@ -18,8 +18,14 @@ public class onBlockBreak implements Listener {
                 if(s.equalsIgnoreCase(loc.getWorld().getName()+","+String.valueOf(loc.getX())+","+String.valueOf(loc.getY())+","+String.valueOf(loc.getZ()))) {
                     e.setCancelled(true);
                     Location l = e.getBlock().getLocation();
-                    l.setY(l.getY()+1D);
-                    for(ItemStack item: e.getBlock().getDrops(e.getPlayer().getInventory().getItemInMainHand()))
+                    if(new Location(l.getWorld(), l.getX(), l.getY()+1, l.getZ()).getBlock().getType()==Material.AIR) l.setY(l.getY()+1D);
+                    else if(new Location(l.getWorld(), l.getX()+1, l.getY(), l.getZ()).getBlock().getType()==Material.AIR) l.setX(l.getX()+1D);
+                    else if(new Location(l.getWorld(), l.getX()-1, l.getY(), l.getZ()).getBlock().getType()==Material.AIR) l.setX(l.getX()-1D);
+                    else if(new Location(l.getWorld(), l.getX(), l.getY(), l.getZ()+1).getBlock().getType()==Material.AIR) l.setZ(l.getZ()+1D);
+                    else if(new Location(l.getWorld(), l.getX(), l.getY(), l.getZ()-1).getBlock().getType()==Material.AIR) l.setZ(l.getZ()-1D);
+                    else if(new Location(l.getWorld(), l.getX(), l.getY()-1, l.getZ()).getBlock().getType()==Material.AIR) l.setY(l.getY()-1D);
+
+                    for(ItemStack item: e.getBlock().getDrops(e.getPlayer().getItemInHand()/*getInventory().getItemInMainHand()*/))
                         e.getBlock().getWorld().dropItemNaturally(l, item);
                     for(int x = 0; x < m.stages.length; x++) {
                         if(e.getBlock().getType().toString().equalsIgnoreCase(m.stages[x])) {

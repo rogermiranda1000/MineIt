@@ -36,12 +36,18 @@ public class MineIt extends JavaPlugin {
 
     public List<Mines> minas = new ArrayList<Mines>();
     public HashMap<String, Location[]> bloques = new HashMap<>();
+    public String version = "";
 
     public int rango;
     public int delay;
 
     public void onEnable() {
         getLogger().info("Plugin enabled.");
+        version = Bukkit.getBukkitVersion();
+        if(version.charAt(3)=='.') version = version.substring(0, 3);
+        else version = version.substring(0,4);
+
+        getLogger().info("Running in "+version);
 
         instance = this;
 
