@@ -14,6 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,7 @@ public class onClick implements Listener {
             player.sendMessage(MineIt.prefix+"You can't use this menu.");
             return;
         }
-        if(clicked==null) return;
+        if(clicked==null || clicked.getType()==null) return;
         if((clicked.equals(MineIt.item2) || clicked.equals(MineIt.editar) || clicked.equals(MineIt.crear)) && !player.hasPermission("mineit.create")) {
             player.sendMessage(MineIt.prefix+"You can't use this action.");
             return;
@@ -52,14 +53,44 @@ public class onClick implements Listener {
             player.closeInventory();
             if(e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine") && isEditing(inventory)) editMine(player);
             else player.openInventory(MineIt.inv);
+            return;
+        }
+        else if(clicked.equals(MineIt.redstone)) {
+            if(!player.hasPermission("mineit.remove")) {
+                player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
+                return;
+            }
+
+            Mines mine = getMine(e.getView().getTitle().substring(14));
+            if(mine==null) return;
+
+            MineIt.instance.minas.remove(mine);
+            try {
+                File f = new File(MineIt.instance.getDataFolder(), mine.name + ".yml");
+                if (f.exists()) f.delete();
+            }
+            catch (Exception ex) {}
+            player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.name+"' removed.");
+            player.closeInventory();
+            return;
+        }
+        else if(clicked.getType()==Material.FURNACE) {
+            Mines mine = getMine(e.getView().getTitle().substring(14));
+            if(mine==null) return;
+
+            if(mine.start) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.name+"' stopped.");
+            else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.name+"'...");
+            mine.start = !mine.start;
+            inventory.setItem(16, watch(mine));
+            return;
         }
         else if(e.getView().getTitle()/*inventory.getName()*/.equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
-            for (Mines mine: MineIt.instance.minas) {
-                if (mine.name.equalsIgnoreCase(clicked.getItemMeta().getDisplayName())) {player.closeInventory();
-                    edintingMine(player, mine);
-                    break;
-                }
-            }
+            Mines mine = getMine(clicked.getItemMeta().getDisplayName());
+            if(mine==null) return;
+
+            player.closeInventory();
+            edintingMine(player, mine);
+            return;
         }
 
         if(e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine") && isEditing(inventory)) {
@@ -75,68 +106,87 @@ public class onClick implements Listener {
                 //if(item==null) return;
                 if(item.getType()!=Material.AIR && !item.getType().isBlock()) return;
 
-                for(Mines mine: MineIt.instance.minas) {
-                    if(!mine.name.equalsIgnoreCase(e.getView().getTitle()/*inventory.getName()*/.substring(14))) continue;
-                    if(item.getType()==Material.AIR) {
-                        List<String> s = new ArrayList<String>();
-                        s.addAll(Arrays.asList(mine.stages));
-                        s.remove(inventory.getItem(x).getType().name());
-                        if(s.size()==0) {
-                            player.sendMessage(MineIt.prefix+"There can't be a null mine.");
-                            return;
-                        }
-                        mine.stages = s.toArray(new String[s.size()]);
+                Mines mine = getMine(e.getView().getTitle().substring(14));
+                if(mine==null) return;
 
-                        player.closeInventory();
-                        edintingMine(player, mine);
+                if(item.getType()==Material.AIR) {
+                    List<String> s = new ArrayList<String>();
+                    s.addAll(Arrays.asList(mine.stages));
+                    s.remove(inventory.getItem(x).getType().name());
+                    if(s.size()==0) {
+                        player.sendMessage(MineIt.prefix+"There can't be a null mine.");
                         return;
                     }
+                    mine.stages = s.toArray(new String[s.size()]);
 
-                    //item.setAmount(1);
-                    ItemMeta m = item.getItemMeta();
-                    if (inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasLore()) {
-                        m.setLore(inventory.getItem(x).getItemMeta().getLore());
-                        item.setItemMeta(m);
+                    player.closeInventory();
+                    edintingMine(player, mine);
+                    return;
+                }
 
-                        List<String> s = new ArrayList<String>();
-                        s.addAll(Arrays.asList(mine.stages));
-                        if(s.contains(item.getType().name())) {
-                            player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
-                            return;
-                        }
-                        for (int y = 0; y<s.size(); y++) {
-                            if(s.get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
-                                s.set(y, item.getType().name());
-                                break;
-                            }
-                        }
-                        mine.stages = s.toArray(new String[s.size()]);
-                        inventory.setItem(x, item);
-                        return;
-                    }
-                    else {
-                        List<String> s = new ArrayList<String>();
-                        s.add("Stage "+String.valueOf(mine.stages.length+1));
-                        m.setLore(s);
-                    }
+                //item.setAmount(1);
+                ItemMeta m = item.getItemMeta();
+                if (inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasLore()) {
+                    m.setLore(inventory.getItem(x).getItemMeta().getLore());
                     item.setItemMeta(m);
 
                     List<String> s = new ArrayList<String>();
                     s.addAll(Arrays.asList(mine.stages));
                     if(s.contains(item.getType().name())) {
                         player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
-                        //player.closeInventory();
                         return;
                     }
-                    s.add(item.getType().name());
+                    for (int y = 0; y<s.size(); y++) {
+                        if(s.get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
+                            s.set(y, item.getType().name());
+                            break;
+                        }
+                    }
                     mine.stages = s.toArray(new String[s.size()]);
+                    inventory.setItem(x, item);
+                    return;
                 }
+                else {
+                    List<String> s = new ArrayList<String>();
+                    s.add("Stage "+String.valueOf(mine.stages.length+1));
+                    m.setLore(s);
+                }
+                item.setItemMeta(m);
+
+                List<String> s = new ArrayList<String>();
+                s.addAll(Arrays.asList(mine.stages));
+                if(s.contains(item.getType().name())) {
+                    player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
+                    //player.closeInventory();
+                    return;
+                }
+                s.add(item.getType().name());
+                mine.stages = s.toArray(new String[s.size()]);
 
                 inventory.setItem(x, item);
                 return;
             }
             e.setCancelled(false);
         }
+    }
+
+    Mines getMine(String name) {
+        for(Mines mine: MineIt.instance.minas) {
+            if (!mine.name.equalsIgnoreCase(name)) continue;
+            return mine;
+        }
+        return null;
+    }
+
+    ItemStack watch(Mines mine) {
+        ItemStack clock = new ItemStack(Material.FURNACE);
+        ItemMeta m = clock.getItemMeta();
+        String s = ChatColor.GREEN+"Start";
+        if(mine.start) s = ChatColor.RED+"Stop";
+        m.setDisplayName(s+" mine");
+        clock.setItemMeta(m);
+
+        return clock;
     }
 
     void editMine(Player player) {
@@ -189,14 +239,13 @@ public class onClick implements Listener {
                 ItemStack gls = new ItemStack(Material.GLASS);
                 ItemMeta meta = gls.getItemMeta();
                 meta.setDisplayName("-");
-                            /*List<String> l = new ArrayList<String>();
-                            l.add("None");
-                            meta.setLore(l);*/
                 gls.setItemMeta(meta);
                 i.setItem(x, gls);
             }
         }
         i.setItem(9, MineIt.anvil);
+        i.setItem(16, watch(mine));
+        i.setItem(17, MineIt.redstone);
         player.openInventory(i);
     }
 

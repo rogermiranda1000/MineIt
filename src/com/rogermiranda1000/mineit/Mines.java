@@ -8,6 +8,7 @@ public class Mines {
     public String[] stages = {"BEDROCK", "STONE", "OBSIDIAN", "DIAMOND_ORE"};
     public String name = "";
     public int currentTime = 0;
+    public boolean start = true;
 
     Mines() { }
 

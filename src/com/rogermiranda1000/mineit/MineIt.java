@@ -21,7 +21,7 @@ import java.io.*;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
-    public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] ", prefix=clearPrefix+ChatColor.RED;
+    public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] "+ChatColor.GREEN, prefix=clearPrefix+ChatColor.RED;
     public static ItemStack item;
     public static MineIt instance;
     public static FileConfiguration config;
@@ -32,6 +32,7 @@ public class MineIt extends JavaPlugin {
     public static ItemStack crear;
     public static ItemStack editar;
     public static ItemStack anvil = new ItemStack(Material.ANVIL);
+    public static ItemStack redstone = new ItemStack(Material.REDSTONE_BLOCK);
 
     public List<Mines> minas = new ArrayList<Mines>();
     public HashMap<String, Location[]> bloques = new HashMap<>();
@@ -90,8 +91,14 @@ public class MineIt extends JavaPlugin {
                 Mines mina = new Mines();
                 l = br.readLine();
                 String[] args2 = l.split(";");
+
+                //Last file version 0.2-0.1?
+                if(args2[0].equalsIgnoreCase(archivo.getName().replace(".yml",""))) {
+                    args2[0] = "true";
+                }
                 if(args2.length!=3) continue;
-                mina.name = args2[0].replace(".yml","");
+                mina.name = archivo.getName().replace(".yml","");
+                mina.start = Boolean.valueOf(args2[0]);
                 List<String> stages = new ArrayList<>();
                 for(String s: args2[1].split(",")) stages.add(s);
                 mina.stages = stages.toArray(new String[stages.size()]);
@@ -115,6 +122,9 @@ public class MineIt extends JavaPlugin {
         m = anvil.getItemMeta();
         m.setDisplayName(ChatColor.GREEN+"Go back");
         anvil.setItemMeta(m);
+        m = redstone.getItemMeta();
+        m.setDisplayName(ChatColor.RED+"Remove mine");
+        redstone.setItemMeta(m);
 
         //Inv
         item2 = item.clone();
@@ -148,6 +158,7 @@ public class MineIt extends JavaPlugin {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
             public void run() {
                 for(Mines m: minas) {
+                    if(!m.start) continue;
                     m.currentTime++;
                     if(m.currentTime<(double)(delay*20D)/m.bloques.size()) continue;
 
@@ -177,7 +188,7 @@ public class MineIt extends JavaPlugin {
                 File file = new File(getDataFolder(), mina.name+".yml");
                 BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 
-                String txt = mina.name+";";
+                String txt = String.valueOf(mina.start)+";";
                 for(String st: mina.stages) txt += st+",";
                 bw.write(txt.substring(0, txt.length()-1)+";"+mina.loc()[0].split(",")[0]);
                 bw.newLine();
@@ -185,7 +196,7 @@ public class MineIt extends JavaPlugin {
                 for (String n : mina.loc()) {
                     String[] args = n.split(",");
                     if(args.length!=4) continue;
-                    bw.write(args[1]+","+args[2]+","+args[3]);
+                    bw.write(args[1].substring(0, args[1].length()-2)+","+args[2].substring(0, args[2].length()-2)+","+args[3].substring(0, args[3].length()-2));
                     bw.newLine();
                 }
                 bw.flush();
@@ -199,54 +210,89 @@ public class MineIt extends JavaPlugin {
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         Player player = (sender instanceof Player) ? (Player) sender : null;
-        if (cmd.getName().equalsIgnoreCase("mineit")) {
-            if (player == null) {
-                sender.sendMessage("Don't use this command in console.");
-                return true;
-            }
+        if (!cmd.getName().equalsIgnoreCase("mineit")) return false;
+        if (player == null) {
+            sender.sendMessage("Don't use this command in console.");
+            return true;
+        }
+
+        if(args.length == 0) {
             if(!player.hasPermission("mineit.open")) {
                 player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
                 return true;
             }
+            player.openInventory(MineIt.inv);
+            return true;
+        }
 
-            if(args.length == 0) {
-                player.openInventory(MineIt.inv);
-                /*getLogger().info("Giving Mine creator to "+player.getName()+"...");
-                player.getInventory().addItem(item);*/
+        if(args[0].equalsIgnoreCase("?")) {
+            player.sendMessage(ChatColor.GOLD+"--Mine It--");
+            player.sendMessage(ChatColor.GOLD+"/mineit create [name]");
+            player.sendMessage(ChatColor.GOLD+"/mineit remove [name]");
+            return true;
+        }
+        if(args[0].equalsIgnoreCase("create")) {
+            if(!player.hasPermission("mineit.create")) {
+                player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
                 return true;
             }
-
-            if(args[0].equalsIgnoreCase("create")) {
-                if(!bloques.containsKey(player.getName()) || bloques.get(player.getName()).length==0) {
-                    player.sendMessage(prefix+"Please, select the mine's blocks first.");
-                    return true;
-                }
-                if(args.length!=2) {
-                    player.sendMessage(prefix+"Command error, use /mineit create [name].");
-                    return true;
-                }
-                if(new File(getDataFolder(), args[1]+".yml").exists()) {
+            if(!bloques.containsKey(player.getName()) || bloques.get(player.getName()).length==0) {
+                player.sendMessage(prefix+"Please, select the mine's blocks first.");
+                return true;
+            }
+            if(args.length!=2) {
+                player.sendMessage(prefix+"Command error, use /mineit create [name].");
+                return true;
+            }
+            for (Mines mina: minas) {
+                if(mina.name.equalsIgnoreCase(args[1])) {
                     player.sendMessage(prefix+"There's already a mine named '"+args[1]+"'.");
                     return true;
                 }
+            }
 
-                Mines m = new Mines();
-                m.name = args[1];
-                for(Location loc : bloques.get(player.getName())) {
-                    m.add(loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
-                    loc.getBlock().setType(Material.getMaterial(m.stages[0]));
-                }
-                minas.add(m);
-                bloques.remove(player.getName());
+            Mines m = new Mines();
+            m.name = args[1];
+            for(Location loc : bloques.get(player.getName())) {
+                m.add(loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
+                loc.getBlock().setType(Material.getMaterial(m.stages[0]));
+            }
+            minas.add(m);
+            bloques.remove(player.getName());
 
-                player.sendMessage(clearPrefix+ChatColor.GREEN+"Mine created successfully.");
+            player.sendMessage(clearPrefix+ChatColor.GREEN+"Mine created successfully.");
+            return true;
+        }
+        if(args[0].equalsIgnoreCase("remove")) {
+            if(!player.hasPermission("mineit.remove")) {
+                player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
+                return true;
+            }
+            if(args.length!=2) {
+                player.sendMessage(prefix+"Command error, use /mineit create [name].");
+                return true;
+            }
+            Mines m = null;
+            for (Mines mina: minas) {
+                if(mina.name.equalsIgnoreCase(args[1])) m = mina;
+            }
+            if(m==null) {
+                player.sendMessage(prefix+"The mine '"+args[1]+"' doesn't exist.");
                 return true;
             }
 
-            //player.sendMessage("Under consatruction...");
+            minas.remove(m);
+            try {
+                File f = new File(getDataFolder(), args[1] + ".yml");
+                if (f.exists()) f.delete();
+            }
+            catch (Exception e) {}
+            player.sendMessage(clearPrefix+"Mine '"+args[1]+"' removed.");
             return true;
         }
-        return false;
+
+        player.sendMessage(MineIt.prefix+"Use "+ChatColor.GOLD+"/mineit ?"+ChatColor.RED+".");
+        return true;
     }
 
 
