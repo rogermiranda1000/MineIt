@@ -29,7 +29,13 @@ public class onBlockBreak implements Listener {
                         e.getBlock().getWorld().dropItemNaturally(l, item);
                     for(int x = 0; x < m.stages.length; x++) {
                         if(e.getBlock().getType().toString().equalsIgnoreCase(m.stages[x])) {
-                            if(x>0) e.getBlock().setType(Material.getMaterial(m.stages[x-1]));
+                            if(x>0) {
+                                if(MineIt.instance.limit) {
+                                    m.stageBlocks[x]--;
+                                    m.stageBlocks[x - 1]++;
+                                }
+                                e.getBlock().setType(Material.getMaterial(m.stages[x-1]));
+                            }
                             else e.getBlock().setType(Material.getMaterial(m.stages[x]));
                             break;
                         }

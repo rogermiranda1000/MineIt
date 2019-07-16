@@ -118,6 +118,7 @@ public class onClick implements Listener {
                         return;
                     }
                     mine.stages = s.toArray(new String[s.size()]);
+                    if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
 
                     player.closeInventory();
                     edintingMine(player, mine);
@@ -125,17 +126,17 @@ public class onClick implements Listener {
                 }
 
                 //item.setAmount(1);
-                ItemMeta m = item.getItemMeta();
+                ItemMeta m = item.getItemMeta();List<String> s = new ArrayList<String>();
+                s.addAll(Arrays.asList(mine.stages));
+                if(s.contains(item.getType().name())) {
+                    player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
+                    return;
+                }
+
                 if (inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasLore()) {
                     m.setLore(inventory.getItem(x).getItemMeta().getLore());
                     item.setItemMeta(m);
 
-                    List<String> s = new ArrayList<String>();
-                    s.addAll(Arrays.asList(mine.stages));
-                    if(s.contains(item.getType().name())) {
-                        player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
-                        return;
-                    }
                     for (int y = 0; y<s.size(); y++) {
                         if(s.get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
                             s.set(y, item.getType().name());
@@ -143,25 +144,20 @@ public class onClick implements Listener {
                         }
                     }
                     mine.stages = s.toArray(new String[s.size()]);
+                    if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
                     inventory.setItem(x, item);
                     return;
                 }
-                else {
-                    List<String> s = new ArrayList<String>();
-                    s.add("Stage "+String.valueOf(mine.stages.length+1));
-                    m.setLore(s);
-                }
-                item.setItemMeta(m);
 
-                List<String> s = new ArrayList<String>();
-                s.addAll(Arrays.asList(mine.stages));
-                if(s.contains(item.getType().name())) {
-                    player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
-                    //player.closeInventory();
-                    return;
-                }
                 s.add(item.getType().name());
                 mine.stages = s.toArray(new String[s.size()]);
+                if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
+
+                List<String> st = new ArrayList<String>();
+                st.add("Stage "+String.valueOf(mine.stages.length+1));
+                if(MineIt.instance.limit) st.add("Limit setted to "+String.valueOf(mine.stageLimit[x])+" blocks");
+                m.setLore(st);
+                item.setItemMeta(m);
 
                 inventory.setItem(x, item);
                 return;
@@ -231,6 +227,7 @@ public class onClick implements Listener {
                 ItemMeta meta = block.getItemMeta();
                 List<String> l = new ArrayList<String>();
                 l.add("Stage " + String.valueOf(x + 1));
+                if(MineIt.instance.limit) l.add("Limit setted to "+String.valueOf(mine.stageLimit[x])+" blocks");
                 meta.setLore(l);
                 block.setItemMeta(meta);
                 i.setItem(x, block);

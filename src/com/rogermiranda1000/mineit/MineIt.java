@@ -40,6 +40,7 @@ public class MineIt extends JavaPlugin {
 
     public int rango;
     public int delay;
+    public boolean limit;
 
     public void onEnable() {
         getLogger().info("Plugin enabled.");
@@ -55,6 +56,7 @@ public class MineIt extends JavaPlugin {
         HashMap<String,String> c = new HashMap<String, String>();
         c.put("mine_creator_range", "5");
         c.put("seconds_per_block", "80");
+        c.put("limit_blocks_per_stage", "false");
         config = getConfig();
         //Create/actualize config file
         try {
@@ -86,12 +88,14 @@ public class MineIt extends JavaPlugin {
         }
         rango = config.getInt("mine_creator_range");
         delay = config.getInt("seconds_per_block");
+        limit = config.getBoolean("limit_blocks_per_stage");
 
         //Minas
         for(File archivo: getDataFolder().listFiles()) {
             if(archivo.getName().equalsIgnoreCase("config.yml")) continue;
 
             try {
+                getLogger().info("Loading mine "+archivo.getName().replace(".yml","")+"...");
                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(archivo)));
                 String l;
                 Mines mina = new Mines();
@@ -102,7 +106,13 @@ public class MineIt extends JavaPlugin {
                 if(args2[0].equalsIgnoreCase(archivo.getName().replace(".yml",""))) {
                     args2[0] = "true";
                 }
-                if(args2.length!=3) continue;
+
+                if(args2.length<3) continue;
+                if(limit && args2.length!=4) {
+                    String s = "";
+                    for(int y = 0; y<args2[1].split(",").length; y++) s+="9999,";
+                    args2 = new String[]{args2[0], args2[1], args2[2], s.substring(0, s.length()-1)};
+                }
                 mina.name = archivo.getName().replace(".yml","");
                 mina.start = Boolean.valueOf(args2[0]);
                 List<String> stages = new ArrayList<>();
@@ -113,6 +123,13 @@ public class MineIt extends JavaPlugin {
                     String[] args = l.split(",");
                     if(args.length!=3) continue;
                     mina.add(world,Double.valueOf(args[0]),Double.valueOf(args[1]),Double.valueOf(args[2]));
+                }
+                if(limit) {
+                    updateStages(mina);
+                    for(int x = 0; x<mina.stageLimit.length; x++) {
+                        if(args2[3].split(",").length<x+1) mina.stageLimit[x] = 0;
+                        else mina.stageLimit[x] = Integer.valueOf(args2[3].split(",")[x]);
+                    }
                 }
                 minas.add(mina);
                 br.close();
@@ -180,7 +197,13 @@ public class MineIt extends JavaPlugin {
                             break;
                         }
                     }
-                    if(fase!=-1 && m.stages.length>fase+1) loc.getBlock().setType(Material.getMaterial(m.stages[fase+1]));
+                    if(fase!=-1 && m.stages.length>fase+1 && (!limit || (m.stageBlocks[fase+1]+1<=m.stageLimit[fase+1]))) {
+                        if(limit) {
+                            m.stageBlocks[fase]--;
+                            m.stageBlocks[fase+1]++;
+                        }
+                        loc.getBlock().setType(Material.getMaterial(m.stages[fase+1]));
+                    }
                 }
             }
         },1,1);
@@ -189,6 +212,10 @@ public class MineIt extends JavaPlugin {
     public void onDisable() {
         getLogger().info("Plugin disabled.");
 
+        for(Map.Entry<String, Location[]> entry : bloques.entrySet()) {
+            for(Location l: entry.getValue()) l.getBlock().setType(Material.STONE);
+        }
+
         for (Mines mina : minas) {
             try {
                 File file = new File(getDataFolder(), mina.name+".yml");
@@ -196,7 +223,13 @@ public class MineIt extends JavaPlugin {
 
                 String txt = String.valueOf(mina.start)+";";
                 for(String st: mina.stages) txt += st+",";
-                bw.write(txt.substring(0, txt.length()-1)+";"+mina.loc()[0].split(",")[0]);
+                txt = txt.substring(0, txt.length()-1)+";"+mina.loc()[0].split(",")[0];
+                if(limit) {
+                    txt += ";";
+                    for (int stL : mina.stageLimit) txt += String.valueOf(stL) + ",";
+                    txt = txt.substring(0, txt.length() - 1);
+                }
+                bw.write(txt);
                 bw.newLine();
 
                 for (String n : mina.loc()) {
@@ -212,7 +245,6 @@ public class MineIt extends JavaPlugin {
             }
         }
     }
-
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         Player player = (sender instanceof Player) ? (Player) sender : null;
@@ -235,6 +267,7 @@ public class MineIt extends JavaPlugin {
             player.sendMessage(ChatColor.GOLD+"--Mine It--");
             player.sendMessage(ChatColor.GOLD+"/mineit create [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit remove [name]");
+            player.sendMessage(ChatColor.GOLD+"/mineit edit stagelimit [name] [stage number] [limit blocks number]");
             return true;
         }
         if(args[0].equalsIgnoreCase("create")) {
@@ -263,6 +296,7 @@ public class MineIt extends JavaPlugin {
                 m.add(loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
                 loc.getBlock().setType(Material.getMaterial(m.stages[0]));
             }
+            if(limit) updateStages(m);
             minas.add(m);
             bloques.remove(player.getName());
 
@@ -296,10 +330,84 @@ public class MineIt extends JavaPlugin {
             player.sendMessage(clearPrefix+"Mine '"+args[1]+"' removed.");
             return true;
         }
+        if(args[0].equalsIgnoreCase("edit")) {
+            if(!player.hasPermission("mineit.stagelimit")) {
+                player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
+                return true;
+            }
+            if(args.length!=5 || !args[1].equalsIgnoreCase("stagelimit")) {
+                player.sendMessage(prefix+"Command error, use /mineit edit stagelimit [name] [stage number] [limit blocks number].");
+                player.sendMessage(clearPrefix+"Ex. /mineit edit stagelimit Gold 2 30");
+                return true;
+            }
+            for(Mines m: minas) {
+                if(m.name.equalsIgnoreCase(args[2])) {
+                    int num = -1;
+                    int lim = -1;
+                    try {
+                        num = Integer.valueOf(args[3])-1;
+                        if(num<=0) {
+                            player.sendMessage(prefix+"The stage number can't be lower to 1.");
+                            return true;
+                        }
+                    } catch (NumberFormatException e) {
+                        player.sendMessage(prefix+"'"+args[3]+"' is not a number!");
+                        return true;
+                    }
+                    try {
+                        lim = Integer.valueOf(args[4]);
+                        if(lim<0) {
+                            player.sendMessage(prefix+"The limit number can't be lower to 0.");
+                            return true;
+                        }
+                    } catch (NumberFormatException e) {
+                        player.sendMessage(prefix+"'"+args[4]+"' is not a number!");
+                        return true;
+                    }
+                    if(m.stages.length<=num) {
+                        player.sendMessage(prefix+"There's only "+String.valueOf(m.stages.length)+" stages!");
+                        return true;
+                    }
+
+                    m.stageLimit[num] = lim;
+                    player.sendMessage(clearPrefix+"Set "+args[2]+"'s stage "+args[3]+" limit to "+args[4]+".");
+                    return true;
+                }
+            }
+
+            player.sendMessage(prefix+"Mine '"+args[2]+"' not found.");
+            return true;
+        }
 
         player.sendMessage(MineIt.prefix+"Use "+ChatColor.GOLD+"/mineit ?"+ChatColor.RED+".");
         return true;
     }
 
+    public void updateStages(Mines mina) {
+        mina.stageBlocks = new int[mina.stages.length];
+        for(com.rogermiranda1000.mineit.Location loc: mina.bloques) {
+            Material mat = new Location(Bukkit.getWorld(loc.world),loc.x,loc.y,loc.z).getBlock().getType();
+            for(int x = 0; x<mina.stages.length; x++) {
+                if(mat.name().equalsIgnoreCase(mina.stages[x])) {
+                    mina.stageBlocks[x]++;
+                    break;
+                }
+            }
+        }
 
+        int[] s = new int[mina.stages.length];
+        int dif = s.length-mina.stageLimit.length;
+        if(dif==0) return;
+
+        for(int x = 0; x<mina.stageLimit.length; x++) {
+            if(s.length<x+1) break;
+            s[x] = mina.stageLimit[x];
+        }
+        if(dif>0) {
+            for(int x = 0; x<dif; x++) {
+                s[x+mina.stageLimit.length] = 0;
+            }
+        }
+        mina.stageLimit = s;
+    }
 }

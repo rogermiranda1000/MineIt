@@ -6,6 +6,8 @@ import java.util.List;
 public class Mines {
     List<Location> bloques = new ArrayList<Location>();
     public String[] stages = {"BEDROCK", "STONE", "OBSIDIAN", "DIAMOND_ORE"};
+    public int[] stageBlocks = new int[stages.length];
+    public int[] stageLimit = new int[stageBlocks.length];
     public String name = "";
     public int currentTime = 0;
     public boolean start = true;

@@ -20,13 +20,16 @@ public class onInteract implements Listener {
     public void onInteract(PlayerInteractEvent e) {
         Player ply = e.getPlayer();
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if(e.getClickedBlock().getType()!=Material.STONE) return;
         if(e.isCancelled()) return;
         //if(MineIt.instance.version=="1.8") {
             if(!ply.getItemInHand().equals(MineIt.item)) return;
         /*}
         else if(!ply.getInventory().getItemInMainHand().equals(MineIt.item) && !ply.getInventory().getItemInOffHand().equals(MineIt.item)) return;*/
         e.setCancelled(true);
+        if(e.getClickedBlock().getType()!=Material.STONE) {
+            ply.sendMessage(MineIt.prefix+"You can only hit stone with the Mine Creator!");
+            return;
+        }
 
         if(!ply.hasPermission("mineit.create")) {
             ply.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
