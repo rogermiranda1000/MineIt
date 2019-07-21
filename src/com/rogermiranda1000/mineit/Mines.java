@@ -7,7 +7,8 @@ public class Mines {
     List<Location> bloques = new ArrayList<Location>();
     public String[] stages = {"BEDROCK", "STONE", "OBSIDIAN", "DIAMOND_ORE"};
     public int[] stageBlocks = new int[stages.length];
-    public int[] stageLimit = new int[stageBlocks.length];
+    public int[] stageGo = {1, 2};
+    public int[] stageLimit = {9999, 9999, 9999, 9999};
     public String name = "";
     public int currentTime = 0;
     public boolean start = true;

@@ -27,18 +27,19 @@ public class onBlockBreak implements Listener {
 
                     for(ItemStack item: e.getBlock().getDrops(e.getPlayer().getItemInHand()/*getInventory().getItemInMainHand()*/))
                         e.getBlock().getWorld().dropItemNaturally(l, item);
+
                     for(int x = 0; x < m.stages.length; x++) {
-                        if(e.getBlock().getType().toString().equalsIgnoreCase(m.stages[x])) {
-                            if(x>0) {
-                                if(MineIt.instance.limit) {
-                                    m.stageBlocks[x]--;
-                                    m.stageBlocks[x - 1]++;
-                                }
-                                e.getBlock().setType(Material.getMaterial(m.stages[x-1]));
+                        if(!e.getBlock().getType().toString().equalsIgnoreCase(m.stages[x])) continue;
+
+                        if(x>1) {
+                            if(MineIt.instance.limit) {
+                                m.stageBlocks[x]--;
+                                m.stageBlocks[m.stageGo[x-2]]++;
                             }
-                            else e.getBlock().setType(Material.getMaterial(m.stages[x]));
-                            break;
+                            e.getBlock().setType(Material.getMaterial(m.stages[m.stageGo[x-2]]));
                         }
+                        else e.getBlock().setType(Material.getMaterial(m.stages[0]));
+                        break;
                     }
                     return;
                 }
