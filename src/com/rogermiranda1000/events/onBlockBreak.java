@@ -31,16 +31,17 @@ public class onBlockBreak implements Listener {
                     for(int x = 0; x < m.stages.length; x++) {
                         if(!e.getBlock().getType().toString().equalsIgnoreCase(m.stages[x])) continue;
 
-                        if(x>1) {
-                            if(MineIt.instance.limit) {
-                                m.stageBlocks[x]--;
-                                m.stageBlocks[m.stageGo[x-2]]++;
-                            }
-                            e.getBlock().setType(Material.getMaterial(m.stages[m.stageGo[x-2]]));
+                        if(x<=1) break;
+
+                        if(MineIt.instance.limit) {
+                            m.stageBlocks[x]--;
+                            m.stageBlocks[m.stageGo[x-2]]++;
                         }
-                        else e.getBlock().setType(Material.getMaterial(m.stages[0]));
-                        break;
+                        e.getBlock().setType(Material.getMaterial(m.stages[m.stageGo[x-2]]));
+                        return;
                     }
+
+                    e.getBlock().setType(Material.getMaterial(m.stages[0]));
                     return;
                 }
             }

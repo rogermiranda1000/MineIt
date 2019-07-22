@@ -42,6 +42,7 @@ public class MineIt extends JavaPlugin {
     public int rango;
     public int delay;
     public boolean limit;
+    public boolean start;
 
     public void onEnable() {
         getLogger().info("Plugin enabled.");
@@ -58,6 +59,7 @@ public class MineIt extends JavaPlugin {
         c.put("mine_creator_range", "5");
         c.put("seconds_per_block", "80");
         c.put("limit_blocks_per_stage", "false");
+        c.put("enabled_mine_on_create", "false");
         config = getConfig();
         //Create/actualize config file
         try {
@@ -90,6 +92,7 @@ public class MineIt extends JavaPlugin {
         rango = config.getInt("mine_creator_range");
         delay = config.getInt("seconds_per_block");
         limit = config.getBoolean("limit_blocks_per_stage");
+        start = config.getBoolean("enabled_mine_on_create");
 
         //Minas
         for(File archivo: getDataFolder().listFiles()) {
@@ -321,6 +324,7 @@ public class MineIt extends JavaPlugin {
                 loc.getBlock().setType(Material.getMaterial(m.stages[0]));
             }
             if(limit) updateStages(m);
+            m.start = start;
             minas.add(m);
             bloques.remove(player.getName());
 
