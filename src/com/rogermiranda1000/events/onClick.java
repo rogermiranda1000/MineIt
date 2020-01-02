@@ -82,7 +82,8 @@ public class onClick implements Listener {
             if(mine.start) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.name+"' stopped.");
             else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.name+"'...");
             mine.start = !mine.start;
-            inventory.setItem(16, MineIt.instance.watch(mine));
+            //inventory.setItem(16, MineIt.instance.watch(mine));
+            inventory.setItem(((((int) (mine.stages.length/9) + 1)*2 + 1)*9)-2, MineIt.instance.watch(mine));
             return;
         }
         else if(e.getView().getTitle()/*inventory.getName()*/.equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
@@ -155,6 +156,7 @@ public class onClick implements Listener {
                     }
                     mine.stages = s.toArray(new String[s.size()]);
                     if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
+                    mine.stageGo = Arrays.copyOf(mine.stageGo, mine.stageGo.length-1);
 
                     player.closeInventory();
                     MineIt.instance.edintingMine(player, mine);

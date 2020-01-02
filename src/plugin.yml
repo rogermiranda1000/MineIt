@@ -1,6 +1,6 @@
 name: MineIt
 main: com.rogermiranda1000.mineit.MineIt
-version: 0.7
+version: 0.9
 author: rogermiranda1000
 commands:
   mineit:
@@ -19,3 +19,6 @@ permissions:
   mineit.stagelimit:
     description: Change the mine's stage limit
     default: op
+  mineit.mine.all:
+    description: Mine in all the mines
+    default: true

@@ -129,6 +129,9 @@ public class MineIt extends JavaPlugin {
                 if(l.contains(">")) {
                     for (int x = 0; x<l.split(">").length; x++) mina.stageGo[x] = Integer.valueOf(l.split(">")[x]);
                 }
+                else if(!l.contains(",")) {
+                    mina.stageGo[0] = Integer.valueOf(l);
+                }
                 else {
                     String[] args = l.split(",");
                     if(args.length!=3) continue;
@@ -354,7 +357,7 @@ public class MineIt extends JavaPlugin {
                 File f = new File(getDataFolder(), args[1] + ".yml");
                 if (f.exists()) f.delete();
             }
-            catch (Exception e) {}
+            catch (Exception e) { e.printStackTrace(); }
             player.sendMessage(clearPrefix+"Mine '"+args[1]+"' removed.");
             return true;
         }
