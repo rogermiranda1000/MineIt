@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,7 +10,7 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class FileManager {
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static Mines loadMines(File f) throws FileNotFoundException {
         return FileManager.gson.fromJson(FileManager.getFileContents(f), Mines.class);
