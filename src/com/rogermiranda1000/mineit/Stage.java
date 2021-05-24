@@ -94,4 +94,9 @@ public class Stage {
         Stage s = (Stage) o;
         return this.name.equals(s.name);
     }
+
+    @Override
+    public String toString() {
+        return this.name;
+    }
 }
