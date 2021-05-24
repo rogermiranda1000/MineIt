@@ -1,10 +1,14 @@
 package com.rogermiranda1000.mineit;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Random;
+
+import org.bukkit.Location;
 
 public class Mines {
-    List<Location> bloques = new ArrayList<Location>();
+    public static final Random random = new Random();
+
+    private ArrayList<Location> bloques = new ArrayList<>();
     public String[] stages = {"BEDROCK", "STONE", "OBSIDIAN", "DIAMOND_ORE"};
     public int[] stageBlocks = new int[stages.length];
     public int[] stageGo = {1, 2};
@@ -15,27 +19,19 @@ public class Mines {
 
     Mines() { }
 
-    public void add(String w, double x, double y, double z) {
-        bloques.add(new Location(w,x,y,z));
+    public void add(Location loc) {
+        bloques.add(loc);
     }
 
-    public String[] loc() {
-        List<String> l = new ArrayList<String>();
-        for(Location b: bloques) l.add(b.world+","+String.valueOf(b.x)+","+String.valueOf(b.y)+","+String.valueOf(b.z));
-        return l.toArray(new String[l.size()]);
+    public ArrayList<Location> getMineBlocks() {
+        return this.bloques;
     }
-}
 
-class Location {
-    String world;
-    double x;
-    double y;
-    double z;
+    public int getTotalBlocks() {
+        return this.bloques.size();
+    }
 
-    Location(String world, double x, double y, double z) {
-        this.world = world;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    public Location getRandomBlockInMine() {
+        return this.bloques.get(Mines.random.nextInt(this.bloques.size()));
     }
 }

@@ -1,8 +1,8 @@
 package com.rogermiranda1000.mineit;
 
-import com.rogermiranda1000.events.onBlockBreak;
-import com.rogermiranda1000.events.onClick;
-import com.rogermiranda1000.events.onInteract;
+import com.rogermiranda1000.mineit.events.onBlockBreak;
+import com.rogermiranda1000.mineit.events.onClick;
+import com.rogermiranda1000.mineit.events.onInteract;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,7 +19,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.util.*;
-import java.util.stream.IntStream;
 
 public class MineIt extends JavaPlugin {
     public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] "+ChatColor.GREEN, prefix=clearPrefix+ChatColor.RED;
@@ -99,61 +98,11 @@ public class MineIt extends JavaPlugin {
             if(archivo.getName().equalsIgnoreCase("config.yml")) continue;
 
             try {
-                getLogger().info("Loading mine "+archivo.getName().replace(".yml","")+"...");
-                BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(archivo)));
-                String l;
-                Mines mina = new Mines();
-                l = br.readLine();
-                String[] args2 = l.split(";");
-                l = br.readLine();
-
-                //Last file version 0.2-0.1?
-                if(args2[0].equalsIgnoreCase(archivo.getName().replace(".yml",""))) {
-                    args2[0] = "true";
-                }
-
-                if(args2.length<3) continue;
-                if(limit && args2.length!=4) {
-                    String s = "";
-                    for(int y = 0; y<args2[1].split(",").length; y++) s+="9999,";
-                    args2 = new String[]{args2[0], args2[1], args2[2], s.substring(0, s.length()-1)};
-                }
-                mina.name = archivo.getName().replace(".yml","");
-                mina.start = Boolean.valueOf(args2[0]);
-                List<String> stages = new ArrayList<>();
-                for(String s: args2[1].split(",")) stages.add(s);
-                mina.stages = stages.toArray(new String[stages.size()]);
-                String world = args2[2];
-                mina.stageGo = IntStream.range(1, mina.stages.length-1).toArray();
-                //Last file version 0.5-0.1?
-                if(l.contains(">")) {
-                    for (int x = 0; x<l.split(">").length; x++) mina.stageGo[x] = Integer.valueOf(l.split(">")[x]);
-                }
-                else if(!l.contains(",")) {
-                    mina.stageGo[0] = Integer.valueOf(l);
-                }
-                else {
-                    String[] args = l.split(",");
-                    if(args.length!=3) continue;
-                    mina.add(world,Double.valueOf(args[0]),Double.valueOf(args[1]),Double.valueOf(args[2]));
-                }
-
-
-                while ((l=br.readLine())!=null) {
-                    String[] args = l.split(",");
-                    if(args.length!=3) continue;
-                    mina.add(world,Double.valueOf(args[0]),Double.valueOf(args[1]),Double.valueOf(args[2]));
-                }
-                if(limit) {
-                    updateStages(mina);
-                    for(int x = 0; x<mina.stageLimit.length; x++) {
-                        if(args2[3].split(",").length<x+1) mina.stageLimit[x] = 0;
-                        else mina.stageLimit[x] = Integer.valueOf(args2[3].split(",")[x]);
-                    }
-                }
-                minas.add(mina);
-                br.close();
-            } catch (Exception e) { e.printStackTrace(); }
+                getLogger().info("Loading mine " + archivo.getName().replace(".yml", "") + "...");
+                minas.add(FileManager.loadMines(archivo));
+            } catch (FileNotFoundException ex) {
+                ex.printStackTrace();
+            }
         }
 
         //Crear herramienta
@@ -203,13 +152,10 @@ public class MineIt extends JavaPlugin {
                 for(Mines m: minas) {
                     if(!m.start) continue;
                     m.currentTime++;
-                    if(m.currentTime<(double)(delay*20D)/m.bloques.size()) continue;
+                    if(m.currentTime<(double)(delay*20D)/m.getTotalBlocks()) continue;
 
                     m.currentTime=0;
-                    Random r = new Random();
-                    String l = m.loc()[r.nextInt(m.loc().length)];
-                    Location loc = new Location(Bukkit.getWorld(l.split(",")[0]),Double.valueOf(l.split(",")[1]),
-                            Double.valueOf(l.split(",")[2]),Double.valueOf(l.split(",")[3]));
+                    Location loc = m.getRandomBlockInMine();
                     int fase = -1;
                     for(int x = 0; x<m.stages.length; x++) {
                         if(m.stages[x].equalsIgnoreCase(loc.getBlock().getType().toString())) {
@@ -239,32 +185,7 @@ public class MineIt extends JavaPlugin {
         for (Mines mina : minas) {
             try {
                 File file = new File(getDataFolder(), mina.name+".yml");
-                BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-
-                String txt = String.valueOf(mina.start)+";";
-                for(String st: mina.stages) txt += st+",";
-                txt = txt.substring(0, txt.length()-1)+";"+mina.loc()[0].split(",")[0];
-                if(limit) {
-                    txt += ";";
-                    for (int stL : mina.stageLimit) txt += String.valueOf(stL) + ",";
-                    txt = txt.substring(0, txt.length() - 1);
-                }
-                bw.write(txt);
-                bw.newLine();
-
-                txt = "";
-                for (int st: mina.stageGo) txt += String.valueOf(st)+">";
-                bw.write(txt.substring(0, txt.length()-1));
-                bw.newLine();
-
-                for (String n : mina.loc()) {
-                    String[] args = n.split(",");
-                    if(args.length!=4) continue;
-                    bw.write(args[1].substring(0, args[1].length()-2)+","+args[2].substring(0, args[2].length()-2)+","+args[3].substring(0, args[3].length()-2));
-                    bw.newLine();
-                }
-                bw.flush();
-                bw.close();
+                FileManager.saveMines(file, mina);
             } catch(IOException e){
                 e.printStackTrace();
             }
@@ -323,7 +244,7 @@ public class MineIt extends JavaPlugin {
             Mines m = new Mines();
             m.name = args[1];
             for(Location loc : bloques.get(player.getName())) {
-                m.add(loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ());
+                m.add(loc);
                 loc.getBlock().setType(Material.getMaterial(m.stages[0]));
             }
             if(limit) updateStages(m);
@@ -437,8 +358,8 @@ public class MineIt extends JavaPlugin {
 
     public void updateStages(Mines mina) {
         mina.stageBlocks = new int[mina.stages.length];
-        for(com.rogermiranda1000.mineit.Location loc: mina.bloques) {
-            Material mat = new Location(Bukkit.getWorld(loc.world),loc.x,loc.y,loc.z).getBlock().getType();
+        for(Location loc: mina.getMineBlocks()) {
+            Material mat = loc.getBlock().getType();
             for(int x = 0; x<mina.stages.length; x++) {
                 if(mat.name().equalsIgnoreCase(mina.stages[x])) {
                     mina.stageBlocks[x]++;

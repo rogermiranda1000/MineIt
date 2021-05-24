@@ -1,4 +1,4 @@
-package com.rogermiranda1000.events;
+package com.rogermiranda1000.mineit.events;
 
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Mines;

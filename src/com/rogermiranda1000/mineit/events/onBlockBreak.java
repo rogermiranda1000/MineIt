@@ -1,4 +1,4 @@
-package com.rogermiranda1000.events;
+package com.rogermiranda1000.mineit.events;
 
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Mines;
@@ -17,9 +17,9 @@ public class onBlockBreak implements Listener {
         if(e.isCancelled()) return;
 
         for(Mines m: MineIt.instance.minas) {
-            for(String s: m.loc()) {
+            for(Location mineLoc: m.getMineBlocks()) {
                 Location loc = e.getBlock().getLocation();
-                if(s.equalsIgnoreCase(loc.getWorld().getName()+","+String.valueOf(loc.getX())+","+String.valueOf(loc.getY())+","+String.valueOf(loc.getZ()))) {
+                if(mineLoc.equals(loc)) {
                     Player ply = e.getPlayer();
                     if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.name)) return;
 
