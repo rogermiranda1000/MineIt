@@ -32,8 +32,9 @@ public class MineIt extends JavaPlugin {
     public static ItemStack item2;
     public static ItemStack crear;
     public static ItemStack editar;
-    public static ItemStack anvil = new ItemStack(Material.ANVIL);
-    public static ItemStack redstone = new ItemStack(Material.REDSTONE_BLOCK);
+    public static ItemStack anvil;
+    public static ItemStack redstone;
+    public static ItemStack glass;
 
     public ArrayList<Mine> minas = new ArrayList<>();
     public HashMap<String, Location[]> bloques = new HashMap<>(); // TODO command to unselect?
@@ -115,12 +116,21 @@ public class MineIt extends JavaPlugin {
         m.setDisplayName(ChatColor.GOLD+""+ChatColor.BOLD+"Mine creator");
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
+
+        anvil = new ItemStack(Material.ANVIL);
         m = anvil.getItemMeta();
         m.setDisplayName(ChatColor.GREEN+"Go back");
         anvil.setItemMeta(m);
+
+        redstone = new ItemStack(Material.REDSTONE_BLOCK);
         m = redstone.getItemMeta();
         m.setDisplayName(ChatColor.RED+"Remove mine");
         redstone.setItemMeta(m);
+
+        glass = new ItemStack(Material.GLASS);
+        m = glass.getItemMeta();
+        m.setDisplayName("-");
+        glass.setItemMeta(m);
 
         //Inv
         item2 = item.clone();
@@ -396,12 +406,8 @@ public class MineIt extends JavaPlugin {
                 }
             }
             else {
-                ItemStack gls = new ItemStack(Material.GLASS);
-                ItemMeta meta = gls.getItemMeta();
-                meta.setDisplayName("-");
-                gls.setItemMeta(meta);
-                i.setItem(actualLine, gls);
-                i.setItem(actualLine+9, gls);
+                i.setItem(actualLine, glass);
+                i.setItem(actualLine+9, glass);
             }
         }
         i.setItem(lin*18, MineIt.anvil);

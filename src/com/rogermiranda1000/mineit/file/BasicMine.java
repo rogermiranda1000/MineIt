@@ -11,7 +11,9 @@ import java.util.Map;
 
 public class BasicMine {
     /**
-     * World -> (x,y,z)
+     * World1 -> [(x,y,z), (x,y,z), ...]
+     * World2 -> [(x,y,z), (x,y,z), ...]
+     * ...
      */
     private final HashMap<String, ArrayList<BasicLocation>> blocks;
 

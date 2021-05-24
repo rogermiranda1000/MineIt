@@ -32,6 +32,10 @@ public class Stage {
         this(name, stageLimit, null);
     }
 
+    public Stage(String name) {
+        this(name, Integer.MAX_VALUE, null);
+    }
+
     public void setNextStage(Stage stage) {
         this.nextStage = stage;
     }

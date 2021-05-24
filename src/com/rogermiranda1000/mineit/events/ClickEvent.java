@@ -112,12 +112,13 @@ public class ClickEvent implements Listener {
                 if(mine==null) return;
 
                 int stageNum = x%9; // we're editing the stage nºstageNum
-                if (stageNum >= mine.getStages().size()) return; // not enough stages
 
                 switch (x/9) {
                     case 0:
                         // primera fila (la de stages)
                         if (item.getType().equals(Material.AIR)) {
+                            if (stageNum >= mine.getStages().size()) return; // not enough stages
+
                             // remove stage
                             if (mine.getStageCount() == 1) {
                                 player.sendMessage(MineIt.prefix + "There can't be a mine without stages!");
@@ -136,57 +137,49 @@ public class ClickEvent implements Listener {
                             MineIt.instance.edintingMine(player, mine);
                         }
                         else {
-                            //item.setAmount(1);
-                            // TODO add
-                            /*ItemMeta m = item.getItemMeta();
-                            List<String> s = new ArrayList<String>();
-                            s.addAll(Arrays.asList(mine.stages));
-                            if(s.contains(item.getType().name())) {
-                                player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
+                            String stageMaterial = item.getType().name();
+                            ItemMeta m = item.getItemMeta();
+                            // already exists?
+                            if (mine.getStage(item.getType().name()) != null) {
+                                player.sendMessage(MineIt.prefix+"There's already a "+stageMaterial.toLowerCase()+" stage!");
                                 return;
                             }
 
-                            if (inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasLore()) {
-                                m.setLore(inventory.getItem(x).getItemMeta().getLore());
+                            if (stageNum < mine.getStageCount()) {
+                                // sobreescribir estado
+                                // TODO sobreescribir
+                                /*m.setLore(inventory.getItem(x).getItemMeta().getLore());
                                 item.setItemMeta(m);
 
-                                for (int y = 0; y<s.size(); y++) {
-                                    if(s.get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
-                                        s.set(y, item.getType().name());
+                                for (int y = 0; y<mine.getStages().size(); y++) {
+                                    if(mine.getStages().get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
+                                        mine.getStages().set(y, item.getType().name());
                                         break;
                                     }
                                 }
-                                mine.stages = s.toArray(new String[s.size()]);
+                                mine.stages = mine.getStages().toArray(new String[mine.getStages().size()]);
                                 if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
-                                inventory.setItem(x, item);
-                                return;
+                                inventory.setItem(x, item);*/
                             }
+                            else {
+                                // nuevo estado
+                                mine.addStage(new Stage(stageMaterial));
 
-                            s.add(item.getType().name());
-                            mine.stages = s.toArray(new String[s.size()]);
-                            if (!inventory.getItem(x).hasItemMeta() || !inventory.getItem(x).getItemMeta().hasLore())
-                                mine.stageGo = IntStream.range(1, mine.stages.length-1).toArray();
-                            if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
+                                List<String> st = new ArrayList<>();
+                                st.add("Stage " + mine.getStageCount());
+                                if (MineIt.instance.limit) st.add("Limit at " + Integer.MAX_VALUE + " blocks");
+                                m.setLore(st);
+                                item.setItemMeta(m);
+                                inventory.setItem(mine.getStageCount()-1, item);
 
-                            List<String> st = new ArrayList<String>();
-                            st.add("Stage "+String.valueOf(mine.stages.length));
-                            if(MineIt.instance.limit) st.add("Limit setted to "+String.valueOf(mine.stageLimit[z])+" blocks");
-                            m.setLore(st);
-                            item.setItemMeta(m);
-                            inventory.setItem(x, item);
-
-                            item = new ItemStack(Material.getMaterial(mine.stages[z-1]));
-                            m = item.getItemMeta();
-                            st = new ArrayList<String>();
-                            st.add("On break, go to stage " + String.valueOf(z));
-                            m.setLore(st);
-                            item.setItemMeta(m);
-                            inventory.setItem(x+9, item);
-
-                            if((x+1)%9==0) {
-                                player.closeInventory();
-                                MineIt.instance.edintingMine(player, mine);
-                            }*/
+                                item = new ItemStack(mine.getStage(mine.getStageCount()-2).getStageMaterial());
+                                m = item.getItemMeta();
+                                st = new ArrayList<>();
+                                st.add("On break, go to stage " + item.getType().name());
+                                m.setLore(st);
+                                item.setItemMeta(m);
+                                inventory.setItem(mine.getStageCount()-1+9, item);
+                            }
                         }
                         break;
 

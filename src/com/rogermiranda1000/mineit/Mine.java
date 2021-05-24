@@ -84,6 +84,15 @@ public class Mine /*implements Runnable*/ {
         // TODO quitar bloques del estado eliminado?
     }
 
+    public void addStage(Stage stage) {
+        Stage prev = this.getStage(this.getStageCount()-1);
+        stage.setPreviousStage(prev);
+        prev.setNextStage(stage);
+
+        this.stages.add(stage);
+        this.updateStages();
+    }
+
     private void resetStagesCount() {
         for (Stage s : this.stages) s.resetStageCount();
     }
