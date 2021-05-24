@@ -6,7 +6,7 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
-public class Mine implements Runnable {
+public class Mine /*implements Runnable*/ {
     private static int MINE_DELAY;
     private final ArrayList<BasicLocation> bloques = new ArrayList<>();
     public int currentTime = 0;

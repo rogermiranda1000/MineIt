@@ -17,6 +17,7 @@ public class onBlockBreak implements Listener {
     public void onBlockBreak(BlockBreakEvent e) {
         if(e.isCancelled()) return;
 
+        // TODO optimizar
         for(Mine m: MineIt.instance.minas) {
             for(Location mineLoc: m.getMineBlocks()) {
                 Location loc = e.getBlock().getLocation();
@@ -26,12 +27,17 @@ public class onBlockBreak implements Listener {
 
                     Stage s = m.getStage(e.getBlock().getType().toString());
                     if (s == null) {
+                        // unstaged block in mine
                         establecer(e.getBlock(), m.getStages().get(0).getStageMaterial());
                         return;
                     }
 
                     Stage prev = s.getPreviousStage();
-                    if(prev == null) break;
+                    if(prev == null) {
+                        // first stage mined
+                        establecer(e.getBlock(), m.getStages().get(0).getStageMaterial());
+                        return;
+                    }
 
                     s.decrementStageBlocks();
                     prev.incrementStageBlocks();
@@ -42,7 +48,7 @@ public class onBlockBreak implements Listener {
         }
     }
 
-    public void establecer(Block b,Material material){
+    private static void establecer(Block b,Material material){
         Bukkit.getScheduler().runTaskLater(MineIt.instance,()->b.setType(material),1);
     }
 }
