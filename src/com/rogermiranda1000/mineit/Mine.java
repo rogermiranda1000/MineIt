@@ -63,20 +63,23 @@ public class Mine implements Runnable {
     }
 
     @Override
+    @SuppressWarnings("InfiniteLoopStatement")
     public void run() {
-        if(!this.start) return; // TODO notifies
-        this.currentTime++;
-        if(this.currentTime < (Mine.MINE_DELAY*20D)/this.getTotalBlocks()) return;
+        while (true) {
+            if (!this.start) continue; // TODO notifies
+            this.currentTime++;
+            if (this.currentTime < (Mine.MINE_DELAY * 20D) / this.getTotalBlocks()) continue;
 
-        this.currentTime=0;
-        Location loc = this.getRandomBlockInMine();
-        Stage current = Stage.getMatch(this.stages, loc.getBlock().getType().toString());
-        if (current == null) return; // wtf
-        Stage next = current.getNextStage();
-        if (next != null && next.fitsOneBlock()) {
-            current.decrementStageBlocks();
-            next.incrementStageBlocks();
-            loc.getBlock().setType(next.getStageMaterial());
+            this.currentTime = 0;
+            Location loc = this.getRandomBlockInMine();
+            Stage current = Stage.getMatch(this.stages, loc.getBlock().getType().toString());
+            if (current == null) continue; // wtf
+            Stage next = current.getNextStage();
+            if (next != null && next.fitsOneBlock()) {
+                current.decrementStageBlocks();
+                next.incrementStageBlocks();
+                loc.getBlock().setType(next.getStageMaterial());
+            }
         }
     }
 }
