@@ -36,7 +36,7 @@ public class MineIt extends JavaPlugin {
     public static ItemStack redstone = new ItemStack(Material.REDSTONE_BLOCK);
 
     public ArrayList<Mine> minas = new ArrayList<>();
-    public HashMap<String, Location[]> bloques = new HashMap<>();
+    public HashMap<String, Location[]> bloques = new HashMap<>(); // TODO command to unselect?
     public String version = "";
 
     public int rango;
@@ -95,15 +95,16 @@ public class MineIt extends JavaPlugin {
         //Mine.setMineDelay(this.delay);
         limit = config.getBoolean("limit_blocks_per_stage");
         start = config.getBoolean("enabled_mine_on_create");
+        Mine.setDefaultStart(start);
 
         //Minas
         for(File archivo: getDataFolder().listFiles()) {
             if(archivo.getName().equalsIgnoreCase("config.yml")) continue;
 
             try {
-                getLogger().info("Loading mine " + archivo.getName().replace(".yml", "") + "...");
+                getLogger().info("Loading mine " + archivo.getName().replace(".yml", "") + "..."); // TODO .json
                 minas.add(FileManager.loadMines(archivo));
-            } catch (FileNotFoundException ex) {
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
@@ -245,8 +246,7 @@ public class MineIt extends JavaPlugin {
                 loc.getBlock().setType(Mine.STATE_ZERO);
             }
             Mine m = new Mine(args[1], locations);
-            if(limit) updateStages(m);
-            m.started = start;
+            if(limit) m.updateStages();
             minas.add(m);
             bloques.remove(player.getName());
 
@@ -357,20 +357,6 @@ public class MineIt extends JavaPlugin {
 
         player.sendMessage(MineIt.prefix+"Use "+ChatColor.GOLD+"/mineit ?"+ChatColor.RED+".");
         return true;
-    }
-
-    /**
-     * Recalculates the number of blocks for each stage in the mine
-     * @param mina Mine to recalculate the blocks
-     */
-    public void updateStages(Mine mina) {
-        mina.resetStagesCount();
-
-        for(Location loc: mina.getMineBlocks()) {
-            Material mat = loc.getBlock().getType();
-            Stage match = mina.getStage(mat.name());
-            if (match != null) match.incrementStageBlocks();
-        }
     }
 
     public void edintingMine(Player player, Mine mine) {

@@ -4,6 +4,7 @@ import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.Stage;
 import org.bukkit.Location;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class BasicMine {
@@ -24,7 +25,7 @@ public class BasicMine {
         for (Location block : mine.getMineBlocks()) this.blocks.add(new BasicLocation(block));
     }
 
-    public Mine getMine() {
+    public Mine getMine() throws IOException {
         return new Mine(this.mineName, this.started, BasicLocation.getLocations(this.blocks), BasicStage.getStages(this.stages));
     }
 }

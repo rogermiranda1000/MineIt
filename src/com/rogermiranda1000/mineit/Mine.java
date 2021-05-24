@@ -9,6 +9,7 @@ import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 public class Mine /*implements Runnable*/ {
     public static final Material STATE_ZERO = Material.BEDROCK;
+    private static boolean DEFAULT_START;
 
     //private static int MINE_DELAY;
     private final ArrayList<Location> blocks;
@@ -27,7 +28,7 @@ public class Mine /*implements Runnable*/ {
     }
 
     public Mine(String name, ArrayList<Location> blocks) {
-        this(name, true, blocks, Mine.getDefaultStages());
+        this(name, Mine.DEFAULT_START, blocks, Mine.getDefaultStages());
     }
 
     public String getName() {
@@ -58,7 +59,7 @@ public class Mine /*implements Runnable*/ {
         return this.stages;
     }
 
-    public void resetStagesCount() {
+    private void resetStagesCount() {
         for (Stage s : this.stages) s.resetStageCount();
     }
 
@@ -78,9 +79,27 @@ public class Mine /*implements Runnable*/ {
         return r;
     }
 
+    /**
+     * Recalculates the number of blocks for each stage in the mine
+     * @param mina Mine to recalculate the blocks
+     */
+    public void updateStages() {
+        this.resetStagesCount();
+
+        for(Location loc: this.getMineBlocks()) {
+            Material mat = loc.getBlock().getType();
+            Stage match = this.getStage(mat.name());
+            if (match != null) match.incrementStageBlocks();
+        }
+    }
+
     /*public static void setMineDelay(int delay) {
         Mine.MINE_DELAY = delay;
     }*/
+
+    public static void setDefaultStart(boolean start) {
+        Mine.DEFAULT_START = start;
+    }
 
     @Nullable
     public Stage getStage(String search) {

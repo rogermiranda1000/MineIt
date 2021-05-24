@@ -13,7 +13,7 @@ import java.util.Scanner;
 public class FileManager {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static Mine loadMines(File f) throws FileNotFoundException {
+    public static Mine loadMines(File f) throws IOException {
         return FileManager.gson.fromJson(FileManager.getFileContents(f), BasicMine.class).getMine();
     }
 
