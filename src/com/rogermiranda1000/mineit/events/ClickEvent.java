@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
-public class onClick implements Listener {
+public class ClickEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onClick(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();

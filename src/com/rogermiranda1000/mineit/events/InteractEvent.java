@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class onInteract implements Listener {
+public class InteractEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent e) {
         Player ply = e.getPlayer();

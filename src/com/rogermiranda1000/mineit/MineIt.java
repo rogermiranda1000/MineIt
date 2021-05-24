@@ -1,8 +1,8 @@
 package com.rogermiranda1000.mineit;
 
-import com.rogermiranda1000.mineit.events.onBlockBreak;
-import com.rogermiranda1000.mineit.events.onClick;
-import com.rogermiranda1000.mineit.events.onInteract;
+import com.rogermiranda1000.mineit.events.BlockBreakEvent;
+import com.rogermiranda1000.mineit.events.ClickEvent;
+import com.rogermiranda1000.mineit.events.InteractEvent;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -77,10 +77,10 @@ public class MineIt extends JavaPlugin {
                 String key = entry.getKey();
                 String value = entry.getValue();
                 if(!getConfig().isSet(key)) {
-                    if(value=="true") getConfig().set(key,Boolean.valueOf(true));
-                    else if(value=="false") getConfig().set(key,Boolean.valueOf(false));
-                    else if(value=="5") getConfig().set(key,Integer.valueOf(5));
-                    else if(value=="80") getConfig().set(key,Integer.valueOf(80));
+                    if(value.equalsIgnoreCase("true")) getConfig().set(key,Boolean.valueOf(true));
+                    else if(value.equalsIgnoreCase("false")) getConfig().set(key,Boolean.valueOf(false));
+                    else if(value.equalsIgnoreCase("5")) getConfig().set(key,Integer.valueOf(5));
+                    else if(value.equalsIgnoreCase("80")) getConfig().set(key,Integer.valueOf(80));
                     else getConfig().set(key,value);
                     need = true;
                 }
@@ -145,9 +145,9 @@ public class MineIt extends JavaPlugin {
         editar.setItemMeta(meta);
         inv.setItem(8, editar);
 
-        getServer().getPluginManager().registerEvents(new onBlockBreak(), this);
-        getServer().getPluginManager().registerEvents(new onInteract(), this);
-        getServer().getPluginManager().registerEvents(new onClick(), this);
+        getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
+        getServer().getPluginManager().registerEvents(new InteractEvent(), this);
+        getServer().getPluginManager().registerEvents(new ClickEvent(), this);
 
         //for(Mine mina: this.minas) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, mina, 1, 1);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
