@@ -18,6 +18,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ClickEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
@@ -25,6 +26,8 @@ public class ClickEvent implements Listener {
         Player player = (Player) e.getWhoClicked();
         ItemStack clicked = e.getCurrentItem();
         Inventory inventory = e.getInventory();
+        // TODO use getClickedInventory to discard events?
+        // TODO objects extends Inventory?
 
         if(!e.getView().getTitle()/*inventory.getName()*/.equalsIgnoreCase("§6§lMineIt") && !e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine")) return;
         e.setCancelled(true);
@@ -95,113 +98,124 @@ public class ClickEvent implements Listener {
         }
 
         if(e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine") && isEditing(inventory)) {
+            // TODO Hotfix: bucle for no funciona con elementos repetidos (ej: dos estados que al romperse van a BEDROCK)
             for(int x = 0; x<inventory.getSize()-9; x++) {
-                if(inventory.getItem(x)==null) continue;
-                if(!inventory.getItem(x).equals(clicked)) continue; // busca que elemento ha pulsado
+                if(inventory.getItem(x) == null) continue; // en ese slot no hay nada
+                if(!clicked.equals(inventory.getItem(x))) continue; // no es el elemento que ha pulsado
 
                 e.setCancelled(true);
 
                 ItemStack item = new ItemStack(player.getItemOnCursor().getType());
-                //if(item==null) return;
-                if(item.getType()==Material.AIR || !item.getType().isBlock()) return;
+                if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
 
                 Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
                 if(mine==null) return;
 
-                if ((x/9) % 2 == 1) {
-                    // segunda fila (la de stages)
-                    int stageNum = x%9; // we're editing the stage nºstageNum
-                    if (stageNum <= 1) return; // you can't edit the 1st nor 2nd stage
+                int stageNum = x%9; // we're editing the stage nºstageNum
+                if (stageNum >= mine.getStages().size()) return; // not enough stages
 
-                    Stage match = mine.getStage(item.getType().name());
-                    if(match == null) {
-                        player.sendMessage(MineIt.prefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
-                        return;
-                    }
+                switch (x/9) {
+                    case 0:
+                        // primera fila (la de stages)
+                        if (item.getType().equals(Material.AIR)) {
+                            // remove stage
+                            if (mine.getStageCount() == 1) {
+                                player.sendMessage(MineIt.prefix + "There can't be a mine without stages!");
+                                return;
+                            }
+                            if (stageNum == 0) {
+                                player.sendMessage(MineIt.prefix + "Bedrock can't be deleted.");
+                                return;
+                            }
 
-                    if (stageNum+1 > mine.getStages().size()) return; // not enough stages
-                    mine.getStages().get(stageNum).setPreviousStage(match);
+                            // TODO delete
+                            mine.removeStage(stageNum);
 
-                    // actualizar vista
-                    ItemMeta m = item.getItemMeta();
-                    List<String> str = new ArrayList<>();
-                    str.add("On break, go to stage " + item.getType().name());
-                    m.setLore(str);
-                    item.setItemMeta(m);
-                    inventory.setItem(x, item);
-
-                    return;
-                }
-                int z = (((int)(((int)(x/9))/2))*9) + (x%9);
-
-                if(item.getType().equals(Material.AIR)) {
-                    if(mine.getStages().size()==1) {
-                        player.sendMessage(MineIt.prefix+"There can't be a null mine.");
-                        return;
-                    }
-
-                    // TODO delete
-                    Stage match = mine.getStage(inventory.getItem(x).getType().name());
-                    /*if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
-                    mine.stageGo = Arrays.copyOf(mine.stageGo, mine.stageGo.length-1);*/
-
-                    player.closeInventory();
-                    MineIt.instance.edintingMine(player, mine);
-                    return;
-                }
-
-                //item.setAmount(1);
-                // TODO add
-                /*ItemMeta m = item.getItemMeta();
-                List<String> s = new ArrayList<String>();
-                s.addAll(Arrays.asList(mine.stages));
-                if(s.contains(item.getType().name())) {
-                    player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
-                    return;
-                }
-
-                if (inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasLore()) {
-                    m.setLore(inventory.getItem(x).getItemMeta().getLore());
-                    item.setItemMeta(m);
-
-                    for (int y = 0; y<s.size(); y++) {
-                        if(s.get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
-                            s.set(y, item.getType().name());
-                            break;
+                            // reload inventory
+                            player.closeInventory();
+                            MineIt.instance.edintingMine(player, mine);
                         }
-                    }
-                    mine.stages = s.toArray(new String[s.size()]);
-                    if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
-                    inventory.setItem(x, item);
-                    return;
+                        else {
+                            //item.setAmount(1);
+                            // TODO add
+                            /*ItemMeta m = item.getItemMeta();
+                            List<String> s = new ArrayList<String>();
+                            s.addAll(Arrays.asList(mine.stages));
+                            if(s.contains(item.getType().name())) {
+                                player.sendMessage(MineIt.prefix+"There's already a "+item.getType().name().toLowerCase()+" stage!");
+                                return;
+                            }
+
+                            if (inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasLore()) {
+                                m.setLore(inventory.getItem(x).getItemMeta().getLore());
+                                item.setItemMeta(m);
+
+                                for (int y = 0; y<s.size(); y++) {
+                                    if(s.get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
+                                        s.set(y, item.getType().name());
+                                        break;
+                                    }
+                                }
+                                mine.stages = s.toArray(new String[s.size()]);
+                                if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
+                                inventory.setItem(x, item);
+                                return;
+                            }
+
+                            s.add(item.getType().name());
+                            mine.stages = s.toArray(new String[s.size()]);
+                            if (!inventory.getItem(x).hasItemMeta() || !inventory.getItem(x).getItemMeta().hasLore())
+                                mine.stageGo = IntStream.range(1, mine.stages.length-1).toArray();
+                            if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
+
+                            List<String> st = new ArrayList<String>();
+                            st.add("Stage "+String.valueOf(mine.stages.length));
+                            if(MineIt.instance.limit) st.add("Limit setted to "+String.valueOf(mine.stageLimit[z])+" blocks");
+                            m.setLore(st);
+                            item.setItemMeta(m);
+                            inventory.setItem(x, item);
+
+                            item = new ItemStack(Material.getMaterial(mine.stages[z-1]));
+                            m = item.getItemMeta();
+                            st = new ArrayList<String>();
+                            st.add("On break, go to stage " + String.valueOf(z));
+                            m.setLore(st);
+                            item.setItemMeta(m);
+                            inventory.setItem(x+9, item);
+
+                            if((x+1)%9==0) {
+                                player.closeInventory();
+                                MineIt.instance.edintingMine(player, mine);
+                            }*/
+                        }
+                        break;
+
+                    case 1:
+                        // segunda fila (la de on break go to X stage)
+                        if (stageNum <= 1) return; // you can't edit the 1st nor 2nd stage
+
+                        Stage match = mine.getStage(item.getType().name());
+                        if(match == null) {
+                            player.sendMessage(MineIt.prefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
+                            return;
+                        }
+
+                        mine.getStages().get(stageNum).setPreviousStage(match);
+
+                        // actualizar vista
+                        ItemMeta m = item.getItemMeta();
+                        List<String> str = new ArrayList<>();
+                        str.add("On break, go to stage " + item.getType().name());
+                        m.setLore(str);
+                        item.setItemMeta(m);
+                        inventory.setItem(x, item);
+                        break;
+
+                    default:
+                        // ?
                 }
 
-                s.add(item.getType().name());
-                mine.stages = s.toArray(new String[s.size()]);
-                if (!inventory.getItem(x).hasItemMeta() || !inventory.getItem(x).getItemMeta().hasLore())
-                    mine.stageGo = IntStream.range(1, mine.stages.length-1).toArray();
-                if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
-
-                List<String> st = new ArrayList<String>();
-                st.add("Stage "+String.valueOf(mine.stages.length));
-                if(MineIt.instance.limit) st.add("Limit setted to "+String.valueOf(mine.stageLimit[z])+" blocks");
-                m.setLore(st);
-                item.setItemMeta(m);
-                inventory.setItem(x, item);
-
-                item = new ItemStack(Material.getMaterial(mine.stages[z-1]));
-                m = item.getItemMeta();
-                st = new ArrayList<String>();
-                st.add("On break, go to stage " + String.valueOf(z));
-                m.setLore(st);
-                item.setItemMeta(m);
-                inventory.setItem(x+9, item);
-
-                if((x+1)%9==0) {
-                    player.closeInventory();
-                    MineIt.instance.edintingMine(player, mine);
-                }
-                return;*/
+                return;
             }
             e.setCancelled(false);
         }

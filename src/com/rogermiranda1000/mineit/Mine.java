@@ -59,6 +59,31 @@ public class Mine /*implements Runnable*/ {
         return this.stages;
     }
 
+    public Stage getStage(int i) {
+        return this.stages.get(i);
+    }
+
+    public int getStageCount() {
+        return this.stages.size();
+    }
+
+    public void removeStage(int index) {
+        Stage remove = this.getStage(index);
+        Stage prev = remove.getPreviousStage(), next = remove.getNextStage();
+
+        // remove all stages that points to the one that will be removed
+        for (Stage s : this.stages) {
+            if (s.equals(remove)) continue; // ignore the stage that will be removed
+
+            if (remove.equals(s.getPreviousStage())) s.setPreviousStage(prev);
+            if (remove.equals(s.getNextStage())) s.setNextStage(next);
+        }
+
+        this.stages.remove(index);
+        this.updateStages();
+        // TODO quitar bloques del estado eliminado?
+    }
+
     private void resetStagesCount() {
         for (Stage s : this.stages) s.resetStageCount();
     }
@@ -81,7 +106,6 @@ public class Mine /*implements Runnable*/ {
 
     /**
      * Recalculates the number of blocks for each stage in the mine
-     * @param mina Mine to recalculate the blocks
      */
     public void updateStages() {
         this.resetStagesCount();
