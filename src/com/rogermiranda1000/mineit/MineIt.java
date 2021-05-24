@@ -149,7 +149,25 @@ public class MineIt extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new onInteract(), this);
         getServer().getPluginManager().registerEvents(new onClick(), this);
 
-        for(Mine mina: this.minas) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, mina, 1, 1);
+        //for(Mine mina: this.minas) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, mina, 1, 1);
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            for(Mine mina: this.minas) {
+                if (!mina.start) continue;
+                mina.currentTime++;
+                if (mina.currentTime < (/*Mine.MINE_DELAY*/delay * 20D) / mina.getTotalBlocks()) continue;
+
+                mina.currentTime = 0;
+                Location loc = mina.getRandomBlockInMine();
+                Stage current = mina.getStage(loc.getBlock().getType().toString());
+                if (current == null) continue; // wtf
+                Stage next = current.getNextStage();
+                if (next != null && next.fitsOneBlock()) {
+                    current.decrementStageBlocks();
+                    next.incrementStageBlocks();
+                    loc.getBlock().setType(next.getStageMaterial());
+                }
+            }
+        }, 1, 1);
     }
 
     @Override

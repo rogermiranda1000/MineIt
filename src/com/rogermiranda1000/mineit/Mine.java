@@ -68,7 +68,7 @@ public class Mine implements Runnable {
         return this.stages.stream().filter( e -> e.getName().equalsIgnoreCase(search) ).findAny().orElse(null);
     }
 
-    @Override
+    /*@Override
     @SuppressWarnings("InfiniteLoopStatement")
     public void run() {
         while (true) {
@@ -87,5 +87,5 @@ public class Mine implements Runnable {
                 loc.getBlock().setType(next.getStageMaterial());
             }
         }
-    }
+    }*/
 }
