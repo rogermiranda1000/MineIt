@@ -99,22 +99,21 @@ public class ClickEvent implements Listener {
         if(e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine") && isEditing(inventory)) {
             for(int x = 0; x<inventory.getSize()-9; x++) {
                 if(inventory.getItem(x)==null) continue;
-                //if(player.getItemOnCursor().getType()==Material.AIR) break;
-                if(!inventory.getItem(x).equals(clicked)) continue;
-                /*if(inventory.getItem(x).hasItemMeta() && inventory.getItem(x).getItemMeta().hasDisplayName() &&
-                        inventory.getItem(x).getItemMeta().getDisplayName().equalsIgnoreCase("-")) break;*/
+                if(!inventory.getItem(x).equals(clicked)) continue; // busca que elemento ha pulsado
 
                 e.setCancelled(true);
 
                 ItemStack item = new ItemStack(player.getItemOnCursor().getType());
                 //if(item==null) return;
-                if(item.getType()!=Material.AIR && !item.getType().isBlock()) return;
+                if(item.getType()==Material.AIR || !item.getType().isBlock()) return;
 
                 Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
                 if(mine==null) return;
 
-                if(((int)x/9)%2==1) {
-                    if(item.getType()==Material.AIR) return;
+                if ((x/9) % 2 == 1) {
+                    // segunda fila (la de stages)
+                    int stageNum = x%9; // we're editing the stage nºstageNum
+                    if (stageNum <= 1) return; // you can't edit the 1st nor 2nd stage
 
                     Stage match = mine.getStage(item.getType().name());
                     if(match == null) {
@@ -122,14 +121,15 @@ public class ClickEvent implements Listener {
                         return;
                     }
 
-                    if (match.getPreviousStage() != null) {
-                        ItemMeta m = item.getItemMeta();
-                        List<String> str = new ArrayList<>();
-                        str.add("On break, go to stage " + (match.getPreviousStage().getStageMaterial()));
-                        m.setLore(str);
-                        item.setItemMeta(m);
-                        inventory.setItem(x, item);
-                    }
+                    mine.getStages().get(x % 9).setPreviousStage(match);
+
+                    // actualizar vista
+                    ItemMeta m = item.getItemMeta();
+                    List<String> str = new ArrayList<>();
+                    str.add("On break, go to stage " + item.getType().name());
+                    m.setLore(str);
+                    item.setItemMeta(m);
+                    inventory.setItem(x, item);
 
                     return;
                 }

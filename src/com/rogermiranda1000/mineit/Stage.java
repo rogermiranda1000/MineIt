@@ -13,7 +13,7 @@ public class Stage {
      */
     private int stageLimit;
 
-    private final Stage previousStage;
+    private Stage previousStage;
 
     private Stage nextStage;
 
@@ -36,6 +36,10 @@ public class Stage {
 
     public void setNextStage(Stage stage) {
         this.nextStage = stage;
+    }
+
+    public void setPreviousStage(Stage stage) {
+        this.previousStage = stage;
     }
 
     @Nullable
