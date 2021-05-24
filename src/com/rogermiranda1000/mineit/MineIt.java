@@ -34,7 +34,7 @@ public class MineIt extends JavaPlugin {
     public static ItemStack anvil = new ItemStack(Material.ANVIL);
     public static ItemStack redstone = new ItemStack(Material.REDSTONE_BLOCK);
 
-    public List<Mines> minas = new ArrayList<Mines>();
+    public List<Mine> minas = new ArrayList<Mine>();
     public HashMap<String, Location[]> bloques = new HashMap<>();
     public String version = "";
 
@@ -43,6 +43,7 @@ public class MineIt extends JavaPlugin {
     public boolean limit;
     public boolean start;
 
+    @Override
     public void onEnable() {
         getLogger().info("Plugin enabled.");
         version = Bukkit.getBukkitVersion();
@@ -90,6 +91,7 @@ public class MineIt extends JavaPlugin {
         }
         rango = config.getInt("mine_creator_range");
         delay = config.getInt("seconds_per_block");
+        Mine.setMineDelay(this.delay);
         limit = config.getBoolean("limit_blocks_per_stage");
         start = config.getBoolean("enabled_mine_on_create");
 
@@ -147,34 +149,10 @@ public class MineIt extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new onInteract(), this);
         getServer().getPluginManager().registerEvents(new onClick(), this);
 
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-            public void run() {
-                for(Mines m: minas) {
-                    if(!m.start) continue;
-                    m.currentTime++;
-                    if(m.currentTime<(double)(delay*20D)/m.getTotalBlocks()) continue;
-
-                    m.currentTime=0;
-                    Location loc = m.getRandomBlockInMine();
-                    int fase = -1;
-                    for(int x = 0; x<m.stages.length; x++) {
-                        if(m.stages[x].equalsIgnoreCase(loc.getBlock().getType().toString())) {
-                            fase = x;
-                            break;
-                        }
-                    }
-                    if(fase!=-1 && m.stages.length>fase+1 && (!limit || (m.stageBlocks[fase+1]+1<=m.stageLimit[fase+1]))) {
-                        if(limit) {
-                            m.stageBlocks[fase]--;
-                            m.stageBlocks[fase+1]++;
-                        }
-                        loc.getBlock().setType(Material.getMaterial(m.stages[fase+1]));
-                    }
-                }
-            }
-        },1,1);
+        for(Mine mina: this.minas) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, mina, 1, 1);
     }
 
+    @Override
     public void onDisable() {
         getLogger().info("Plugin disabled.");
 
@@ -182,7 +160,7 @@ public class MineIt extends JavaPlugin {
             for(Location l: entry.getValue()) l.getBlock().setType(Material.STONE);
         }
 
-        for (Mines mina : minas) {
+        for (Mine mina : minas) {
             try {
                 File file = new File(getDataFolder(), mina.name+".yml");
                 FileManager.saveMines(file, mina);
@@ -192,6 +170,7 @@ public class MineIt extends JavaPlugin {
         }
     }
 
+    @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         Player player = (sender instanceof Player) ? (Player) sender : null;
         if (!cmd.getName().equalsIgnoreCase("mineit")) return false;
@@ -234,18 +213,18 @@ public class MineIt extends JavaPlugin {
                 player.sendMessage(prefix+"You've reached the current mines limit!");
                 return true;
             }
-            for (Mines mina: minas) {
+            for (Mine mina: minas) {
                 if(mina.name.equalsIgnoreCase(args[1])) {
                     player.sendMessage(prefix+"There's already a mine named '"+args[1]+"'.");
                     return true;
                 }
             }
 
-            Mines m = new Mines();
+            Mine m = new Mine();
             m.name = args[1];
             for(Location loc : bloques.get(player.getName())) {
                 m.add(loc);
-                loc.getBlock().setType(Material.getMaterial(m.stages[0]));
+                loc.getBlock().setType(m.getStages().get(0).getStageMaterial());
             }
             if(limit) updateStages(m);
             m.start = start;
@@ -264,8 +243,8 @@ public class MineIt extends JavaPlugin {
                 player.sendMessage(prefix+"Command error, use /mineit create [name].");
                 return true;
             }
-            Mines m = null;
-            for (Mines mina: minas) {
+            Mine m = null;
+            for (Mine mina: minas) {
                 if(mina.name.equalsIgnoreCase(args[1])) m = mina;
             }
             if(m==null) {
@@ -293,7 +272,7 @@ public class MineIt extends JavaPlugin {
                     player.sendMessage(prefix+"You can't use mine's menus.");
                     return true;
                 }
-                for(Mines m: minas) {
+                for(Mine m: minas) {
                     if(m.name.equalsIgnoreCase(args[2])) {
                         edintingMine(player, m);
                         return true;
@@ -313,7 +292,7 @@ public class MineIt extends JavaPlugin {
                 player.sendMessage(clearPrefix+"Ex. /mineit edit stagelimit Gold 2 30");
                 return true;
             }
-            for(Mines m: minas) {
+            for(Mine m: minas) {
                 if(m.name.equalsIgnoreCase(args[2])) {
                     int num = -1;
                     int lim = -1;
@@ -337,12 +316,12 @@ public class MineIt extends JavaPlugin {
                         player.sendMessage(prefix+"'"+args[4]+"' is not a number!");
                         return true;
                     }
-                    if(m.stages.length<=num) {
-                        player.sendMessage(prefix+"There's only "+String.valueOf(m.stages.length)+" stages!");
+                    if(m.getStages().size()<=num) {
+                        player.sendMessage(prefix+"There's only " + m.getStages().size() + " stages!");
                         return true;
                     }
 
-                    m.stageLimit[num] = lim;
+                    m.getStages().get(num).setStageLimit(lim);
                     player.sendMessage(clearPrefix+"Set "+args[2]+"'s stage "+args[3]+" limit to "+args[4]+".");
                     return true;
                 }
@@ -356,63 +335,50 @@ public class MineIt extends JavaPlugin {
         return true;
     }
 
-    public void updateStages(Mines mina) {
-        mina.stageBlocks = new int[mina.stages.length];
+    /**
+     * Recalculates the number of blocks for each stage in the mine
+     * @param mina Mine to recalculate the blocks
+     */
+    public void updateStages(Mine mina) {
+        mina.resetStagesCount();
+
         for(Location loc: mina.getMineBlocks()) {
             Material mat = loc.getBlock().getType();
-            for(int x = 0; x<mina.stages.length; x++) {
-                if(mat.name().equalsIgnoreCase(mina.stages[x])) {
-                    mina.stageBlocks[x]++;
-                    break;
-                }
-            }
+            Stage match = Stage.getMatch(mina.getStages(), mat.name());
+            if (match != null) match.incrementStageBlocks();
         }
-
-        int[] s = new int[mina.stages.length];
-        int dif = s.length-mina.stageLimit.length;
-        if(dif==0) return;
-
-        for(int x = 0; x<mina.stageLimit.length; x++) {
-            if(s.length<x+1) break;
-            s[x] = mina.stageLimit[x];
-        }
-        if(dif>0) {
-            for(int x = 0; x<dif; x++) {
-                s[x+mina.stageLimit.length] = 9999;
-            }
-        }
-        mina.stageLimit = s;
     }
 
-    public void edintingMine(Player player, Mines mine) {
-        int lin = ((int) (mine.stages.length/9)) + 1;
+    public void edintingMine(Player player, Mine mine) {
+        int lin = mine.getStages().size()/9 + 1;
         if(lin>2) {
-            if(mine.stages.length%9>0) {
+            if(mine.getStages().size() % 9 > 0) {
                 player.sendMessage(MineIt.prefix + "You've reached the max mines stages! Please, remove some in the mine's config or delete the mine.");
                 return;
             }
-            lin = (int) (mine.stages.length/9);
+            lin = mine.getStages().size()/9;
         }
         Inventory i = Bukkit.createInventory(null, (lin*2 + 1)*9, "§cEdit mine §d"+mine.name);
 
         for(int x = 0; x<lin*9; x++) {
-            int actualLine = ((int)(x/9))*18 + (x%9);
+            int actualLine = (x/9)*18 + (x%9);
 
-            if(mine.stages.length>x) {
-                ItemStack block = new ItemStack(Material.getMaterial(mine.stages[x]));
+            if(mine.getStages().size()>x) {
+                Stage current = mine.getStages().get(x);
+                ItemStack block = new ItemStack(current.getStageMaterial());
                 ItemMeta meta = block.getItemMeta();
-                List<String> l = new ArrayList<String>();
-                l.add("Stage " + String.valueOf(x + 1));
-                if(MineIt.instance.limit) l.add("Limit setted to "+String.valueOf(mine.stageLimit[x])+" blocks");
+                List<String> l = new ArrayList<>();
+                l.add("Stage " + (x + 1));
+                if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
                 meta.setLore(l);
                 block.setItemMeta(meta);
                 i.setItem(actualLine, block);
 
-                if(x>1) {
-                    block = new ItemStack(Material.getMaterial(mine.stages[mine.stageGo[x-2]]));
+                if(current.getPreviousStage() != null) {
+                    block = new ItemStack(current.getPreviousStage().getStageMaterial());
                     meta = block.getItemMeta();
-                    l = new ArrayList<String>();
-                    l.add("On break, go to stage " + String.valueOf(mine.stageGo[x-2]+1));
+                    l = new ArrayList<>();
+                    l.add("On break, go to stage " + current.getPreviousStage().getName());
                     meta.setLore(l);
                     block.setItemMeta(meta);
 
@@ -434,7 +400,7 @@ public class MineIt extends JavaPlugin {
         player.openInventory(i);
     }
 
-    public ItemStack watch(Mines mine) {
+    public ItemStack watch(Mine mine) {
         ItemStack clock = new ItemStack(Material.FURNACE);
         ItemMeta m = clock.getItemMeta();
         String s = org.bukkit.ChatColor.GREEN+"Start";

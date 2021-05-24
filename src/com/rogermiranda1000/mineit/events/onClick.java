@@ -1,7 +1,8 @@
 package com.rogermiranda1000.mineit.events;
 
 import com.rogermiranda1000.mineit.MineIt;
-import com.rogermiranda1000.mineit.Mines;
+import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.Stage;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -62,7 +63,7 @@ public class onClick implements Listener {
                 return;
             }
 
-            Mines mine = getMine(e.getView().getTitle().substring(14));
+            Mine mine = getMine(e.getView().getTitle().substring(14));
             if(mine==null) return;
 
             MineIt.instance.minas.remove(mine);
@@ -76,18 +77,18 @@ public class onClick implements Listener {
             return;
         }
         else if(clicked.getType()==Material.FURNACE) {
-            Mines mine = getMine(e.getView().getTitle().substring(14));
+            Mine mine = getMine(e.getView().getTitle().substring(14));
             if(mine==null) return;
 
             if(mine.start) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.name+"' stopped.");
             else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.name+"'...");
             mine.start = !mine.start;
             //inventory.setItem(16, MineIt.instance.watch(mine));
-            inventory.setItem(((((int) (mine.stages.length/9) + 1)*2 + 1)*9)-2, MineIt.instance.watch(mine));
+            inventory.setItem(((((mine.getStages().size()/9) + 1)*2 + 1)*9)-2, MineIt.instance.watch(mine));
             return;
         }
         else if(e.getView().getTitle()/*inventory.getName()*/.equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
-            Mines mine = getMine(clicked.getItemMeta().getDisplayName());
+            Mine mine = getMine(clicked.getItemMeta().getDisplayName());
             if(mine==null) return;
 
             player.closeInventory();
@@ -109,54 +110,41 @@ public class onClick implements Listener {
                 //if(item==null) return;
                 if(item.getType()!=Material.AIR && !item.getType().isBlock()) return;
 
-                Mines mine = getMine(e.getView().getTitle().substring(14));
+                Mine mine = getMine(e.getView().getTitle().substring(14));
                 if(mine==null) return;
 
                 if(((int)x/9)%2==1) {
                     if(item.getType()==Material.AIR) return;
 
-                    List<String> s = new ArrayList<String>();
-                    s.addAll(Arrays.asList(mine.stages));
-                    if(!s.contains(item.getType().name())) {
+                    Stage match = Stage.getMatch(mine.getStages(), item.getType().name());
+                    if(match == null) {
                         player.sendMessage(MineIt.prefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
                         return;
                     }
 
-                    for(int w = 0; w<s.size(); w++) {
-                        String st = s.get(w);
-                        if(!item.getType().name().equalsIgnoreCase(st)) continue;
-
-                        int z = (((int)(((int)((x-9)/9))/2))*9) + ((x-9)%9);
-
-                        if(z==0 || z-2>=mine.stageGo.length) return;
-
-                        mine.stageGo[z-2] = w;
-
+                    if (match.getPreviousStage() != null) {
                         ItemMeta m = item.getItemMeta();
-                        List<String> str = new ArrayList<String>();
-                        str.add("On break, go to stage " + String.valueOf(w+1));
+                        List<String> str = new ArrayList<>();
+                        str.add("On break, go to stage " + (match.getPreviousStage().getStageMaterial()));
                         m.setLore(str);
                         item.setItemMeta(m);
                         inventory.setItem(x, item);
-
-                        return;
                     }
 
                     return;
                 }
                 int z = (((int)(((int)(x/9))/2))*9) + (x%9);
 
-                if(item.getType()==Material.AIR) {
-                    List<String> s = new ArrayList<String>();
-                    s.addAll(Arrays.asList(mine.stages));
-                    s.remove(inventory.getItem(x).getType().name());
-                    if(s.size()==0) {
+                if(item.getType().equals(Material.AIR)) {
+                    if(mine.getStages().size()==1) {
                         player.sendMessage(MineIt.prefix+"There can't be a null mine.");
                         return;
                     }
-                    mine.stages = s.toArray(new String[s.size()]);
-                    if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
-                    mine.stageGo = Arrays.copyOf(mine.stageGo, mine.stageGo.length-1);
+
+                    // TODO delete
+                    Stage match = Stage.getMatch(mine.getStages(), inventory.getItem(x).getType().name());
+                    /*if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
+                    mine.stageGo = Arrays.copyOf(mine.stageGo, mine.stageGo.length-1);*/
 
                     player.closeInventory();
                     MineIt.instance.edintingMine(player, mine);
@@ -164,7 +152,8 @@ public class onClick implements Listener {
                 }
 
                 //item.setAmount(1);
-                ItemMeta m = item.getItemMeta();
+                // TODO add
+                /*ItemMeta m = item.getItemMeta();
                 List<String> s = new ArrayList<String>();
                 s.addAll(Arrays.asList(mine.stages));
                 if(s.contains(item.getType().name())) {
@@ -213,14 +202,14 @@ public class onClick implements Listener {
                     player.closeInventory();
                     MineIt.instance.edintingMine(player, mine);
                 }
-                return;
+                return;*/
             }
             e.setCancelled(false);
         }
     }
 
-    Mines getMine(String name) {
-        for(Mines mine: MineIt.instance.minas) {
+    Mine getMine(String name) {
+        for(Mine mine: MineIt.instance.minas) {
             if (!mine.name.equalsIgnoreCase(name)) continue;
             return mine;
         }
@@ -250,11 +239,13 @@ public class onClick implements Listener {
 
         Inventory i = Bukkit.createInventory(null, l*9, "§cEdit mine");
         int pos=0;
-        for (Mines mine: MineIt.instance.minas) {
+        for (Mine mine: MineIt.instance.minas) {
             ItemStack mina = new ItemStack(Material.STONE);
             ItemMeta meta = mina.getItemMeta();
             meta.setDisplayName(mine.name);
-            meta.setLore(Arrays.asList(mine.stages));
+            ArrayList<String> print = new ArrayList<>();
+            for (Stage s : mine.getStages()) print.add(s.toString());
+            meta.setLore(print);
             mina.setItemMeta(meta);
 
             i.setItem(pos++, mina);

@@ -12,11 +12,11 @@ import java.util.Scanner;
 public class FileManager {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static Mines loadMines(File f) throws FileNotFoundException {
-        return FileManager.gson.fromJson(FileManager.getFileContents(f), Mines.class);
+    public static Mine loadMines(File f) throws FileNotFoundException {
+        return FileManager.gson.fromJson(FileManager.getFileContents(f), Mine.class);
     }
 
-    public static void saveMines(File f, Mines mines) throws IOException {
+    public static void saveMines(File f, Mine mines) throws IOException {
         FileWriter fw = new FileWriter(f);
         FileManager.gson.toJson(mines, fw);
         fw.close();
