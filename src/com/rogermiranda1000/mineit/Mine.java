@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 import org.bukkit.Location;
@@ -66,6 +67,11 @@ public class Mine /*implements Runnable*/ {
     @Nullable
     public Stage getStage(String search) {
         return this.stages.stream().filter( e -> e.getName().equalsIgnoreCase(search) ).findAny().orElse(null);
+    }
+
+    @Nullable
+    public static Mine getMine(ArrayList<Mine> minas, String search) {
+        return minas.stream().filter( e -> e.name.equalsIgnoreCase(search) ).findAny().orElse(null);
     }
 
     /*@Override

@@ -34,7 +34,7 @@ public class MineIt extends JavaPlugin {
     public static ItemStack anvil = new ItemStack(Material.ANVIL);
     public static ItemStack redstone = new ItemStack(Material.REDSTONE_BLOCK);
 
-    public List<Mine> minas = new ArrayList<Mine>();
+    public ArrayList<Mine> minas = new ArrayList<>();
     public HashMap<String, Location[]> bloques = new HashMap<>();
     public String version = "";
 
@@ -280,6 +280,11 @@ public class MineIt extends JavaPlugin {
             return true;
         }
         if(args[0].equalsIgnoreCase("edit")) {
+            if (args.length == 1) {
+                player.sendMessage(prefix+"Invalid syntax, use /mineit ?");
+                return true;
+            }
+
             if(args[1].equalsIgnoreCase("mine")) {
                 if(args.length!=3) {
                     player.sendMessage(prefix+"Use /mineit edit mine [name]");
@@ -287,7 +292,7 @@ public class MineIt extends JavaPlugin {
                 }
                 if(!player.hasPermission("mineit.open")) {
                     player.closeInventory();
-                    player.sendMessage(prefix+"You can't use mine's menus.");
+                    player.sendMessage(prefix+"You can't use MineIt menus.");
                     return true;
                 }
                 for(Mine m: minas) {

@@ -35,7 +35,7 @@ public class ClickEvent implements Listener {
             player.sendMessage(MineIt.prefix+"You can't use this menu.");
             return;
         }
-        if(clicked==null || clicked.getType()==null) return;
+        if(clicked==null) return;
         if((clicked.equals(MineIt.item2) || clicked.equals(MineIt.editar) || clicked.equals(MineIt.crear)) && !player.hasPermission("mineit.create")) {
             player.sendMessage(MineIt.prefix+"You can't use this action.");
             return;
@@ -63,7 +63,7 @@ public class ClickEvent implements Listener {
                 return;
             }
 
-            Mine mine = getMine(e.getView().getTitle().substring(14));
+            Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
             if(mine==null) return;
 
             MineIt.instance.minas.remove(mine);
@@ -77,7 +77,7 @@ public class ClickEvent implements Listener {
             return;
         }
         else if(clicked.getType()==Material.FURNACE) {
-            Mine mine = getMine(e.getView().getTitle().substring(14));
+            Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
             if(mine==null) return;
 
             if(mine.start) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.name+"' stopped.");
@@ -88,7 +88,7 @@ public class ClickEvent implements Listener {
             return;
         }
         else if(e.getView().getTitle()/*inventory.getName()*/.equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
-            Mine mine = getMine(clicked.getItemMeta().getDisplayName());
+            Mine mine = Mine.getMine(MineIt.instance.minas, clicked.getItemMeta().getDisplayName());
             if(mine==null) return;
 
             player.closeInventory();
@@ -110,7 +110,7 @@ public class ClickEvent implements Listener {
                 //if(item==null) return;
                 if(item.getType()!=Material.AIR && !item.getType().isBlock()) return;
 
-                Mine mine = getMine(e.getView().getTitle().substring(14));
+                Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
                 if(mine==null) return;
 
                 if(((int)x/9)%2==1) {
@@ -206,14 +206,6 @@ public class ClickEvent implements Listener {
             }
             e.setCancelled(false);
         }
-    }
-
-    Mine getMine(String name) {
-        for(Mine mine: MineIt.instance.minas) {
-            if (!mine.name.equalsIgnoreCase(name)) continue;
-            return mine;
-        }
-        return null;
     }
 
     void editMine(Player player) {
