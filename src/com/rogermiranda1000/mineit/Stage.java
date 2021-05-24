@@ -80,12 +80,6 @@ public class Stage {
         return this.stageLimit;
     }
 
-    // TODO se usa siempre con mine.getStages()?
-    @Nullable
-    public static Stage getMatch(ArrayList<Stage> stages, String search) {
-        return stages.stream().filter( e -> e.getName().equalsIgnoreCase(search) ).findAny().orElse(null);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Stage)) return false;

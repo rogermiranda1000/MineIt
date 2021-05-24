@@ -344,7 +344,7 @@ public class MineIt extends JavaPlugin {
 
         for(Location loc: mina.getMineBlocks()) {
             Material mat = loc.getBlock().getType();
-            Stage match = Stage.getMatch(mina.getStages(), mat.name());
+            Stage match = mina.getStage(mat.name());
             if (match != null) match.incrementStageBlocks();
         }
     }

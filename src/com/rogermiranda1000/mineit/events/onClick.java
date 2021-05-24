@@ -116,7 +116,7 @@ public class onClick implements Listener {
                 if(((int)x/9)%2==1) {
                     if(item.getType()==Material.AIR) return;
 
-                    Stage match = Stage.getMatch(mine.getStages(), item.getType().name());
+                    Stage match = mine.getStage(item.getType().name());
                     if(match == null) {
                         player.sendMessage(MineIt.prefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
                         return;
@@ -142,7 +142,7 @@ public class onClick implements Listener {
                     }
 
                     // TODO delete
-                    Stage match = Stage.getMatch(mine.getStages(), inventory.getItem(x).getType().name());
+                    Stage match = mine.getStage(inventory.getItem(x).getType().name());
                     /*if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
                     mine.stageGo = Arrays.copyOf(mine.stageGo, mine.stageGo.length-1);*/
 

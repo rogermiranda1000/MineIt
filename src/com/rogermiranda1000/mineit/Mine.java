@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 public class Mine implements Runnable {
     private static int MINE_DELAY;
@@ -62,6 +63,11 @@ public class Mine implements Runnable {
         Mine.MINE_DELAY = delay;
     }
 
+    @Nullable
+    public Stage getStage(String search) {
+        return this.stages.stream().filter( e -> e.getName().equalsIgnoreCase(search) ).findAny().orElse(null);
+    }
+
     @Override
     @SuppressWarnings("InfiniteLoopStatement")
     public void run() {
@@ -72,7 +78,7 @@ public class Mine implements Runnable {
 
             this.currentTime = 0;
             Location loc = this.getRandomBlockInMine();
-            Stage current = Stage.getMatch(this.stages, loc.getBlock().getType().toString());
+            Stage current = this.getStage(loc.getBlock().getType().toString());
             if (current == null) continue; // wtf
             Stage next = current.getNextStage();
             if (next != null && next.fitsOneBlock()) {

@@ -24,7 +24,7 @@ public class onBlockBreak implements Listener {
                     Player ply = e.getPlayer();
                     if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.name)) return;
 
-                    Stage s = Stage.getMatch(m.getStages(), e.getBlock().getType().toString());
+                    Stage s = m.getStage(e.getBlock().getType().toString());
                     if (s == null) {
                         establecer(e.getBlock(), m.getStages().get(0).getStageMaterial());
                         return;
