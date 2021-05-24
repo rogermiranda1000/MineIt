@@ -3,8 +3,6 @@ package com.rogermiranda1000.mineit;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
-import java.util.ArrayList;
-
 public class Stage {
     private final String name;
 

@@ -22,7 +22,7 @@ public class BlockBreakEvent implements Listener {
                 Location loc = e.getBlock().getLocation();
                 if(mineLoc.equals(loc)) {
                     Player ply = e.getPlayer();
-                    if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.name)) return;
+                    if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.mineName)) return;
 
                     Stage s = m.getStage(e.getBlock().getType().toString());
                     if (s == null) {

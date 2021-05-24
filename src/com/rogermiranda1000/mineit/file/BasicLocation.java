@@ -1,4 +1,4 @@
-package com.rogermiranda1000.mineit;
+package com.rogermiranda1000.mineit.file;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,9 +22,9 @@ public class BasicLocation {
         return new Location(Bukkit.getWorld(this.worldName), this.x, this.y, this.z);
     }
 
-    public static Location[] getLocations(ArrayList<BasicLocation> locations) {
-        Location[] r = new Location[locations.size()];
-        for (int i = 0; i < r.length; i++) r[i] = locations.get(i).getLocation();
+    public static ArrayList<Location> getLocations(ArrayList<BasicLocation> locations) {
+        ArrayList<Location> r = new ArrayList<>(locations.size());
+        for (BasicLocation bl : locations) r.add(bl.getLocation());
         return r;
     }
 }

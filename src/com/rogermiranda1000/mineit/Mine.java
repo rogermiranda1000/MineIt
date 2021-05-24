@@ -1,39 +1,57 @@
 package com.rogermiranda1000.mineit;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 public class Mine /*implements Runnable*/ {
-    private static int MINE_DELAY;
-    private final ArrayList<BasicLocation> bloques = new ArrayList<>();
-    public int currentTime = 0;
+    public static final Material STATE_ZERO = Material.BEDROCK;
 
-    private final ArrayList<Stage> stages = Mine.getDefaultStages();
-    public String name = "";
-    public boolean start = true;
+    //private static int MINE_DELAY;
+    private final ArrayList<Location> blocks;
+    public int currentTime;
+    private final ArrayList<Stage> stages;
+    public final String mineName;
+    public boolean started;
 
-    public Mine() {
+    public Mine(String name, boolean started, ArrayList<Location> blocks, ArrayList<Stage> stages) {
+        this.currentTime = 0;
 
+        this.mineName = name;
+        this.started = started;
+        this.blocks = blocks;
+        this.stages = stages;
+    }
+
+    public Mine(String name, ArrayList<Location> blocks) {
+        this(name, true, blocks, Mine.getDefaultStages());
+    }
+
+    public String getName() {
+        return this.mineName;
+    }
+
+    public boolean isStarted() {
+        return this.started;
     }
 
     public void add(Location loc) {
-        this.bloques.add(new BasicLocation(loc));
+        this.blocks.add(loc);
     }
 
-    public Location[] getMineBlocks() {
-        return BasicLocation.getLocations(this.bloques);
+    public ArrayList<Location> getMineBlocks() {
+        return this.blocks;
     }
 
     public int getTotalBlocks() {
-        return this.bloques.size();
+        return this.blocks.size();
     }
 
     public Location getRandomBlockInMine() {
-        return this.bloques.get(new Random().nextInt(this.bloques.size())).getLocation();
+        return this.blocks.get(new Random().nextInt(this.blocks.size()));
     }
 
     public ArrayList<Stage> getStages() {
@@ -46,7 +64,7 @@ public class Mine /*implements Runnable*/ {
 
     private static ArrayList<Stage> getDefaultStages() {
         ArrayList<Stage> r = new ArrayList<>(4);
-        Stage bedrock = new Stage("BEDROCK", Integer.MAX_VALUE);
+        Stage bedrock = new Stage(Mine.STATE_ZERO.name(), Integer.MAX_VALUE);
         r.add(bedrock);
         Stage stone = new Stage("STONE", Integer.MAX_VALUE, bedrock);
         bedrock.setNextStage(stone);
@@ -60,9 +78,9 @@ public class Mine /*implements Runnable*/ {
         return r;
     }
 
-    public static void setMineDelay(int delay) {
+    /*public static void setMineDelay(int delay) {
         Mine.MINE_DELAY = delay;
-    }
+    }*/
 
     @Nullable
     public Stage getStage(String search) {
@@ -71,7 +89,7 @@ public class Mine /*implements Runnable*/ {
 
     @Nullable
     public static Mine getMine(ArrayList<Mine> minas, String search) {
-        return minas.stream().filter( e -> e.name.equalsIgnoreCase(search) ).findAny().orElse(null);
+        return minas.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
     }
 
     /*@Override

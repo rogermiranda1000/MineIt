@@ -3,6 +3,7 @@ package com.rogermiranda1000.mineit;
 import com.rogermiranda1000.mineit.events.BlockBreakEvent;
 import com.rogermiranda1000.mineit.events.ClickEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
+import com.rogermiranda1000.mineit.file.FileManager;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -91,7 +92,7 @@ public class MineIt extends JavaPlugin {
         }
         rango = config.getInt("mine_creator_range");
         delay = config.getInt("seconds_per_block");
-        Mine.setMineDelay(this.delay);
+        //Mine.setMineDelay(this.delay);
         limit = config.getBoolean("limit_blocks_per_stage");
         start = config.getBoolean("enabled_mine_on_create");
 
@@ -152,7 +153,7 @@ public class MineIt extends JavaPlugin {
         //for(Mine mina: this.minas) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, mina, 1, 1);
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
             for(Mine mina: this.minas) {
-                if (!mina.start) continue;
+                if (!mina.started) continue;
                 mina.currentTime++;
                 if (mina.currentTime < (/*Mine.MINE_DELAY*/delay * 20D) / mina.getTotalBlocks()) continue;
 
@@ -180,7 +181,7 @@ public class MineIt extends JavaPlugin {
 
         for (Mine mina : minas) {
             try {
-                File file = new File(getDataFolder(), mina.name+".yml");
+                File file = new File(getDataFolder(), mina.mineName +".yml");
                 FileManager.saveMines(file, mina);
             } catch(IOException e){
                 e.printStackTrace();
@@ -232,20 +233,20 @@ public class MineIt extends JavaPlugin {
                 return true;
             }
             for (Mine mina: minas) {
-                if(mina.name.equalsIgnoreCase(args[1])) {
+                if(mina.mineName.equalsIgnoreCase(args[1])) {
                     player.sendMessage(prefix+"There's already a mine named '"+args[1]+"'.");
                     return true;
                 }
             }
 
-            Mine m = new Mine();
-            m.name = args[1];
+            ArrayList<Location> locations = new ArrayList<>();
             for(Location loc : bloques.get(player.getName())) {
-                m.add(loc);
-                loc.getBlock().setType(m.getStages().get(0).getStageMaterial());
+                locations.add(loc);
+                loc.getBlock().setType(Mine.STATE_ZERO);
             }
+            Mine m = new Mine(args[1], locations);
             if(limit) updateStages(m);
-            m.start = start;
+            m.started = start;
             minas.add(m);
             bloques.remove(player.getName());
 
@@ -263,7 +264,7 @@ public class MineIt extends JavaPlugin {
             }
             Mine m = null;
             for (Mine mina: minas) {
-                if(mina.name.equalsIgnoreCase(args[1])) m = mina;
+                if(mina.mineName.equalsIgnoreCase(args[1])) m = mina;
             }
             if(m==null) {
                 player.sendMessage(prefix+"The mine '"+args[1]+"' doesn't exist.");
@@ -296,7 +297,7 @@ public class MineIt extends JavaPlugin {
                     return true;
                 }
                 for(Mine m: minas) {
-                    if(m.name.equalsIgnoreCase(args[2])) {
+                    if(m.mineName.equalsIgnoreCase(args[2])) {
                         edintingMine(player, m);
                         return true;
                     }
@@ -316,7 +317,7 @@ public class MineIt extends JavaPlugin {
                 return true;
             }
             for(Mine m: minas) {
-                if(m.name.equalsIgnoreCase(args[2])) {
+                if(m.mineName.equalsIgnoreCase(args[2])) {
                     int num = -1;
                     int lim = -1;
                     try {
@@ -381,7 +382,7 @@ public class MineIt extends JavaPlugin {
             }
             lin = mine.getStages().size()/9;
         }
-        Inventory i = Bukkit.createInventory(null, (lin*2 + 1)*9, "§cEdit mine §d"+mine.name);
+        Inventory i = Bukkit.createInventory(null, (lin*2 + 1)*9, "§cEdit mine §d"+mine.mineName);
 
         for(int x = 0; x<lin*9; x++) {
             int actualLine = (x/9)*18 + (x%9);
@@ -427,7 +428,7 @@ public class MineIt extends JavaPlugin {
         ItemStack clock = new ItemStack(Material.FURNACE);
         ItemMeta m = clock.getItemMeta();
         String s = org.bukkit.ChatColor.GREEN+"Start";
-        if(mine.start) s = org.bukkit.ChatColor.RED+"Stop";
+        if(mine.started) s = org.bukkit.ChatColor.RED+"Stop";
         m.setDisplayName(s+" mine");
         clock.setItemMeta(m);
 

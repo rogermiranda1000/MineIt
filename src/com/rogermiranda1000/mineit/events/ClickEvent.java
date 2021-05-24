@@ -17,9 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.IntStream;
 
 public class ClickEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
@@ -68,11 +66,11 @@ public class ClickEvent implements Listener {
 
             MineIt.instance.minas.remove(mine);
             try {
-                File f = new File(MineIt.instance.getDataFolder(), mine.name + ".yml");
+                File f = new File(MineIt.instance.getDataFolder(), mine.mineName + ".yml");
                 if (f.exists()) f.delete();
             }
             catch (Exception ex) {}
-            player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.name+"' removed.");
+            player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' removed.");
             player.closeInventory();
             return;
         }
@@ -80,9 +78,9 @@ public class ClickEvent implements Listener {
             Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
             if(mine==null) return;
 
-            if(mine.start) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.name+"' stopped.");
-            else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.name+"'...");
-            mine.start = !mine.start;
+            if(mine.started) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' stopped.");
+            else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.mineName +"'...");
+            mine.started = !mine.started;
             //inventory.setItem(16, MineIt.instance.watch(mine));
             inventory.setItem(((((mine.getStages().size()/9) + 1)*2 + 1)*9)-2, MineIt.instance.watch(mine));
             return;
@@ -121,7 +119,8 @@ public class ClickEvent implements Listener {
                         return;
                     }
 
-                    mine.getStages().get(x % 9).setPreviousStage(match);
+                    if (stageNum+1 > mine.getStages().size()) return; // not enough stages
+                    mine.getStages().get(stageNum).setPreviousStage(match);
 
                     // actualizar vista
                     ItemMeta m = item.getItemMeta();
@@ -234,7 +233,7 @@ public class ClickEvent implements Listener {
         for (Mine mine: MineIt.instance.minas) {
             ItemStack mina = new ItemStack(Material.STONE);
             ItemMeta meta = mina.getItemMeta();
-            meta.setDisplayName(mine.name);
+            meta.setDisplayName(mine.mineName);
             ArrayList<String> print = new ArrayList<>();
             for (Stage s : mine.getStages()) print.add(s.toString());
             meta.setLore(print);
