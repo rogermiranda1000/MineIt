@@ -6,9 +6,14 @@ import org.bukkit.Location;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BasicMine {
-    private final ArrayList<BasicLocation> blocks;
+    /**
+     * World -> (x,y,z)
+     */
+    private final HashMap<String, ArrayList<BasicLocation>> blocks;
 
     private final ArrayList<BasicStage> stages;
     private final String mineName;
@@ -21,11 +26,22 @@ public class BasicMine {
         this.stages = new ArrayList<>();
         for (Stage s : mine.getStages()) this.stages.add(new BasicStage(s));
 
-        this.blocks = new ArrayList<>();
-        for (Location block : mine.getMineBlocks()) this.blocks.add(new BasicLocation(block));
+        this.blocks = new HashMap<>();
+        for (Location block : mine.getMineBlocks()) {
+            String world = (block.getWorld() == null) ? null : block.getWorld().getName();
+            ArrayList<BasicLocation> worldBlocks = this.blocks.get(world);
+            if (worldBlocks == null) {
+                worldBlocks = new ArrayList<>();
+                this.blocks.put(world, worldBlocks);
+            }
+
+            worldBlocks.add(new BasicLocation(block));
+        }
     }
 
     public Mine getMine() throws IOException {
-        return new Mine(this.mineName, this.started, BasicLocation.getLocations(this.blocks), BasicStage.getStages(this.stages));
+        ArrayList<Location> blocks = new ArrayList<>();
+        for (Map.Entry<String, ArrayList<BasicLocation>> basicLocationList : this.blocks.entrySet()) blocks.addAll(BasicLocation.getLocations(basicLocationList.getKey(), basicLocationList.getValue()));
+        return new Mine(this.mineName, this.started, blocks, BasicStage.getStages(this.stages));
     }
 }
