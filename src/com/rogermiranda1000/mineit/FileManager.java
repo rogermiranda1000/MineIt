@@ -16,7 +16,9 @@ public class FileManager {
     }
 
     public static void saveMines(File f, Mines mines) throws IOException {
-        FileManager.gson.toJson(mines, new FileWriter(f));
+        FileWriter fw = new FileWriter(f);
+        FileManager.gson.toJson(mines, fw);
+        fw.close();
     }
 
     private static String getFileContents(File f) throws FileNotFoundException {
