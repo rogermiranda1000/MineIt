@@ -194,7 +194,7 @@ public class MineIt extends JavaPlugin {
             player.sendMessage(ChatColor.GOLD+"--Mine It--");
             player.sendMessage(ChatColor.GOLD+"/mineit create [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit remove [name]");
-            player.sendMessage(ChatColor.GOLD+"/mineit enable [name]");
+            player.sendMessage(ChatColor.GOLD+"/mineit start [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit stop [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit mine [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit stagelimit [name] [stage number] [limit blocks number]");
@@ -266,7 +266,15 @@ public class MineIt extends JavaPlugin {
             player.sendMessage(clearPrefix+"Mine '"+args[1]+"' removed.");
             return true;
         }
-        if (args[0].equalsIgnoreCase("enable")) {
+        if (args[0].equalsIgnoreCase("start")) {
+            if(!player.hasPermission("mineit.start")) {
+                player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
+                return true;
+            }
+            if(args.length!=2) {
+                player.sendMessage(prefix+"Command error, use /mineit start [name].");
+                return true;
+            }
             Mine m = null;
             for (Mine mina: minas) {
                 if(mina.mineName.equalsIgnoreCase(args[1])) m = mina;
@@ -281,6 +289,14 @@ public class MineIt extends JavaPlugin {
             return true;
         }
         if (args[0].equalsIgnoreCase("stop")) {
+            if(!player.hasPermission("mineit.stop")) {
+                player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
+                return true;
+            }
+            if(args.length!=2) {
+                player.sendMessage(prefix+"Command error, use /mineit stop [name].");
+                return true;
+            }
             Mine m = null;
             for (Mine mina: minas) {
                 if(mina.mineName.equalsIgnoreCase(args[1])) m = mina;
