@@ -277,6 +277,7 @@ public class MineIt extends JavaPlugin {
             }
 
             m.setStart(true);
+            player.sendMessage(clearPrefix+"Mine "+args[1]+" started.");
             return true;
         }
         if (args[0].equalsIgnoreCase("stop")) {
@@ -290,6 +291,7 @@ public class MineIt extends JavaPlugin {
             }
 
             m.setStart(false);
+            player.sendMessage(clearPrefix+"Mine "+args[1]+" stopped.");
             return true;
         }
         if(args[0].equalsIgnoreCase("edit")) {
