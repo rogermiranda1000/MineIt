@@ -7,11 +7,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
-public class Mine /*implements Runnable*/ {
+public class Mine implements Runnable {
     public static final Material STATE_ZERO = Material.BEDROCK;
     private static boolean DEFAULT_START;
 
-    //private static int MINE_DELAY;
+    /**
+     * Ticks per block (seconds per block * 20)
+     */
+    private static int MINE_DELAY;
     private final ArrayList<Location> blocks;
     public int currentTime;
     private final ArrayList<Stage> stages;
@@ -93,6 +96,15 @@ public class Mine /*implements Runnable*/ {
         this.updateStages();
     }
 
+    /**
+     * Sets all the blocks of the mine to STATE_ZERO
+     */
+    public void resetBlocksMine() {
+        for (Location l: this.blocks) {
+            if (l.getBlock().getType()!=Mine.STATE_ZERO) l.getBlock().setType(Mine.STATE_ZERO);
+        }
+    }
+
     private void resetStagesCount() {
         for (Stage s : this.stages) s.resetStageCount();
     }
@@ -126,9 +138,9 @@ public class Mine /*implements Runnable*/ {
         }
     }
 
-    /*public static void setMineDelay(int delay) {
-        Mine.MINE_DELAY = delay;
-    }*/
+    public static void setMineDelay(int delay) {
+        Mine.MINE_DELAY = delay * 20;
+    }
 
     public static void setDefaultStart(boolean start) {
         Mine.DEFAULT_START = start;
@@ -144,18 +156,19 @@ public class Mine /*implements Runnable*/ {
         return minas.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
     }
 
-    /*@Override
-    @SuppressWarnings("InfiniteLoopStatement")
+    @Override
     public void run() {
-        while (true) {
-            if (!this.start) continue; // TODO notifies
-            this.currentTime++;
-            if (this.currentTime < (Mine.MINE_DELAY * 20D) / this.getTotalBlocks()) continue;
+        if (!this.started) return; // TODO stop/start task
+        this.currentTime++;
+        int changedBlocks = (this.currentTime * this.getTotalBlocks()) / Mine.MINE_DELAY;
+        if (changedBlocks == 0) return;
 
-            this.currentTime = 0;
+        this.currentTime = 0;
+        // we need to change 'changedBlocks' blocks
+        for (int x = 0; x < changedBlocks; x++) {
             Location loc = this.getRandomBlockInMine();
             Stage current = this.getStage(loc.getBlock().getType().toString());
-            if (current == null) continue; // wtf
+            if (current == null) return; // wtf
             Stage next = current.getNextStage();
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();
@@ -163,5 +176,5 @@ public class Mine /*implements Runnable*/ {
                 loc.getBlock().setType(next.getStageMaterial());
             }
         }
-    }*/
+    }
 }

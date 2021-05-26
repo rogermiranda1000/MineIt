@@ -1,6 +1,6 @@
 name: MineIt
 main: com.rogermiranda1000.mineit.MineIt
-version: 0.9.2
+version: 0.9.3
 author: rogermiranda1000
 commands:
   mineit:
@@ -22,3 +22,6 @@ permissions:
   mineit.mine.all:
     description: Mine in all the mines
     default: true
+  mineit.reset:
+    description: Set all the mine blocks to bedrock
+    default: op

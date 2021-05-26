@@ -93,7 +93,7 @@ public class MineIt extends JavaPlugin {
         }
         rango = config.getInt("mine_creator_range");
         delay = config.getInt("seconds_per_block");
-        //Mine.setMineDelay(this.delay);
+        Mine.setMineDelay(this.delay);
         limit = config.getBoolean("limit_blocks_per_stage");
         start = config.getBoolean("enabled_mine_on_create");
         Mine.setDefaultStart(start);
@@ -161,25 +161,8 @@ public class MineIt extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
         getServer().getPluginManager().registerEvents(new ClickEvent(), this);
 
-        //for(Mine mina: this.minas) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, mina, 1, 1);
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, () -> {
-            for(Mine mina: this.minas) {
-                if (!mina.started) continue;
-                mina.currentTime++;
-                if (mina.currentTime < (/*Mine.MINE_DELAY*/delay * 20D) / mina.getTotalBlocks()) continue;
-
-                mina.currentTime = 0;
-                Location loc = mina.getRandomBlockInMine();
-                Stage current = mina.getStage(loc.getBlock().getType().toString());
-                if (current == null) continue; // wtf
-                Stage next = current.getNextStage();
-                if (next != null && next.fitsOneBlock()) {
-                    current.decrementStageBlocks();
-                    next.incrementStageBlocks();
-                    loc.getBlock().setType(next.getStageMaterial());
-                }
-            }
-        }, 1, 1);
+        for(Mine mina: this.minas) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, mina, 1, 1);
+        // TODO start on new mine
     }
 
     @Override
@@ -362,6 +345,26 @@ public class MineIt extends JavaPlugin {
             }
 
             player.sendMessage(prefix+"Mine '"+args[2]+"' not found.");
+            return true;
+        }
+        if(args[0].equalsIgnoreCase("reset")) {
+            if(args.length!=2) {
+                player.sendMessage(prefix+"Use /mineit reset [name]");
+                return true;
+            }
+            if(!player.hasPermission("mineit.reset")) {
+                player.sendMessage(prefix+"You can't reset mines!");
+                return true;
+            }
+
+            for(Mine m: minas) {
+                if(m.mineName.equalsIgnoreCase(args[1])) {
+                    m.resetBlocksMine();
+                    return true;
+                }
+            }
+
+            player.sendMessage(MineIt.prefix+"Mine '"+args[1]+"' not found.");
             return true;
         }
 
