@@ -43,7 +43,6 @@ public class MineIt extends JavaPlugin {
     public int rango;
     public int delay;
     public boolean limit;
-    public boolean start;
 
     @Override
     public void onEnable() {
@@ -52,16 +51,15 @@ public class MineIt extends JavaPlugin {
         if(version.charAt(3)=='.') version = version.substring(0, 3);
         else version = version.substring(0,4);
 
-        getLogger().info("Running in "+version);
+        //getLogger().info("Running in "+version);
 
         instance = this;
 
         //Config
-        HashMap<String,String> c = new HashMap<String, String>();
-        c.put("mine_creator_range", "5");
-        c.put("seconds_per_block", "80");
-        c.put("limit_blocks_per_stage", "false");
-        c.put("enabled_mine_on_create", "false");
+        HashMap<String,Object> c = new HashMap<>();
+        c.put("mine_creator_range", 5);
+        c.put("seconds_per_block", 80);
+        c.put("limit_blocks_per_stage", false);
         config = getConfig();
         //Create/actualize config file
         try {
@@ -75,15 +73,11 @@ public class MineIt extends JavaPlugin {
                 need = true;
             }
 
-            for(Map.Entry<String, String> entry : c.entrySet()) {
+            for(Map.Entry<String, Object> entry : c.entrySet()) {
                 String key = entry.getKey();
-                String value = entry.getValue();
+                Object value = entry.getValue();
                 if(!getConfig().isSet(key)) {
-                    if(value.equalsIgnoreCase("true")) getConfig().set(key,Boolean.valueOf(true));
-                    else if(value.equalsIgnoreCase("false")) getConfig().set(key,Boolean.valueOf(false));
-                    else if(value.equalsIgnoreCase("5")) getConfig().set(key,Integer.valueOf(5));
-                    else if(value.equalsIgnoreCase("80")) getConfig().set(key,Integer.valueOf(80));
-                    else getConfig().set(key,value);
+                    getConfig().set(key,value);
                     need = true;
                 }
             }
@@ -95,8 +89,6 @@ public class MineIt extends JavaPlugin {
         delay = config.getInt("seconds_per_block");
         Mine.setMineDelay(this.delay);
         limit = config.getBoolean("limit_blocks_per_stage");
-        start = config.getBoolean("enabled_mine_on_create");
-        Mine.setDefaultStart(start);
 
         //Minas
         for(File archivo: getDataFolder().listFiles()) {
@@ -202,8 +194,11 @@ public class MineIt extends JavaPlugin {
             player.sendMessage(ChatColor.GOLD+"--Mine It--");
             player.sendMessage(ChatColor.GOLD+"/mineit create [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit remove [name]");
+            player.sendMessage(ChatColor.GOLD+"/mineit enable [name]");
+            player.sendMessage(ChatColor.GOLD+"/mineit stop [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit mine [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit stagelimit [name] [stage number] [limit blocks number]");
+            player.sendMessage(ChatColor.GOLD+"/mineit reset [name]" + ChatColor.GREEN + ": it sets all the mine's block to bedrock " + ChatColor.RED + "[if the mine it's too big it may crash your server]");
             return true;
         }
         if(args[0].equalsIgnoreCase("create")) {
@@ -241,6 +236,7 @@ public class MineIt extends JavaPlugin {
             bloques.remove(player.getName());
 
             player.sendMessage(clearPrefix+ChatColor.GREEN+"Mine created successfully.");
+            player.sendMessage(clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit enable " + args[1]);
             return true;
         }
         if(args[0].equalsIgnoreCase("remove")) {
@@ -268,6 +264,32 @@ public class MineIt extends JavaPlugin {
             }
             catch (Exception e) { e.printStackTrace(); }
             player.sendMessage(clearPrefix+"Mine '"+args[1]+"' removed.");
+            return true;
+        }
+        if (args[0].equalsIgnoreCase("enable")) {
+            Mine m = null;
+            for (Mine mina: minas) {
+                if(mina.mineName.equalsIgnoreCase(args[1])) m = mina;
+            }
+            if(m==null) {
+                player.sendMessage(prefix+"The mine '"+args[1]+"' doesn't exist.");
+                return true;
+            }
+
+            m.setStart(true);
+            return true;
+        }
+        if (args[0].equalsIgnoreCase("stop")) {
+            Mine m = null;
+            for (Mine mina: minas) {
+                if(mina.mineName.equalsIgnoreCase(args[1])) m = mina;
+            }
+            if(m==null) {
+                player.sendMessage(prefix+"The mine '"+args[1]+"' doesn't exist.");
+                return true;
+            }
+
+            m.setStart(false);
             return true;
         }
         if(args[0].equalsIgnoreCase("edit")) {

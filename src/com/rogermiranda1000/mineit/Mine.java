@@ -10,7 +10,6 @@ import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 public class Mine implements Runnable {
     public static final Material STATE_ZERO = Material.BEDROCK;
-    private static boolean DEFAULT_START;
 
     /**
      * Ticks per block (seconds per block * 20)
@@ -33,10 +32,12 @@ public class Mine implements Runnable {
     }
 
     public Mine(String name, ArrayList<Location> blocks) {
-        this(name, Mine.DEFAULT_START, blocks, Mine.getDefaultStages());
+        this(name, false, blocks, Mine.getDefaultStages());
     }
 
     public void setStart(boolean value) {
+        if (this.started == value) return;
+
         this.started = value;
         if (value) this.scheduleID = Bukkit.getScheduler().scheduleSyncRepeatingTask(MineIt.instance, this, 1, 1);
         else Bukkit.getServer().getScheduler().cancelTask(this.scheduleID);
@@ -152,10 +153,6 @@ public class Mine implements Runnable {
 
     public static void setMineDelay(int delay) {
         Mine.MINE_DELAY = delay * 20;
-    }
-
-    public static void setDefaultStart(boolean start) {
-        Mine.DEFAULT_START = start;
     }
 
     @Nullable
