@@ -81,9 +81,9 @@ public class ClickEvent implements Listener {
             Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
             if(mine==null) return;
 
-            if(mine.started) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' stopped.");
+            if(mine.getStart()) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' stopped.");
             else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.mineName +"'...");
-            mine.started = !mine.started;
+            mine.setStart(!mine.getStart());
             //inventory.setItem(16, MineIt.instance.watch(mine));
             inventory.setItem(((((mine.getStages().size()/9) + 1)*2 + 1)*9)-2, MineIt.instance.watch(mine));
             return;

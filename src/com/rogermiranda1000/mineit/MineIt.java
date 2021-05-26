@@ -160,9 +160,6 @@ public class MineIt extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
         getServer().getPluginManager().registerEvents(new ClickEvent(), this);
-
-        for(Mine mina: this.minas) Bukkit.getScheduler().scheduleSyncRepeatingTask(this, mina, 1, 1);
-        // TODO start on new mine
     }
 
     @Override
@@ -423,7 +420,7 @@ public class MineIt extends JavaPlugin {
         ItemStack clock = new ItemStack(Material.FURNACE);
         ItemMeta m = clock.getItemMeta();
         String s = org.bukkit.ChatColor.GREEN+"Start";
-        if(mine.started) s = org.bukkit.ChatColor.RED+"Stop";
+        if(mine.getStart()) s = org.bukkit.ChatColor.RED+"Stop";
         m.setDisplayName(s+" mine");
         clock.setItemMeta(m);
 
