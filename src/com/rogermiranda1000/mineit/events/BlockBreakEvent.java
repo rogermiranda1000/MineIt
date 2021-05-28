@@ -23,7 +23,7 @@ public class BlockBreakEvent implements Listener {
                 if(mineLoc.equals(loc)) {
                     Player ply = e.getPlayer();
                     if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.mineName)) {
-                        ply.sendMessage(MineIt.prefix + "You can't mine here!");
+                        ply.sendMessage(MineIt.errorPrefix + "You can't mine here!");
                         e.setCancelled(true);
                         return;
                     }

@@ -2,6 +2,7 @@ package com.rogermiranda1000.mineit.file;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.rogermiranda1000.mineit.Mine;
 
 import java.io.File;
@@ -13,7 +14,7 @@ import java.util.Scanner;
 public class FileManager {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static Mine loadMines(File f) throws IOException {
+    public static Mine loadMines(File f) throws IOException, JsonSyntaxException {
         return FileManager.gson.fromJson(FileManager.getFileContents(f), BasicMine.class).getMine();
     }
 
