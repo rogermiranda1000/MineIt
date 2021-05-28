@@ -18,12 +18,13 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.fusesource.jansi.Ansi;
 
 import java.io.*;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
-    public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] "+ChatColor.GREEN, prefix=clearPrefix+ChatColor.RED;
+    public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] "+ChatColor.GREEN, errorPrefix=clearPrefix+ChatColor.RED;
     public static ItemStack item;
     public static MineIt instance;
     public static FileConfiguration config;
@@ -91,8 +92,9 @@ public class MineIt extends JavaPlugin {
         for(File archivo: getDataFolder().listFiles()) {
             if(archivo.getName().equalsIgnoreCase("config.yml")) continue;
 
+            String mineName = archivo.getName().replaceAll("\\.yml$", "");
             try {
-                getLogger().info("Loading mine " + archivo.getName().replace(".yml", "") + "..."); // TODO .json
+                getLogger().info("Loading mine " + mineName + "..."); // TODO .json
                 minas.add(FileManager.loadMines(archivo));
             } catch (IOException ex) {
                 ex.printStackTrace();
