@@ -33,12 +33,12 @@ public class ClickEvent implements Listener {
         e.setCancelled(true);
         if(!player.hasPermission("mineit.open")) {
             player.closeInventory();
-            player.sendMessage(MineIt.errorPrefix+"You can't use this menu.");
+            player.sendMessage(MineIt.prefix+"You can't use this menu.");
             return;
         }
         if(clicked==null) return;
         if((clicked.equals(MineIt.item2) || clicked.equals(MineIt.editar) || clicked.equals(MineIt.crear)) && !player.hasPermission("mineit.create")) {
-            player.sendMessage(MineIt.errorPrefix+"You can't use this action.");
+            player.sendMessage(MineIt.prefix+"You can't use this action.");
             return;
         }
 
@@ -49,7 +49,7 @@ public class ClickEvent implements Listener {
         }
         else if(clicked.equals(MineIt.crear)) {
             player.closeInventory();
-            player.sendMessage(MineIt.errorPrefix+"Under construction, use "+ ChatColor.AQUA+"/mineit create [name]"+ChatColor.RED+" instead.");
+            player.sendMessage(MineIt.prefix+"Under construction, use "+ ChatColor.AQUA+"/mineit create [name]"+ChatColor.RED+" instead.");
         }
         else if(clicked.equals(MineIt.editar)) editMine(player);
         else if(clicked.equals(MineIt.anvil)) {
@@ -60,7 +60,7 @@ public class ClickEvent implements Listener {
         }
         else if(clicked.equals(MineIt.redstone)) {
             if(!player.hasPermission("mineit.remove")) {
-                player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
+                player.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
                 return;
             }
 
@@ -121,11 +121,11 @@ public class ClickEvent implements Listener {
 
                             // remove stage
                             if (mine.getStageCount() == 1) {
-                                player.sendMessage(MineIt.errorPrefix + "There can't be a mine without stages!");
+                                player.sendMessage(MineIt.prefix + "There can't be a mine without stages!");
                                 return;
                             }
                             if (stageNum == 0) {
-                                player.sendMessage(MineIt.errorPrefix + "Bedrock can't be deleted.");
+                                player.sendMessage(MineIt.prefix + "Bedrock can't be deleted.");
                                 return;
                             }
 
@@ -141,7 +141,7 @@ public class ClickEvent implements Listener {
                             ItemMeta m = item.getItemMeta();
                             // already exists?
                             if (mine.getStage(item.getType().name()) != null) {
-                                player.sendMessage(MineIt.errorPrefix+"There's already a "+stageMaterial.toLowerCase()+" stage!");
+                                player.sendMessage(MineIt.prefix+"There's already a "+stageMaterial.toLowerCase()+" stage!");
                                 return;
                             }
 
@@ -189,7 +189,7 @@ public class ClickEvent implements Listener {
 
                         Stage match = mine.getStage(item.getType().name());
                         if(match == null) {
-                            player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
+                            player.sendMessage(MineIt.prefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
                             return;
                         }
 
@@ -231,7 +231,7 @@ public class ClickEvent implements Listener {
         }
         l++;
         if(l>6) {
-            player.sendMessage(MineIt.errorPrefix+"Error, too many mines. Please remove some mines.");
+            player.sendMessage(MineIt.prefix+"Error, too many mines. Please remove some mines.");
             return;
         }
 

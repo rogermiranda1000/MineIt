@@ -176,7 +176,7 @@ public class Mine implements Runnable {
         for (int x = 0; x < changedBlocks; x++) {
             Location loc = this.getRandomBlockInMine();
             Stage current = this.getStage(loc.getBlock().getType().toString());
-            if (current == null) continue; // wtf
+            if (current == null) return; // wtf
             Stage next = current.getNextStage();
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();
