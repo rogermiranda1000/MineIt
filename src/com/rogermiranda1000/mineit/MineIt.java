@@ -107,7 +107,7 @@ public class MineIt extends JavaPlugin {
             } catch (IOException ex) {
                 ex.printStackTrace();
             } catch (JsonSyntaxException ex) {
-                MineIt.printConsoleErrorMessage( "Invalid file, the mine '" + mineName + "' can't be loaded.");
+                MineIt.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
             }
         }
 
