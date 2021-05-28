@@ -47,7 +47,7 @@ public class MineIt extends JavaPlugin {
     public boolean limit;
 
     public static void printConsoleErrorMessage(String msg) {
-        System.out.println(Ansi.ansi().fg(Ansi.Color.RED).boldOff().toString() + "[MineIt] " + msg + Ansi.ansi().fg(Ansi.Color.WHITE).boldOff().toString());
+        System.err.println(Ansi.ansi().fg(Ansi.Color.RED).boldOff().toString() + "[MineIt] " + msg + Ansi.ansi().fg(Ansi.Color.WHITE).boldOff().toString());
     }
 
     @Override
