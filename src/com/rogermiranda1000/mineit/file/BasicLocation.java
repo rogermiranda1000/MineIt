@@ -21,9 +21,17 @@ public class BasicLocation {
         return new Location(Bukkit.getWorld(worldName), this.x, this.y, this.z);
     }
 
-    public static ArrayList<Location> getLocations(@Nullable String world, ArrayList<BasicLocation> locations) {
+    public static ArrayList<Location> getLocations(@Nullable String world, ArrayList<BasicLocation> locations) throws InvalidLocationException {
         ArrayList<Location> r = new ArrayList<>(locations.size());
-        for (BasicLocation bl : locations) r.add(bl.getLocation(world));
+        for (BasicLocation bl : locations) {
+            Location loc = bl.getLocation(world);
+            try {
+                loc.getBlock(); // throws NPE if invalid world
+                r.add(loc);
+            } catch (NullPointerException ex) {
+                throw new InvalidLocationException("Invalid location (world:" + loc.getWorld() + ", x:" + loc.getX() + ", y:" + loc.getY() + ", z:" + loc.getZ() + ")");
+            }
+        }
         return r;
     }
 }

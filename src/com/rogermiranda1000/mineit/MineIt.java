@@ -5,6 +5,7 @@ import com.rogermiranda1000.mineit.events.BlockBreakEvent;
 import com.rogermiranda1000.mineit.events.ClickEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
+import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -100,6 +101,8 @@ public class MineIt extends JavaPlugin {
                 ex.printStackTrace();
             } catch (JsonSyntaxException ex) {
                 MineIt.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
+            } catch (InvalidLocationException ex) {
+                MineIt.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
             }
         }
 
