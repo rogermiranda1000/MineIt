@@ -1,7 +1,8 @@
 name: MineIt
 main: com.rogermiranda1000.mineit.MineIt
-version: 0.9.6
+version: 0.9.7
 author: rogermiranda1000
+softdepend: [Multiverse-Core]
 commands:
   mineit:
     description: Create mines
