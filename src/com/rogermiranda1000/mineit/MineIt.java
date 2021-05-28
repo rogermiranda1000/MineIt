@@ -38,7 +38,6 @@ public class MineIt extends JavaPlugin {
 
     public ArrayList<Mine> minas = new ArrayList<>();
     public HashMap<String, Location[]> bloques = new HashMap<>(); // TODO command to unselect?
-    public String version = "";
 
     public int rango;
     public int delay;
@@ -46,13 +45,6 @@ public class MineIt extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getLogger().info("Plugin enabled.");
-        version = Bukkit.getBukkitVersion();
-        if(version.charAt(3)=='.') version = version.substring(0, 3);
-        else version = version.substring(0,4);
-
-        //getLogger().info("Running in "+version);
-
         instance = this;
 
         //Config
@@ -156,8 +148,6 @@ public class MineIt extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        getLogger().info("Plugin disabled.");
-
         for(Map.Entry<String, Location[]> entry : bloques.entrySet()) {
             for(Location l: entry.getValue()) l.getBlock().setType(Material.STONE);
         }
@@ -236,7 +226,7 @@ public class MineIt extends JavaPlugin {
             bloques.remove(player.getName());
 
             player.sendMessage(clearPrefix+ChatColor.GREEN+"Mine created successfully.");
-            player.sendMessage(clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit enable " + args[1]);
+            player.sendMessage(clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit start " + args[1]);
             return true;
         }
         if(args[0].equalsIgnoreCase("remove")) {
