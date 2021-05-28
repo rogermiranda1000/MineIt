@@ -41,9 +41,11 @@ public class BasicMine {
         }
     }
 
-    public Mine getMine() throws IOException {
+    public Mine getMine() throws IOException, InvalidLocationException {
         ArrayList<Location> blocks = new ArrayList<>();
-        for (Map.Entry<String, ArrayList<BasicLocation>> basicLocationList : this.blocks.entrySet()) blocks.addAll(BasicLocation.getLocations(basicLocationList.getKey(), basicLocationList.getValue()));
+        for (Map.Entry<String, ArrayList<BasicLocation>> basicLocationList : this.blocks.entrySet()) {
+            blocks.addAll(BasicLocation.getLocations(basicLocationList.getKey(), basicLocationList.getValue()));
+        }
         return new Mine(this.mineName, this.started, blocks, BasicStage.getStages(this.stages));
     }
 }

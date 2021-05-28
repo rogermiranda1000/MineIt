@@ -27,12 +27,12 @@ public class InteractEvent implements Listener {
         else if(!ply.getInventory().getItemInMainHand().equals(MineIt.item) && !ply.getInventory().getItemInOffHand().equals(MineIt.item)) return;*/
         e.setCancelled(true);
         if(e.getClickedBlock().getType()!=Material.STONE) {
-            ply.sendMessage(MineIt.prefix+"You can only hit stone with the Mine Creator!");
+            ply.sendMessage(MineIt.errorPrefix+"You can only hit stone with the Mine Creator!");
             return;
         }
 
         if(!ply.hasPermission("mineit.create")) {
-            ply.sendMessage(MineIt.prefix + "You don't have the permissions to do that.");
+            ply.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
             return;
         }
 
