@@ -1,6 +1,6 @@
 name: MineIt
 main: com.rogermiranda1000.mineit.MineIt
-version: 0.9.6
+version: 0.9.5
 author: rogermiranda1000
 commands:
   mineit:
