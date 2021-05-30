@@ -25,6 +25,9 @@ import java.io.*;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
+    private static final String ERROR_COLOR = Ansi.ansi().fg(Ansi.Color.RED).boldOff().toString(),
+            WARNING_COLOR = Ansi.ansi().fg(Ansi.Color.YELLOW).boldOff().toString(),
+            NO_COLOR = Ansi.ansi().fg(Ansi.Color.WHITE).boldOff().toString();
     public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] "+ChatColor.GREEN, errorPrefix=clearPrefix+ChatColor.RED;
     public static ItemStack item;
     public static MineIt instance;
@@ -46,13 +49,26 @@ public class MineIt extends JavaPlugin {
     public int delay;
     public boolean limit;
 
-    public static void printConsoleErrorMessage(String msg) {
-        System.err.println(Ansi.ansi().fg(Ansi.Color.RED).boldOff().toString() + "[MineIt] " + msg + Ansi.ansi().fg(Ansi.Color.WHITE).boldOff().toString());
+    public void printConsoleErrorMessage(String msg) {
+        this.getLogger().warning(MineIt.ERROR_COLOR + msg + MineIt.NO_COLOR);
+    }
+
+    public void printConsoleWarningMessage(String msg) {
+        this.getLogger().info(MineIt.WARNING_COLOR + msg + MineIt.NO_COLOR);
     }
 
     @Override
     public void onEnable() {
         instance = this;
+
+        Bukkit.getScheduler().runTaskAsynchronously(this,()->{
+            try {
+                String version = PluginVersionChecker.getVersion();
+                if (PluginVersionChecker.isLower(this.getDescription().getVersion(), version)) this.printConsoleWarningMessage("v" + version + " is now available! You should consider updating the plugin.");
+            } catch (IOException e) {
+                this.printConsoleWarningMessage("Can't check for updates.");
+            }
+        });
 
         //Config
         HashMap<String,Object> c = new HashMap<>();
@@ -100,9 +116,9 @@ public class MineIt extends JavaPlugin {
             } catch (IOException ex) {
                 ex.printStackTrace();
             } catch (JsonSyntaxException ex) {
-                MineIt.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
+                this.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
             } catch (InvalidLocationException ex) {
-                MineIt.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
+                this.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
             }
         }
 
