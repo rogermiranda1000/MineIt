@@ -43,7 +43,7 @@ public class MineIt extends JavaPlugin {
     public static ItemStack glass;
 
     public ArrayList<Mine> minas = new ArrayList<>();
-    public HashMap<String, Location[]> bloques = new HashMap<>(); // TODO command to unselect?
+    public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
     public int rango;
     public int delay;
@@ -176,8 +176,9 @@ public class MineIt extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for(Map.Entry<String, Location[]> entry : bloques.entrySet()) {
-            for(Location l: entry.getValue()) l.getBlock().setType(Material.STONE);
+        // undo selected blocks
+        for(ArrayList<Location> locations : selectedBlocks.values()) {
+            for(Location l: locations) l.getBlock().setType(Material.STONE);
         }
 
         for (Mine mina : minas) {
@@ -192,6 +193,9 @@ public class MineIt extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        // TODO unselect
+        // TODO append to existing mine
+        // TODO mine list
         Player player = (sender instanceof Player) ? (Player) sender : null;
         if (!cmd.getName().equalsIgnoreCase("mineit")) return false;
         if (player == null) {
@@ -224,7 +228,7 @@ public class MineIt extends JavaPlugin {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return true;
             }
-            if(!bloques.containsKey(player.getName()) || bloques.get(player.getName()).length==0) {
+            if(!selectedBlocks.containsKey(player.getName()) || selectedBlocks.get(player.getName()).size()==0) {
                 player.sendMessage(errorPrefix +"Please, select the mine's blocks first.");
                 return true;
             }
@@ -244,14 +248,14 @@ public class MineIt extends JavaPlugin {
             }
 
             ArrayList<Location> locations = new ArrayList<>();
-            for(Location loc : bloques.get(player.getName())) {
+            for(Location loc : selectedBlocks.get(player.getName())) {
                 locations.add(loc);
                 loc.getBlock().setType(Mine.STATE_ZERO);
             }
             Mine m = new Mine(args[1], locations);
             if(limit) m.updateStages();
             minas.add(m);
-            bloques.remove(player.getName());
+            selectedBlocks.remove(player.getName());
 
             player.sendMessage(clearPrefix+ChatColor.GREEN+"Mine created successfully.");
             player.sendMessage(clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit enable " + args[1]);

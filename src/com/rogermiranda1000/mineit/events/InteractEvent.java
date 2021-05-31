@@ -1,5 +1,6 @@
 package com.rogermiranda1000.mineit.events;
 
+import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -12,10 +13,10 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class InteractEvent implements Listener {
+    private static final Material SELECTED_BLOCK = Material.EMERALD_BLOCK;
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent e) {
         Player ply = e.getPlayer();
@@ -36,54 +37,57 @@ public class InteractEvent implements Listener {
             return;
         }
 
-        List<Location> b = new ArrayList<>();
-        if(MineIt.instance.bloques.containsKey(ply.getName())) b.addAll(Arrays.asList(MineIt.instance.bloques.get(ply.getName())));
-        Location[] nb = newBlock(e.getClickedBlock(), 0);
-        if(nb==null) return;
-        b.addAll(Arrays.asList(nb));
-        MineIt.instance.bloques.put(ply.getName(), b.toArray(new Location[b.size()]));
-
-        //ply.sendMessage(">"+String.valueOf(bloques.get(ply.getName())));
-        for(Location l : b/*MineIt.instance.bloques.get(ply.getName())*/) l.getBlock().setType(Material.EMERALD_BLOCK);
+        ArrayList<Location> b = MineIt.instance.selectedBlocks.get(ply.getName());
+        if (b == null) {
+            b = new ArrayList<>();
+            MineIt.instance.selectedBlocks.put(ply.getName(), b);
+        }
+        b.addAll(InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation()));
     }
 
-    Location[] newBlock(Block blk, int current) {
-        List<Location> b = new ArrayList<>();
-        if(current>=MineIt.instance.rango) return null;
-        if(blk.getType() != Material.STONE) return null;
 
-        Location l = blk.getLocation();
-        if (air(l) && !b.contains(l)) b.add(l);
+    /**
+     * Given a location it explores the surrounding blocks until the expansion area it's bigger than 'MineIt.instance.rango'
+     * It also converts the matching blocks into 'InteractEvent.SELECTED_BLOCK' to avoid recursion
+     * @param loc Initial block
+     * @return All the converted blocks
+     */
+    private static ArrayList<Location> getSurroundingBlocks(Location loc) {
+        return InteractEvent.getSurroundingBlocks(loc, loc);
+    }
 
-        for(int x = -1; x<2; x++) {
-            for (int y = -1; y < 2; y++) {
-                for (int z = -1; z < 2; z++) {
-                    if(x==0 && y==0 && z==0) continue;
-                    Block bloque = new Location(l.getWorld(), l.getX() + Long.valueOf(x), l.getY() + Long.valueOf(y), l.getZ() + Long.valueOf(z)).getBlock();
-                    if (bloque.getType() != Material.STONE) continue;
+    private static ArrayList<Location> getSurroundingBlocks(Location loc, Location origin) {
+        ArrayList<Location> b = new ArrayList<>();
+        if(loc.getBlock().getType() != Material.STONE) return b;
+        if(InteractEvent.isDistanceGreater(origin, loc, MineIt.instance.rango)) return b;
 
-                    Location[] temp = newBlock(bloque, current + 1);
-                    if(temp==null) continue;
-                    for(Location s: temp) {
-                        if(!air(s) || b.contains(s)) continue;
-                        b.add(s);
-                    }
+        if (!InteractEvent.airNear(loc)) return b;
+        b.add(loc);
+        loc.getBlock().setType(InteractEvent.SELECTED_BLOCK); // convert block visually
+
+        for(int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    if(x==0 && y==0 && z==0) continue; // same block
+                    Location next = new Location(loc.getWorld(), loc.getX() + x, loc.getY() + y, loc.getZ() + z);
+                    b.addAll(getSurroundingBlocks(next, origin));
                 }
             }
         }
 
-        //MineIt.instance.getLogger().info(b.toString());
-        if(b.size()==0) return null;
-        return b.toArray(new Location[b.size()]);
+        return b;
     }
 
-    boolean air(Location l) {
-        if(new Location(l.getWorld(), l.getX()+1, l.getY(), l.getZ()).getBlock().getType()==Material.AIR ||
+    private static boolean isDistanceGreater(Location l1, Location l2, int threshold) {
+        return (Math.pow(l1.getX() - l2.getX(), 2) + Math.pow(l1.getY() - l2.getY(), 2) + Math.pow(l1.getZ() - l2.getZ(), 2) > Math.pow(threshold, 2));
+    }
+
+    private static boolean airNear(Location l) {
+        return (new Location(l.getWorld(), l.getX()+1, l.getY(), l.getZ()).getBlock().getType()==Material.AIR ||
                 new Location(l.getWorld(), l.getX()-1, l.getY(), l.getZ()).getBlock().getType()==Material.AIR ||
                 new Location(l.getWorld(), l.getX(), l.getY()+1, l.getZ()).getBlock().getType()==Material.AIR ||
                 new Location(l.getWorld(), l.getX(), l.getY()-1, l.getZ()).getBlock().getType()==Material.AIR ||
                 new Location(l.getWorld(), l.getX(), l.getY(), l.getZ()+1).getBlock().getType()==Material.AIR ||
-                new Location(l.getWorld(), l.getX(), l.getY(), l.getZ()-1).getBlock().getType()==Material.AIR) return true;
-        return false;
+                new Location(l.getWorld(), l.getX(), l.getY(), l.getZ()-1).getBlock().getType()==Material.AIR);
     }
 }
