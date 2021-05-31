@@ -53,7 +53,12 @@ public class InteractEvent implements Listener {
      * @return All the converted blocks
      */
     private static ArrayList<Location> getSurroundingBlocks(Location loc) {
-        return InteractEvent.getSurroundingBlocks(loc, loc);
+        try {
+            return InteractEvent.getSurroundingBlocks(loc, loc);
+        } catch (StackOverflowError err) {
+            MineIt.instance.printConsoleErrorMessage("Reduce the mine_creator_range value on the config.yml!");
+            return new ArrayList<>();
+        }
     }
 
     private static ArrayList<Location> getSurroundingBlocks(Location loc, Location origin) {
