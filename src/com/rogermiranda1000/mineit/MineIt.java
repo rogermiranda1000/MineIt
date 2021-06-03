@@ -112,7 +112,9 @@ public class MineIt extends JavaPlugin {
             String mineName = archivo.getName().replaceAll("\\.yml$", "");
             try {
                 getLogger().info("Loading mine " + mineName + "..."); // TODO .json
-                minas.add(FileManager.loadMines(archivo));
+                Mine mine = FileManager.loadMines(archivo);
+                mine.updateStages();
+                minas.add(mine);
             } catch (IOException ex) {
                 ex.printStackTrace();
             } catch (JsonSyntaxException ex) {
@@ -253,12 +255,12 @@ public class MineIt extends JavaPlugin {
                 loc.getBlock().setType(Mine.STATE_ZERO);
             }
             Mine m = new Mine(args[1], locations);
-            if(limit) m.updateStages();
+            m.updateStages();
             minas.add(m);
             selectedBlocks.remove(player.getName());
 
             player.sendMessage(clearPrefix+ChatColor.GREEN+"Mine created successfully.");
-            player.sendMessage(clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit enable " + args[1]);
+            player.sendMessage(clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit start " + args[1]);
             return true;
         }
         if(args[0].equalsIgnoreCase("remove")) {
