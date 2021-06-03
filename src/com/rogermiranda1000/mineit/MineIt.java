@@ -25,6 +25,9 @@ import java.io.*;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
+    private static final String ERROR_COLOR = Ansi.ansi().fg(Ansi.Color.RED).boldOff().toString(),
+            WARNING_COLOR = Ansi.ansi().fg(Ansi.Color.YELLOW).boldOff().toString(),
+            NO_COLOR = Ansi.ansi().fg(Ansi.Color.WHITE).boldOff().toString();
     public static final String clearPrefix = ChatColor.GOLD+""+ChatColor.BOLD+"[MineIt] "+ChatColor.GREEN, errorPrefix=clearPrefix+ChatColor.RED;
     public static ItemStack item;
     public static MineIt instance;
@@ -40,19 +43,32 @@ public class MineIt extends JavaPlugin {
     public static ItemStack glass;
 
     public ArrayList<Mine> minas = new ArrayList<>();
-    public HashMap<String, Location[]> bloques = new HashMap<>(); // TODO command to unselect?
+    public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
     public int rango;
     public int delay;
     public boolean limit;
 
-    public static void printConsoleErrorMessage(String msg) {
-        System.err.println(Ansi.ansi().fg(Ansi.Color.RED).boldOff().toString() + "[MineIt] " + msg + Ansi.ansi().fg(Ansi.Color.WHITE).boldOff().toString());
+    public void printConsoleErrorMessage(String msg) {
+        this.getLogger().warning(MineIt.ERROR_COLOR + msg + MineIt.NO_COLOR);
+    }
+
+    public void printConsoleWarningMessage(String msg) {
+        this.getLogger().info(MineIt.WARNING_COLOR + msg + MineIt.NO_COLOR);
     }
 
     @Override
     public void onEnable() {
         instance = this;
+
+        Bukkit.getScheduler().runTaskAsynchronously(this,()->{
+            try {
+                String version = PluginVersionChecker.getVersion();
+                if (PluginVersionChecker.isLower(this.getDescription().getVersion(), version)) this.printConsoleWarningMessage("v" + version + " is now available! You should consider updating the plugin.");
+            } catch (IOException e) {
+                this.printConsoleWarningMessage("Can't check for updates.");
+            }
+        });
 
         //Config
         HashMap<String,Object> c = new HashMap<>();
@@ -96,13 +112,15 @@ public class MineIt extends JavaPlugin {
             String mineName = archivo.getName().replaceAll("\\.yml$", "");
             try {
                 getLogger().info("Loading mine " + mineName + "..."); // TODO .json
-                minas.add(FileManager.loadMines(archivo));
+                Mine mine = FileManager.loadMines(archivo);
+                mine.updateStages();
+                minas.add(mine);
             } catch (IOException ex) {
                 ex.printStackTrace();
             } catch (JsonSyntaxException ex) {
-                MineIt.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
+                this.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
             } catch (InvalidLocationException ex) {
-                MineIt.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
+                this.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
             }
         }
 
@@ -160,8 +178,9 @@ public class MineIt extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        for(Map.Entry<String, Location[]> entry : bloques.entrySet()) {
-            for(Location l: entry.getValue()) l.getBlock().setType(Material.STONE);
+        // undo selected blocks
+        for(ArrayList<Location> locations : selectedBlocks.values()) {
+            for(Location l: locations) l.getBlock().setType(Material.STONE);
         }
 
         for (Mine mina : minas) {
@@ -176,6 +195,9 @@ public class MineIt extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        // TODO unselect
+        // TODO append to existing mine
+        // TODO mine list
         Player player = (sender instanceof Player) ? (Player) sender : null;
         if (!cmd.getName().equalsIgnoreCase("mineit")) return false;
         if (player == null) {
@@ -208,7 +230,7 @@ public class MineIt extends JavaPlugin {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return true;
             }
-            if(!bloques.containsKey(player.getName()) || bloques.get(player.getName()).length==0) {
+            if(!selectedBlocks.containsKey(player.getName()) || selectedBlocks.get(player.getName()).size()==0) {
                 player.sendMessage(errorPrefix +"Please, select the mine's blocks first.");
                 return true;
             }
@@ -228,17 +250,17 @@ public class MineIt extends JavaPlugin {
             }
 
             ArrayList<Location> locations = new ArrayList<>();
-            for(Location loc : bloques.get(player.getName())) {
+            for(Location loc : selectedBlocks.get(player.getName())) {
                 locations.add(loc);
                 loc.getBlock().setType(Mine.STATE_ZERO);
             }
             Mine m = new Mine(args[1], locations);
-            if(limit) m.updateStages();
+            m.updateStages();
             minas.add(m);
-            bloques.remove(player.getName());
+            selectedBlocks.remove(player.getName());
 
             player.sendMessage(clearPrefix+ChatColor.GREEN+"Mine created successfully.");
-            player.sendMessage(clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit enable " + args[1]);
+            player.sendMessage(clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit start " + args[1]);
             return true;
         }
         if(args[0].equalsIgnoreCase("remove")) {
