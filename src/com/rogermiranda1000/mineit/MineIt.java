@@ -34,6 +34,7 @@ public class MineIt extends JavaPlugin {
     public static FileConfiguration config;
 
     //Inv
+    private static Material AIR_STAGE = Material.GLASS;
     public static Inventory inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
     public static ItemStack item2;
     public static ItemStack crear;
@@ -433,6 +434,7 @@ public class MineIt extends JavaPlugin {
         return true;
     }
 
+    @SuppressWarnings("ConstantConditions")
     public void edintingMine(Player player, Mine mine) {
         int lin = mine.getStages().size()/9 + 1;
         if(lin>2) {
@@ -451,6 +453,12 @@ public class MineIt extends JavaPlugin {
                 Stage current = mine.getStages().get(x);
                 ItemStack block = new ItemStack(current.getStageMaterial());
                 ItemMeta meta = block.getItemMeta();
+                if (meta == null) {
+                    // AIR
+                    block = new ItemStack(MineIt.AIR_STAGE);
+                    meta = block.getItemMeta();
+                    meta.setDisplayName("Air");
+                }
                 List<String> l = new ArrayList<>();
                 l.add("Stage " + (x + 1));
                 if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
@@ -461,6 +469,12 @@ public class MineIt extends JavaPlugin {
                 if(current.getPreviousStage() != null) {
                     block = new ItemStack(current.getPreviousStage().getStageMaterial());
                     meta = block.getItemMeta();
+                    if (meta == null) {
+                        // AIR
+                        block = new ItemStack(MineIt.AIR_STAGE);
+                        meta = block.getItemMeta();
+                        meta.setDisplayName("Air");
+                    }
                     l = new ArrayList<>();
                     l.add("On break, go to stage " + current.getPreviousStage().getName());
                     meta.setLore(l);
