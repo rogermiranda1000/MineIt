@@ -3,6 +3,7 @@ package com.rogermiranda1000.mineit.events;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -172,7 +173,7 @@ public class ClickEvent implements Listener {
                                 item.setItemMeta(m);
                                 inventory.setItem(mine.getStageCount()-1, item);
 
-                                item = new ItemStack(mine.getStage(mine.getStageCount()-2).getStageMaterial());
+                                item = mine.getStage(mine.getStageCount()-2).getStageItemStack();
                                 m = item.getItemMeta();
                                 st = new ArrayList<>();
                                 st.add("On break, go to stage " + item.getType().name());

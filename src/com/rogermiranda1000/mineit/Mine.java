@@ -3,6 +3,8 @@ package com.rogermiranda1000.mineit;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -126,13 +128,13 @@ public class Mine implements Runnable {
         ArrayList<Stage> r = new ArrayList<>(4);
         Stage bedrock = new Stage(Mine.STATE_ZERO.name(), Integer.MAX_VALUE);
         r.add(bedrock);
-        Stage stone = new Stage("STONE", Integer.MAX_VALUE, bedrock);
+        Stage stone = new Stage(VersionController.getVersion() < 13 ? "1" : "STONE", Integer.MAX_VALUE, bedrock);
         bedrock.setNextStage(stone);
         r.add(stone);
-        Stage obsidian = new Stage("OBSIDIAN", Integer.MAX_VALUE, stone);
+        Stage obsidian = new Stage(VersionController.getVersion() < 13 ? "49" : "OBSIDIAN", Integer.MAX_VALUE, stone);
         stone.setNextStage(obsidian);
         r.add(obsidian);
-        Stage diamond = new Stage("DIAMOND_ORE", Integer.MAX_VALUE, obsidian);
+        Stage diamond = new Stage(VersionController.getVersion() < 13 ? "56" : "DIAMOND_ORE", Integer.MAX_VALUE, obsidian);
         obsidian.setNextStage(diamond);
         r.add(diamond);
         return r;
@@ -181,7 +183,7 @@ public class Mine implements Runnable {
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();
                 next.incrementStageBlocks();
-                loc.getBlock().setType(next.getStageMaterial());
+                VersionController.get().setType(loc.getBlock(), next.getStageMaterial());
             }
         }
     }

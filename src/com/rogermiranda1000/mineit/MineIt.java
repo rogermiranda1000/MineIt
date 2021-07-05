@@ -7,6 +7,7 @@ import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -453,7 +454,7 @@ public class MineIt extends JavaPlugin {
 
             if(mine.getStages().size()>x) {
                 Stage current = mine.getStages().get(x);
-                ItemStack block = new ItemStack(current.getStageMaterial());
+                ItemStack block = current.getStageItemStack();
                 ItemMeta meta = block.getItemMeta();
                 if (meta == null) {
                     // AIR
@@ -469,7 +470,7 @@ public class MineIt extends JavaPlugin {
                 i.setItem(actualLine, block);
 
                 if(current.getPreviousStage() != null) {
-                    block = new ItemStack(current.getPreviousStage().getStageMaterial());
+                    block = current.getPreviousStage().getStageItemStack();
                     meta = block.getItemMeta();
                     if (meta == null) {
                         // AIR

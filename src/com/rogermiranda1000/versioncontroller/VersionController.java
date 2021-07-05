@@ -56,6 +56,22 @@ public class VersionController extends ItemManager implements BlockManager, Part
     }
 
     @Override
+    @Nullable
+    public String getName(@NotNull Object block) {
+        return VersionController.blockManager.getName(block);
+    }
+
+    @Override
+    public void setType(@NotNull Block block, Object type) {
+        VersionController.blockManager.setType(block, type);
+    }
+
+    @Override
+    public ItemStack getItemStack(Object type) {
+        return VersionController.blockManager.getItemStack(type);
+    }
+
+    @Override
     public ItemStack[] getItemInHand(PlayerInventory playerInventory) {
         return VersionController.itemManager.getItemInHand(playerInventory);
     }
