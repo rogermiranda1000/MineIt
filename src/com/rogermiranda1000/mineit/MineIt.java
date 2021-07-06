@@ -119,9 +119,7 @@ public class MineIt extends JavaPlugin {
                 Mine mine = FileManager.loadMines(archivo);
                 mine.updateStages();
                 minas.add(mine);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (JsonSyntaxException ex) {
+            } catch (IOException | JsonSyntaxException ex) {
                 this.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
             } catch (InvalidLocationException ex) {
                 this.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());

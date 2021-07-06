@@ -76,6 +76,7 @@ public class Stage {
         return VersionController.get().getName(this.block);
     }
 
+    @Nullable
     public Object getStageMaterial() {
         return this.block;
     }
