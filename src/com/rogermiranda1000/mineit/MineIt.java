@@ -37,7 +37,6 @@ public class MineIt extends JavaPlugin {
     public static FileConfiguration config;
 
     //Inv
-    private static Material AIR_STAGE = Material.GLASS;
     public static Inventory inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
     public static ItemStack item2;
     public static ItemStack crear;
@@ -456,7 +455,7 @@ public class MineIt extends JavaPlugin {
                 ItemMeta meta = block.getItemMeta();
                 if (meta == null) {
                     // AIR
-                    block = new ItemStack(MineIt.AIR_STAGE);
+                    block = new ItemStack(Mine.AIR_STAGE);
                     meta = block.getItemMeta();
                     meta.setDisplayName("Air");
                 }
@@ -472,7 +471,7 @@ public class MineIt extends JavaPlugin {
                     meta = block.getItemMeta();
                     if (meta == null) {
                         // AIR
-                        block = new ItemStack(MineIt.AIR_STAGE);
+                        block = new ItemStack(Mine.AIR_STAGE);
                         meta = block.getItemMeta();
                         meta.setDisplayName("Air");
                     }
