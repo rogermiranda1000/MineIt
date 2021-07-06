@@ -129,13 +129,13 @@ public class Mine implements Runnable {
         ArrayList<Stage> r = new ArrayList<>(4);
         Stage bedrock = new Stage(Mine.STATE_ZERO.name(), Integer.MAX_VALUE);
         r.add(bedrock);
-        Stage stone = new Stage(VersionController.getVersion() < 13 ? "1" : "STONE", Integer.MAX_VALUE, bedrock);
+        Stage stone = new Stage("STONE", Integer.MAX_VALUE, bedrock);
         bedrock.setNextStage(stone);
         r.add(stone);
-        Stage obsidian = new Stage(VersionController.getVersion() < 13 ? "49" : "OBSIDIAN", Integer.MAX_VALUE, stone);
+        Stage obsidian = new Stage("OBSIDIAN", Integer.MAX_VALUE, stone);
         stone.setNextStage(obsidian);
         r.add(obsidian);
-        Stage diamond = new Stage(VersionController.getVersion() < 13 ? "56" : "DIAMOND_ORE", Integer.MAX_VALUE, obsidian);
+        Stage diamond = new Stage("DIAMOND_ORE", Integer.MAX_VALUE, obsidian);
         obsidian.setNextStage(diamond);
         r.add(diamond);
         return r;

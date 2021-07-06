@@ -138,11 +138,12 @@ public class ClickEvent implements Listener {
                             MineIt.instance.edintingMine(player, mine);
                         }
                         else {
-                            String stageMaterial = item.getType().name();
+                            Object stageMaterial = VersionController.get().getObject(item);
                             ItemMeta m = item.getItemMeta();
                             // already exists?
-                            if (mine.getStage(item.getType().name()) != null) {
-                                player.sendMessage(MineIt.errorPrefix+"There's already a "+stageMaterial.toLowerCase()+" stage!");
+                            String name = VersionController.get().getName(stageMaterial);
+                            if (mine.getStage(name) != null) {
+                                player.sendMessage(MineIt.errorPrefix+"There's already a "+name+" stage!");
                                 return;
                             }
 
@@ -164,7 +165,7 @@ public class ClickEvent implements Listener {
                             }
                             else {
                                 // nuevo estado
-                                mine.addStage(new Stage(stageMaterial));
+                                mine.addStage(new Stage(name));
 
                                 List<String> st = new ArrayList<>();
                                 st.add("Stage " + mine.getStageCount());

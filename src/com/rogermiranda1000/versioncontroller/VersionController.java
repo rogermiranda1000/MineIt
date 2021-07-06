@@ -51,12 +51,16 @@ public class VersionController extends ItemManager implements BlockManager, Part
         return VersionController.blockManager.getObject(block);
     }
 
+    @Override
+    public Object getObject(@NotNull ItemStack item) {
+        return VersionController.blockManager.getObject(item);
+    }
+
     public boolean isPassable(@NotNull Block block) {
         return VersionController.blockManager.isPassable(block);
     }
 
     @Override
-    @Nullable
     public String getName(@NotNull Object block) {
         return VersionController.blockManager.getName(block);
     }

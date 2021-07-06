@@ -28,12 +28,16 @@ public class BlockPost13 implements BlockManager {
     }
 
     @Override
+    public Object getObject(@NotNull ItemStack item) {
+        return item.getType();
+    }
+
+    @Override
     public boolean isPassable(@NotNull Block block) {
         return block.isPassable();
     }
 
     @Override
-    @Nullable
     public String getName(@NotNull Object block) {
         return ((Material)block).name();
     }

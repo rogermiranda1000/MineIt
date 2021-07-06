@@ -14,18 +14,7 @@ import java.lang.reflect.Method;
  * BlockManager for version < 1.13
  */
 public class BlockPre13 implements BlockManager {
-    @Nullable private static final Method getTypeIdMethod = BlockPre13.getGetTypeIdMethod();
     @Nullable private static final Method setTypeMethod = BlockPre13.getSetTypeMethod();
-
-    @Nullable
-    private static Method getGetTypeIdMethod() {
-        try {
-            return ItemStack.class.getMethod("getTypeId");
-        } catch (NoSuchMethodException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-    }
 
     @Nullable
     private static Method getSetTypeMethod() {
@@ -52,7 +41,12 @@ public class BlockPre13 implements BlockManager {
 
     @Override
     public Object getObject(@NotNull Block block) {
-        return new ItemStack(block.getType(), (short)1, block.getData());
+        return new ItemStack(block.getType(), 1, block.getData());
+    }
+
+    @Override
+    public Object getObject(@NotNull ItemStack item) {
+        return new ItemStack(item);
     }
 
     @Override
@@ -60,27 +54,27 @@ public class BlockPre13 implements BlockManager {
         return !block.getType().isSolid();
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
-    @Nullable
     public String getName(@NotNull Object block) {
-        try {
-            return String.valueOf((int)BlockPre13.getTypeIdMethod.invoke((ItemStack)block)) + ":" + "0"; // TODO sub-id
-        } catch (InvocationTargetException | IllegalAccessException | NullPointerException ignored) { }
-        return null;
+        String material = ((ItemStack)block).getType().name();
+        byte subId = ((ItemStack)block).getData().getData();
+
+        if (subId > 0) return material + ":" + String.valueOf(subId);
+        else return material;
     }
 
-    @SuppressWarnings("ConstantConditions")
     @Override
     public void setType(@NotNull Block block, Object type) {
         try {
             String[] typeInfo = this.getName(type).split(":");
-            BlockPre13.setTypeMethod.invoke(block, Integer.parseInt(typeInfo[0]), Byte.parseByte(typeInfo[1]), true);
-        } catch (InvocationTargetException | IllegalAccessException | NullPointerException ignored) { }
+            block.setType(Material.valueOf(typeInfo[0]));
+            // TODO sub-id
+            //BlockPre13.setTypeMethod.invoke(block, Integer.parseInt(typeInfo[0]), typeInfo.length == 2 ? Byte.parseByte(typeInfo[1]) : 0, true);
+        } catch (IllegalArgumentException ignored) { }
     }
 
     @Override
     public ItemStack getItemStack(Object type) {
-        return new ItemStack((ItemStack) type);
+        return (type == null ? null : new ItemStack((ItemStack) type));
     }
 }

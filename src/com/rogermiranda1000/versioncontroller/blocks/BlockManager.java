@@ -24,6 +24,13 @@ public interface BlockManager {
     Object getObject(@NotNull Block block);
 
     /**
+     * Item to material
+     * @param item Item
+     * @return Material
+     */
+    Object getObject(@NotNull ItemStack item);
+
+    /**
      * Is the block passable?
      * @param block Block to get the information
      * @return If it's passable (true), or not (false)
@@ -35,7 +42,7 @@ public interface BlockManager {
      * @param block Object returned by getMaterial or getObject
      * @return Material/ID identifying the block
      */
-    @Nullable String getName(@NotNull Object block);
+    String getName(@NotNull Object block);
 
     /**
      * Change the block's type
@@ -44,5 +51,10 @@ public interface BlockManager {
      */
     void setType(@NotNull Block block, Object type);
 
+    /**
+     * Given an object created by this class, it returns the ItemStack
+     * @param type Object
+     * @return Object's ItemStack
+     */
     ItemStack getItemStack(Object type);
 }
