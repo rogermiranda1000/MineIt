@@ -1,7 +1,8 @@
 name: MineIt
 main: com.rogermiranda1000.mineit.MineIt
-version: 0.9.8
+version: 1.0.0
 author: rogermiranda1000
+api-version: 1.13
 softdepend: [Multiverse-Core]
 commands:
   mineit:

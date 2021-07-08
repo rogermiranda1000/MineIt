@@ -26,6 +26,8 @@ public class BasicStage {
         // create all stages
         for (BasicStage bs : stages) {
             Stage now = new Stage(bs.name, bs.stageLimit);
+            if (now.getStageMaterial() == null) throw new IOException("Unknown block material stage in mine");
+
             cache.put(bs.name, now);
             r.add(now);
         }

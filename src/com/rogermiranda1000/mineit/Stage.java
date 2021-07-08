@@ -1,10 +1,11 @@
 package com.rogermiranda1000.mineit;
 
-import org.bukkit.Material;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
+import org.bukkit.inventory.ItemStack;
 
 public class Stage {
-    private final String name;
+    private final Object block;
 
     /**
      * Maximum number of simultaneous blocks on that stage
@@ -20,8 +21,8 @@ public class Stage {
      */
     private int stageBlocks;
 
-    public Stage(String name, int stageLimit, Stage previousStage) {
-        this.name = name;
+    public Stage(String block, int stageLimit, Stage previousStage) {
+        this.block = VersionController.get().getMaterial(block);
         this.stageLimit = stageLimit;
         this.previousStage = previousStage;
         this.stageBlocks = 0;
@@ -71,11 +72,16 @@ public class Stage {
     }
 
     public String getName() {
-        return this.name;
+        return VersionController.get().getName(this.block);
     }
 
-    public Material getStageMaterial() {
-        return Material.getMaterial(this.name);
+    @Nullable
+    public Object getStageMaterial() {
+        return this.block;
+    }
+
+    public ItemStack getStageItemStack() {
+        return VersionController.get().getItemStack(this.block);
     }
 
     public void setStageLimit(int limit) {
@@ -92,11 +98,11 @@ public class Stage {
 
         if (this == o) return true;
         Stage s = (Stage) o;
-        return this.name.equals(s.name);
+        return this.getName().equals(s.getName());
     }
 
     @Override
     public String toString() {
-        return this.name;
+        return this.getName();
     }
 }

@@ -6,6 +6,8 @@ import com.rogermiranda1000.mineit.events.ClickEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
+import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -25,6 +27,7 @@ import java.io.*;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
+    public static final String PLUGIN_ID = "69161";
     private static final String ERROR_COLOR = Ansi.ansi().fg(Ansi.Color.RED).boldOff().toString(),
             WARNING_COLOR = Ansi.ansi().fg(Ansi.Color.YELLOW).boldOff().toString(),
             NO_COLOR = Ansi.ansi().fg(Ansi.Color.WHITE).boldOff().toString();
@@ -63,8 +66,8 @@ public class MineIt extends JavaPlugin {
 
         Bukkit.getScheduler().runTaskAsynchronously(this,()->{
             try {
-                String version = PluginVersionChecker.getVersion();
-                if (PluginVersionChecker.isLower(this.getDescription().getVersion(), version)) this.printConsoleWarningMessage("v" + version + " is now available! You should consider updating the plugin.");
+                String version = VersionChecker.getVersion(MineIt.PLUGIN_ID);
+                if (VersionChecker.isLower(this.getDescription().getVersion(), version)) this.printConsoleWarningMessage("v" + version + " is now available! You should consider updating the plugin.");
             } catch (IOException e) {
                 this.printConsoleWarningMessage("Can't check for updates.");
             }
@@ -115,9 +118,7 @@ public class MineIt extends JavaPlugin {
                 Mine mine = FileManager.loadMines(archivo);
                 mine.updateStages();
                 minas.add(mine);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (JsonSyntaxException ex) {
+            } catch (IOException | JsonSyntaxException ex) {
                 this.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
             } catch (InvalidLocationException ex) {
                 this.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
@@ -433,6 +434,7 @@ public class MineIt extends JavaPlugin {
         return true;
     }
 
+    @SuppressWarnings("ConstantConditions")
     public void edintingMine(Player player, Mine mine) {
         int lin = mine.getStages().size()/9 + 1;
         if(lin>2) {
@@ -449,8 +451,14 @@ public class MineIt extends JavaPlugin {
 
             if(mine.getStages().size()>x) {
                 Stage current = mine.getStages().get(x);
-                ItemStack block = new ItemStack(current.getStageMaterial());
+                ItemStack block = current.getStageItemStack();
                 ItemMeta meta = block.getItemMeta();
+                if (meta == null) {
+                    // AIR
+                    block = new ItemStack(Mine.AIR_STAGE);
+                    meta = block.getItemMeta();
+                    meta.setDisplayName("Air");
+                }
                 List<String> l = new ArrayList<>();
                 l.add("Stage " + (x + 1));
                 if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
@@ -459,8 +467,14 @@ public class MineIt extends JavaPlugin {
                 i.setItem(actualLine, block);
 
                 if(current.getPreviousStage() != null) {
-                    block = new ItemStack(current.getPreviousStage().getStageMaterial());
+                    block = current.getPreviousStage().getStageItemStack();
                     meta = block.getItemMeta();
+                    if (meta == null) {
+                        // AIR
+                        block = new ItemStack(Mine.AIR_STAGE);
+                        meta = block.getItemMeta();
+                        meta.setDisplayName("Air");
+                    }
                     l = new ArrayList<>();
                     l.add("On break, go to stage " + current.getPreviousStage().getName());
                     meta.setLore(l);

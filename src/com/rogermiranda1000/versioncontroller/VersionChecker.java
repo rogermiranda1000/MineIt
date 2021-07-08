@@ -1,16 +1,15 @@
-package com.rogermiranda1000.mineit;
+package com.rogermiranda1000.versioncontroller;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Scanner;
 
-public class PluginVersionChecker {
-    private static final String PLUGIN_ID = "69161";
-    private static final String PLUGIN_VERSION_URL = "https://api.spigotmc.org/legacy/update.php?resource=" + PluginVersionChecker.PLUGIN_ID;
+public class VersionChecker {
+    private static final String PLUGIN_VERSION_URL = "https://api.spigotmc.org/legacy/update.php?resource={id}";
 
-    public static String getVersion() throws IOException {
-        InputStream inputStream = new URL(PluginVersionChecker.PLUGIN_VERSION_URL).openStream();
+    public static String getVersion(String id) throws IOException {
+        InputStream inputStream = new URL(VersionChecker.PLUGIN_VERSION_URL.replace("{id}", id)).openStream();
         Scanner scanner = new Scanner(inputStream);
         if (scanner.hasNext()) {
             String version = scanner.next();

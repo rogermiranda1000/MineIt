@@ -3,12 +3,15 @@ package com.rogermiranda1000.mineit;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 public class Mine implements Runnable {
+    public static final Material AIR_STAGE = Material.GLASS;
     public static final Material STATE_ZERO = Material.BEDROCK;
 
     /**
@@ -145,8 +148,8 @@ public class Mine implements Runnable {
         this.resetStagesCount();
 
         for(Location loc: this.getMineBlocks()) {
-            Material mat = loc.getBlock().getType();
-            Stage match = this.getStage(mat.name());
+            Object mat = VersionController.get().getObject(loc.getBlock());
+            Stage match = this.getStage(VersionController.get().getName(mat));
             if (match != null) match.incrementStageBlocks();
         }
     }
@@ -181,7 +184,7 @@ public class Mine implements Runnable {
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();
                 next.incrementStageBlocks();
-                loc.getBlock().setType(next.getStageMaterial());
+                VersionController.get().setType(loc.getBlock(), next.getStageMaterial());
             }
         }
     }
