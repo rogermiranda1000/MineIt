@@ -7,6 +7,7 @@ import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -36,7 +37,6 @@ public class MineIt extends JavaPlugin {
     public static FileConfiguration config;
 
     //Inv
-    private static Material AIR_STAGE = Material.GLASS;
     public static Inventory inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
     public static ItemStack item2;
     public static ItemStack crear;
@@ -118,9 +118,7 @@ public class MineIt extends JavaPlugin {
                 Mine mine = FileManager.loadMines(archivo);
                 mine.updateStages();
                 minas.add(mine);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (JsonSyntaxException ex) {
+            } catch (IOException | JsonSyntaxException ex) {
                 this.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
             } catch (InvalidLocationException ex) {
                 this.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
@@ -453,11 +451,11 @@ public class MineIt extends JavaPlugin {
 
             if(mine.getStages().size()>x) {
                 Stage current = mine.getStages().get(x);
-                ItemStack block = new ItemStack(current.getStageMaterial());
+                ItemStack block = current.getStageItemStack();
                 ItemMeta meta = block.getItemMeta();
                 if (meta == null) {
                     // AIR
-                    block = new ItemStack(MineIt.AIR_STAGE);
+                    block = new ItemStack(Mine.AIR_STAGE);
                     meta = block.getItemMeta();
                     meta.setDisplayName("Air");
                 }
@@ -469,11 +467,11 @@ public class MineIt extends JavaPlugin {
                 i.setItem(actualLine, block);
 
                 if(current.getPreviousStage() != null) {
-                    block = new ItemStack(current.getPreviousStage().getStageMaterial());
+                    block = current.getPreviousStage().getStageItemStack();
                     meta = block.getItemMeta();
                     if (meta == null) {
                         // AIR
-                        block = new ItemStack(MineIt.AIR_STAGE);
+                        block = new ItemStack(Mine.AIR_STAGE);
                         meta = block.getItemMeta();
                         meta.setDisplayName("Air");
                     }

@@ -3,9 +3,9 @@ package com.rogermiranda1000.mineit.events;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -51,7 +51,7 @@ public class BlockBreakEvent implements Listener {
         }
     }
 
-    private static void establecer(Block b,Material material){
-        Bukkit.getScheduler().runTaskLater(MineIt.instance,()->b.setType(material),1);
+    private static void establecer(Block b,Object type){
+        Bukkit.getScheduler().runTaskLater(MineIt.instance,()->VersionController.get().setType(b, type),1);
     }
 }
