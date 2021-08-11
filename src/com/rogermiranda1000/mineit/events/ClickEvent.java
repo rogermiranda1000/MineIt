@@ -65,10 +65,10 @@ public class ClickEvent implements Listener {
                 return;
             }
 
-            Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
+            Mine mine = Mine.getMine(e.getView().getTitle().substring(14));
             if(mine==null) return;
 
-            MineIt.instance.minas.remove(mine);
+            Mine.removeMine(mine);
             try {
                 File f = new File(MineIt.instance.getDataFolder(), mine.mineName + ".yml");
                 if (f.exists()) f.delete();
@@ -79,7 +79,7 @@ public class ClickEvent implements Listener {
             return;
         }
         else if(clicked.getType()==Material.FURNACE) {
-            Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
+            Mine mine = Mine.getMine(e.getView().getTitle().substring(14));
             if(mine==null) return;
 
             if(mine.getStart()) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' stopped.");
@@ -90,7 +90,7 @@ public class ClickEvent implements Listener {
             return;
         }
         else if(e.getView().getTitle()/*inventory.getName()*/.equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
-            Mine mine = Mine.getMine(MineIt.instance.minas, clicked.getItemMeta().getDisplayName());
+            Mine mine = Mine.getMine(clicked.getItemMeta().getDisplayName());
             if(mine==null) return;
 
             player.closeInventory();
@@ -109,7 +109,7 @@ public class ClickEvent implements Listener {
                 ItemStack item = new ItemStack(player.getItemOnCursor().getType());
                 if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
 
-                Mine mine = Mine.getMine(MineIt.instance.minas, e.getView().getTitle().substring(14));
+                Mine mine = Mine.getMine(e.getView().getTitle().substring(14));
                 if(mine==null) return;
 
                 int stageNum = x%9; // we're editing the stage nºstageNum
@@ -218,8 +218,8 @@ public class ClickEvent implements Listener {
 
     void editMine(Player player) {
         player.closeInventory();
-        int l = (int) (MineIt.instance.minas.size()/9);
-        if(MineIt.instance.minas.size()%9>0) l++;
+        int l = Mine.getMinesLength()/9;
+        if(Mine.getMinesLength()%9>0) l++;
         if(l==0) {
             Inventory i = Bukkit.createInventory(null, 18, "§cEdit mine");
             ItemStack none = new ItemStack(Material.COBBLESTONE);
@@ -239,7 +239,7 @@ public class ClickEvent implements Listener {
 
         Inventory i = Bukkit.createInventory(null, l*9, "§cEdit mine");
         int pos=0;
-        for (Mine mine: MineIt.instance.minas) {
+        for (Mine mine: Mine.getMines()) {
             ItemStack mina = new ItemStack(Material.STONE);
             ItemMeta meta = mina.getItemMeta();
             meta.setDisplayName(mine.mineName);
