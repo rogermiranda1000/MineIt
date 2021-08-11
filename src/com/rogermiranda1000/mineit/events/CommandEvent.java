@@ -8,19 +8,18 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public class CommandEvent implements CommandExecutor {
-
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         // TODO unselect
         // TODO append to existing mine
         // TODO mine list
         Player player = (sender instanceof Player) ? (Player) sender : null;
-        if (!cmd.getName().equalsIgnoreCase("mineit")) return false;
         if (player == null) {
             sender.sendMessage("Don't use this command in console.");
             return true;
@@ -43,7 +42,7 @@ public class CommandEvent implements CommandExecutor {
             player.sendMessage(ChatColor.GOLD+"/mineit stop [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit mine [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit stagelimit [name] [stage number] [limit blocks number]");
-            player.sendMessage(ChatColor.GOLD+"/mineit reset [name]" + ChatColor.GREEN + ": it sets all the mine's block to bedrock " + ChatColor.RED + "[if the mine it's too big it may crash your server]");
+            player.sendMessage(ChatColor.GOLD+"/mineit reset [name]" + ChatColor.GREEN + ": it sets all the mine's block to " + Mine.STATE_ZERO.toString().toLowerCase() + ChatColor.RED + " [if the mine it's too big it may crash your server]");
             return true;
         }
         if(args[0].equalsIgnoreCase("create")) {

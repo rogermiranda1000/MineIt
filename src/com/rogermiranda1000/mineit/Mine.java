@@ -1,11 +1,12 @@
 package com.rogermiranda1000.mineit;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
-import com.github.davidmoten.rtree.RTree;
-import com.github.davidmoten.rtree.geometry.Point;
-import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.github.davidmoten.rtreemulti.Entry;
+import com.github.davidmoten.rtreemulti.RTree;
+import com.github.davidmoten.rtreemulti.geometry.Point;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -24,12 +25,12 @@ public class Mine implements Runnable {
     /**
      * Used for optimize search
      */
-    private static RTree<Mine, Point> tree = RTree.star().create();
+    private static RTree<Mine, Point> tree = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
 
     /**
      * All the active mines
      */
-    private static ArrayList<Mine> mines = new ArrayList<>();
+    private static final ArrayList<Mine> mines = new ArrayList<>();
 
     private final ArrayList<Location> blocks;
     public int currentTime;
@@ -181,6 +182,13 @@ public class Mine implements Runnable {
         return Mine.mines.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
     }
 
+    private static Point getPoint(Location loc) {
+        if (loc.getWorld() == null) return Point.create(0,0,loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+
+        return Point.create(loc.getWorld().getUID().getMostSignificantBits(),
+                loc.getWorld().getUID().getLeastSignificantBits(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+    }
+
     /**
      * It gets the mine that the location belongs
      * @param loc Location to get the mine
@@ -188,13 +196,29 @@ public class Mine implements Runnable {
      */
     @Nullable
     public static Mine getMine(Location loc) {
-        // TODO use R-tree
+        long startTime = System.nanoTime();
+        Iterator<Entry<Mine, Point>> results = tree.search(Mine.getPoint(loc)).iterator();
+        System.out.println("R-tree: " + (System.nanoTime() - startTime));
+
+
+
+        Mine result = null;
+        startTime = System.nanoTime();
         for(Mine m: Mine.mines) {
             for (Location mineLoc : m.getMineBlocks()) {
-                if (mineLoc.equals(loc)) return m;
+                if (mineLoc.equals(loc)) {
+                    result = m;
+                    break;
+                }
             }
+            if (result != null) break;
         }
-        return null;
+        System.out.println("Old: " + (System.nanoTime() - startTime));
+
+
+
+        if (!results.hasNext()) return null;
+        return results.next().value();
     }
 
     public static int getMinesLength() {
@@ -206,8 +230,9 @@ public class Mine implements Runnable {
     }
 
     public static void removeMine(Mine m) {
-        // TODO remove from R-tree
         Mine.mines.remove(m);
+
+        for (Location loc : m.blocks) Mine.tree.delete(m, Mine.getPoint(loc));
     }
 
     /**
@@ -216,8 +241,10 @@ public class Mine implements Runnable {
      */
     public static void addMine(Mine m) {
         m.updateStages();
-        // TODO add to R-tree
+
         Mine.mines.add(m);
+
+        for (Location loc : m.blocks) Mine.tree.add(m, Mine.getPoint(loc));
     }
 
     @Override

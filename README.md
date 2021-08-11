@@ -3,4 +3,4 @@
 
 ## Dependencies
 - spigot 1.13.2
-- com.github.davidmoten:rtree:0.6.4
+- com.github.davidmoten:rtree-multi:0.1-RC1
