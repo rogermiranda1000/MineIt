@@ -1,20 +1,37 @@
 package com.rogermiranda1000.mineit;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 
+import com.github.davidmoten.rtreemulti.Entry;
+import com.github.davidmoten.rtreemulti.RTree;
+import com.github.davidmoten.rtreemulti.geometry.Point;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 public class Mine implements Runnable {
+    public static final Material AIR_STAGE = Material.GLASS;
     public static final Material STATE_ZERO = Material.BEDROCK;
 
     /**
      * Ticks per block (seconds per block * 20)
      */
     private static int MINE_DELAY;
+
+    /**
+     * Used for optimize search
+     */
+    private static RTree<Mine, Point> tree = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
+
+    /**
+     * All the active mines
+     */
+    private static final ArrayList<Mine> mines = new ArrayList<>();
+
     private final ArrayList<Location> blocks;
     public int currentTime;
     private final ArrayList<Stage> stages;
@@ -145,8 +162,8 @@ public class Mine implements Runnable {
         this.resetStagesCount();
 
         for(Location loc: this.getMineBlocks()) {
-            Material mat = loc.getBlock().getType();
-            Stage match = this.getStage(mat.name());
+            Object mat = VersionController.get().getObject(loc.getBlock());
+            Stage match = this.getStage(VersionController.get().getName(mat));
             if (match != null) match.incrementStageBlocks();
         }
     }
@@ -161,8 +178,55 @@ public class Mine implements Runnable {
     }
 
     @Nullable
-    public static Mine getMine(ArrayList<Mine> minas, String search) {
-        return minas.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
+    synchronized public static Mine getMine(String search) {
+        return Mine.mines.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
+    }
+
+    private static Point getPoint(Location loc) {
+        if (loc.getWorld() == null) return Point.create(0,0,loc.getX(), loc.getY(), loc.getZ());
+
+        return Point.create(Double.longBitsToDouble(loc.getWorld().getUID().getMostSignificantBits()),
+                Double.longBitsToDouble(loc.getWorld().getUID().getLeastSignificantBits()),
+                loc.getX(), loc.getY(), loc.getZ());
+    }
+
+    /**
+     * It gets the mine that the location belongs
+     * @param loc Location to get the mine
+     * @return Mine that contains 'loc', null if any
+     */
+    @Nullable
+    synchronized public static Mine getMine(Location loc) {
+        Iterator<Entry<Mine, Point>> results = Mine.tree.search(Mine.getPoint(loc)).iterator();
+
+        if (!results.hasNext()) return null;
+        return results.next().value();
+    }
+
+    synchronized public static int getMinesLength() {
+        return Mine.mines.size();
+    }
+
+    public static ArrayList<Mine> getMines() {
+        return Mine.mines;
+    }
+
+    synchronized public static void removeMine(Mine m) {
+        Mine.mines.remove(m);
+
+        for (Location loc : m.blocks) Mine.tree = Mine.tree.delete(m, Mine.getPoint(loc));
+    }
+
+    /**
+     * Updates the mine stages and add it into the internal list. It also adds them into the optimized search list.
+     * @param m Mine to add
+     */
+    synchronized public static void addMine(Mine m) {
+        m.updateStages();
+
+        Mine.mines.add(m);
+
+        for (Location loc : m.blocks) Mine.tree = Mine.tree.add(m, Mine.getPoint(loc));
     }
 
     @Override
@@ -181,7 +245,7 @@ public class Mine implements Runnable {
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();
                 next.incrementStageBlocks();
-                loc.getBlock().setType(next.getStageMaterial());
+                VersionController.get().setType(loc.getBlock(), next.getStageMaterial());
             }
         }
     }
