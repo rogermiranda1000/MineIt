@@ -3,6 +3,8 @@ package com.rogermiranda1000.mineit;
 import java.util.ArrayList;
 import java.util.Random;
 
+import com.github.davidmoten.rtree.RTree;
+import com.github.davidmoten.rtree.geometry.Point;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
@@ -18,6 +20,17 @@ public class Mine implements Runnable {
      * Ticks per block (seconds per block * 20)
      */
     private static int MINE_DELAY;
+
+    /**
+     * Used for optimize search
+     */
+    private static RTree<Mine, Point> tree = RTree.star().create();
+
+    /**
+     * All the active mines
+     */
+    private static ArrayList<Mine> mines = new ArrayList<>();
+
     private final ArrayList<Location> blocks;
     public int currentTime;
     private final ArrayList<Stage> stages;
@@ -164,8 +177,47 @@ public class Mine implements Runnable {
     }
 
     @Nullable
-    public static Mine getMine(ArrayList<Mine> minas, String search) {
-        return minas.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
+    public static Mine getMine(String search) {
+        return Mine.mines.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
+    }
+
+    /**
+     * It gets the mine that the location belongs
+     * @param loc Location to get the mine
+     * @return Mine that contains 'loc', null if any
+     */
+    @Nullable
+    public static Mine getMine(Location loc) {
+        // TODO use R-tree
+        for(Mine m: Mine.mines) {
+            for (Location mineLoc : m.getMineBlocks()) {
+                if (mineLoc.equals(loc)) return m;
+            }
+        }
+        return null;
+    }
+
+    public static int getMinesLength() {
+        return Mine.mines.size();
+    }
+
+    public static ArrayList<Mine> getMines() {
+        return Mine.mines;
+    }
+
+    public static void removeMine(Mine m) {
+        // TODO remove from R-tree
+        Mine.mines.remove(m);
+    }
+
+    /**
+     * Updates the mine stages and add it into the internal list. It also adds them into the optimized search list.
+     * @param m Mine to add
+     */
+    public static void addMine(Mine m) {
+        m.updateStages();
+        // TODO add to R-tree
+        Mine.mines.add(m);
     }
 
     @Override
