@@ -178,15 +178,16 @@ public class Mine implements Runnable {
     }
 
     @Nullable
-    public static Mine getMine(String search) {
+    synchronized public static Mine getMine(String search) {
         return Mine.mines.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
     }
 
     private static Point getPoint(Location loc) {
-        if (loc.getWorld() == null) return Point.create(0,0,loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        if (loc.getWorld() == null) return Point.create(0,0,loc.getX(), loc.getY(), loc.getZ());
 
-        return Point.create(loc.getWorld().getUID().getMostSignificantBits(),
-                loc.getWorld().getUID().getLeastSignificantBits(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+        return Point.create(Double.longBitsToDouble(loc.getWorld().getUID().getMostSignificantBits()),
+                Double.longBitsToDouble(loc.getWorld().getUID().getLeastSignificantBits()),
+                loc.getX(), loc.getY(), loc.getZ());
     }
 
     /**
@@ -195,33 +196,14 @@ public class Mine implements Runnable {
      * @return Mine that contains 'loc', null if any
      */
     @Nullable
-    public static Mine getMine(Location loc) {
-        long startTime = System.nanoTime();
-        Iterator<Entry<Mine, Point>> results = tree.search(Mine.getPoint(loc)).iterator();
-        System.out.println("R-tree: " + (System.nanoTime() - startTime));
-
-
-
-        Mine result = null;
-        startTime = System.nanoTime();
-        for(Mine m: Mine.mines) {
-            for (Location mineLoc : m.getMineBlocks()) {
-                if (mineLoc.equals(loc)) {
-                    result = m;
-                    break;
-                }
-            }
-            if (result != null) break;
-        }
-        System.out.println("Old: " + (System.nanoTime() - startTime));
-
-
+    synchronized public static Mine getMine(Location loc) {
+        Iterator<Entry<Mine, Point>> results = Mine.tree.search(Mine.getPoint(loc)).iterator();
 
         if (!results.hasNext()) return null;
         return results.next().value();
     }
 
-    public static int getMinesLength() {
+    synchronized public static int getMinesLength() {
         return Mine.mines.size();
     }
 
@@ -229,22 +211,22 @@ public class Mine implements Runnable {
         return Mine.mines;
     }
 
-    public static void removeMine(Mine m) {
+    synchronized public static void removeMine(Mine m) {
         Mine.mines.remove(m);
 
-        for (Location loc : m.blocks) Mine.tree.delete(m, Mine.getPoint(loc));
+        for (Location loc : m.blocks) Mine.tree = Mine.tree.delete(m, Mine.getPoint(loc));
     }
 
     /**
      * Updates the mine stages and add it into the internal list. It also adds them into the optimized search list.
      * @param m Mine to add
      */
-    public static void addMine(Mine m) {
+    synchronized public static void addMine(Mine m) {
         m.updateStages();
 
         Mine.mines.add(m);
 
-        for (Location loc : m.blocks) Mine.tree.add(m, Mine.getPoint(loc));
+        for (Location loc : m.blocks) Mine.tree = Mine.tree.add(m, Mine.getPoint(loc));
     }
 
     @Override
