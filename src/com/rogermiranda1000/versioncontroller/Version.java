@@ -6,10 +6,13 @@ import org.jetbrains.annotations.NotNull;
  * A Minecraft version (ex: 1.8 or 1.12.2)
  */
 public class Version implements Comparable<Version> {
+    public static final Version MC_1_13 = new Version(1,13);
+    public static final Version MC_1_12 = new Version(1,12);
+    public static final Version MC_1_9 = new Version(1,9);
     private final byte []version;
 
     /**
-     * It parses a string
+     * It parses a version as string
      * @param version Version (ex: 1.8 or 1.12.2)
      * @throws NumberFormatException The version is not a number
      */
@@ -20,6 +23,20 @@ public class Version implements Comparable<Version> {
         for (int x = 0; x < 3; x++) {
             if (x < currentParams.length) this.version[x] = Byte.parseByte(currentParams[x]);
             else this.version[x] = 0;
+        }
+    }
+
+    /**
+     * It parses a version
+     * @param num Version (ex: 1.8 or 1.12.2)
+     */
+    @SuppressWarnings("ConstantConditions")
+    public Version(int ...num) {
+        this.version = new byte[3];
+
+        for (int x = 0; x < 3; x++) {
+            if (x < num.length) this.version[x] = (byte) num[x];
+            else this.version[x] = (byte) 0;
         }
     }
 
@@ -36,7 +53,7 @@ public class Version implements Comparable<Version> {
         do {
             tmp = this.version[x] - o.version[x];
             x++;
-        } while (x < 3 && tmp == 0);
+        } while (x < this.version.length && tmp == 0);
         return tmp;
     }
 }

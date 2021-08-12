@@ -7,6 +7,7 @@ import com.rogermiranda1000.mineit.events.CommandEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
+import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
@@ -48,7 +49,6 @@ public class MineIt extends JavaPlugin {
     public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
     public int rango;
-    public int delay;
     public boolean limit;
 
     public void printConsoleErrorMessage(String msg) {
@@ -265,7 +265,7 @@ public class MineIt extends JavaPlugin {
     @SuppressWarnings("ConstantConditions")
     private static ItemStack time(Mine mine) {
         Material mat;
-        if (VersionController.getVersion() > 12) mat = Material.getMaterial("CLOCK");
+        if (VersionController.version.compareTo(Version.MC_1_12) > 0) mat = Material.getMaterial("CLOCK");
         else mat = Material.getMaterial("WATCH"); // <= 1.12 clock's name is "watch"
         ItemStack clock = new ItemStack(mat);
         ItemMeta m = clock.getItemMeta();

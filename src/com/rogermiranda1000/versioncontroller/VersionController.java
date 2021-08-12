@@ -30,20 +30,21 @@ import org.jetbrains.annotations.NotNull;
  */
 public class VersionController extends ItemManager implements BlockManager, ParticleManager, EntityManager {
     private static VersionController versionController = null;
-    private static int version = VersionController.getVersion();
+    public static final Version version = VersionController.getVersion();
     public static final boolean isPaper = VersionController.getMCPaper();
 
-    private static final BlockManager blockManager = (VersionController.version<13) ? new BlockPre13() : new BlockPost13();
-    private static final ItemManager itemManager = (VersionController.version<9) ? new ItemPre9() : new ItemPost9();
-    private static final ParticleManager particleManager = (VersionController.version<9) ? new ParticlePre9() : new ParticlePost9();
+    private static final BlockManager blockManager = (VersionController.version.compareTo(Version.MC_1_13) < 0) ? new BlockPre13() : new BlockPost13();
+    private static final ItemManager itemManager = (VersionController.version.compareTo(Version.MC_1_9) < 0) ? new ItemPre9() : new ItemPost9();
+    private static final ParticleManager particleManager = (VersionController.version.compareTo(Version.MC_1_9) < 0) ? new ParticlePre9() : new ParticlePost9();
     private static final EntityManager entityManager = (VersionController.isPaper) ? new EntityPaper() : new EntitySpigot();
 
     /**
      * Get the current minecraft version
      * @return version (1.XX)
      */
-    public static int getVersion() {
-        return Integer.parseInt(Bukkit.getBukkitVersion().split("-")[0].split("\\.")[1]);
+    private static Version getVersion() {
+        // TODO get the full version
+        return new Version(1, Integer.parseInt(Bukkit.getBukkitVersion().split("-")[0].split("\\.")[1]), 0);
     }
 
     /**
