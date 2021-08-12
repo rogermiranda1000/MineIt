@@ -30,7 +30,7 @@ public class CommandEvent implements CommandExecutor {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return true;
             }
-            player.openInventory(MineIt.inv);
+            player.openInventory(MineIt.instance.mainInventory.getInventory());
             return true;
         }
 
@@ -166,7 +166,8 @@ public class CommandEvent implements CommandExecutor {
                     return true;
                 }
 
-                MineIt.instance.edintingMine(player, m);
+                // TODO
+                //MineIt.instance.edintingMine(player, m);
             }
             else if (args[1].equalsIgnoreCase("time")) {
                 if (args.length != 4) {

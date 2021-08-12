@@ -1,36 +1,108 @@
-package com.rogermiranda1000.mineit.events;
+package com.rogermiranda1000.mineit.inventories;
 
-import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.versioncontroller.VersionController;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-public class ClickEvent implements Listener {
+public class EditMineInventory extends BasicInventory {
+    public EditMineInventory() {
+        /*
+        anvil = new ItemStack(Material.ANVIL);
+        m = anvil.getItemMeta();
+        m.setDisplayName(ChatColor.GREEN+"Go back");
+        anvil.setItemMeta(m);
+
+        redstone = new ItemStack(Material.REDSTONE_BLOCK);
+        m = redstone.getItemMeta();
+        m.setDisplayName(ChatColor.RED+"Remove mine");
+        redstone.setItemMeta(m);
+
+        glass = new ItemStack(Material.GLASS);
+        m = glass.getItemMeta();
+        m.setDisplayName("-");
+        glass.setItemMeta(m);
+        */
+
+        /*
+        int lin = mine.getStages().size()/9 + 1;
+        if(lin>2) {
+            if(mine.getStages().size() % 9 > 0) {
+                player.sendMessage(MineIt.errorPrefix + "You've reached the max mines stages! Please, remove some in the mine's config or delete the mine.");
+                return;
+            }
+            lin = mine.getStages().size()/9;
+        }
+        Inventory i = Bukkit.createInventory(null, (lin*2 + 1)*9, "§cEdit mine §d"+mine.mineName);
+
+        for(int x = 0; x<lin*9; x++) {
+            int actualLine = (x/9)*18 + (x%9);
+
+            if(mine.getStages().size()>x) {
+                Stage current = mine.getStages().get(x);
+                ItemStack block = current.getStageItemStack();
+                ItemMeta meta = block.getItemMeta();
+                if (meta == null) {
+                    // AIR
+                    block = new ItemStack(Mine.AIR_STAGE);
+                    meta = block.getItemMeta();
+                    meta.setDisplayName("Air");
+                }
+                List<String> l = new ArrayList<>();
+                l.add("Stage " + (x + 1));
+                if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
+                meta.setLore(l);
+                block.setItemMeta(meta);
+                i.setItem(actualLine, block);
+
+                if(current.getPreviousStage() != null) {
+                    block = current.getPreviousStage().getStageItemStack();
+                    meta = block.getItemMeta();
+                    if (meta == null) {
+                        // AIR
+                        block = new ItemStack(Mine.AIR_STAGE);
+                        meta = block.getItemMeta();
+                        meta.setDisplayName("Air");
+                    }
+                    l = new ArrayList<>();
+                    l.add("On break, go to stage " + current.getPreviousStage().getName());
+                    meta.setLore(l);
+                    block.setItemMeta(meta);
+
+                    i.setItem(actualLine+9, block);
+                }
+            }
+            else {
+                i.setItem(actualLine, glass);
+                i.setItem(actualLine+9, glass);
+            }
+        }
+        i.setItem(lin*18, MineIt.anvil);
+        i.setItem(((lin*2 + 1)*9)-3, MineIt.time(mine));
+        i.setItem(((lin*2 + 1)*9)-2, MineIt.status(mine));
+        i.setItem(((lin*2 + 1)*9)-1, MineIt.redstone);
+        player.openInventory(i);
+         */
+    }
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onClick(InventoryClickEvent e) {
+        /*
         Player player = (Player) e.getWhoClicked();
         ItemStack clicked = e.getCurrentItem();
         Inventory inventory = e.getInventory();
-        // TODO use getClickedInventory to discard events?
-        // TODO objects extends Inventory?
 
-        if(!e.getView().getTitle()/*inventory.getName()*/.equalsIgnoreCase("§6§lMineIt") && !e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine")) return;
         e.setCancelled(true);
         if(!player.hasPermission("mineit.open")) {
             player.closeInventory();
@@ -38,25 +110,10 @@ public class ClickEvent implements Listener {
             return;
         }
         if(clicked==null) return;
-        if((clicked.equals(MineIt.item2) || clicked.equals(MineIt.editar) || clicked.equals(MineIt.crear)) && !player.hasPermission("mineit.create")) {
-            player.sendMessage(MineIt.errorPrefix+"You can't use this action.");
-            return;
-        }
-
-        if(clicked.equals(MineIt.item2)) {
+        if(clicked.equals(MineIt.anvil)) {
             player.closeInventory();
-            MineIt.instance.getLogger().info("Giving Mine creator to "+player.getName()+"...");
-            player.getInventory().addItem(MineIt.item);
-        }
-        else if(clicked.equals(MineIt.crear)) {
-            player.closeInventory();
-            player.sendMessage(MineIt.errorPrefix+"Under construction, use "+ ChatColor.AQUA+"/mineit create [name]"+ChatColor.RED+" instead.");
-        }
-        else if(clicked.equals(MineIt.editar)) editMine(player);
-        else if(clicked.equals(MineIt.anvil)) {
-            player.closeInventory();
-            if(e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine") && isEditing(inventory)) editMine(player);
-            else player.openInventory(MineIt.inv);
+            if(e.getView().getTitle().contains("§cEdit mine") && isEditing(inventory)) editMine(player);
+            else player.openInventory(MineIt.instance.mainInventory.getInventory());
             return;
         }
         else if(clicked.equals(MineIt.redstone)) {
@@ -70,10 +127,8 @@ public class ClickEvent implements Listener {
 
             Mine.removeMine(mine);
             try {
-                File f = new File(MineIt.instance.getDataFolder(), mine.mineName + ".yml");
-                if (f.exists()) f.delete();
-            }
-            catch (Exception ex) {}
+                FileManager.removeMine(mine);
+            } catch (Exception ignored) {}
             player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' removed.");
             player.closeInventory();
             return;
@@ -89,7 +144,7 @@ public class ClickEvent implements Listener {
             inventory.setItem(((((mine.getStages().size()/9) + 1)*2 + 1)*9)-2, MineIt.status(mine));
             return;
         }
-        else if(e.getView().getTitle()/*inventory.getName()*/.equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
+        else if(e.getView().getTitle().equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {
             Mine mine = Mine.getMine(clicked.getItemMeta().getDisplayName());
             if(mine==null) return;
 
@@ -98,7 +153,7 @@ public class ClickEvent implements Listener {
             return;
         }
 
-        if(e.getView().getTitle()/*inventory.getName()*/.contains("§cEdit mine") && isEditing(inventory)) {
+        if(e.getView().getTitle().contains("§cEdit mine") && isEditing(inventory)) {
             // TODO Hotfix: bucle for no funciona con elementos repetidos (ej: dos estados que al romperse van a BEDROCK)
             for(int x = 0; x<inventory.getSize()-9; x++) {
                 if(inventory.getItem(x) == null) continue; // en ese slot no hay nada
@@ -147,7 +202,7 @@ public class ClickEvent implements Listener {
                                 return;
                             }
 
-                            if (stageNum < mine.getStageCount()) {
+                            if (stageNum < mine.getStageCount()) {*/
                                 // sobreescribir estado
                                 // TODO sobreescribir
                                 /*m.setLore(inventory.getItem(x).getItemMeta().getLore());
@@ -162,7 +217,7 @@ public class ClickEvent implements Listener {
                                 mine.stages = mine.getStages().toArray(new String[mine.getStages().size()]);
                                 if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
                                 inventory.setItem(x, item);*/
-                            }
+                            /*}
                             else {
                                 // nuevo estado
                                 mine.addStage(new Stage(name));
@@ -214,50 +269,17 @@ public class ClickEvent implements Listener {
             }
             e.setCancelled(false);
         }
+         */
     }
 
-    void editMine(Player player) {
-        player.closeInventory();
-        int l = Mine.getMinesLength()/9;
-        if(Mine.getMinesLength()%9>0) l++;
-        if(l==0) {
-            Inventory i = Bukkit.createInventory(null, 18, "§cEdit mine");
-            ItemStack none = new ItemStack(Material.COBBLESTONE);
-            ItemMeta m = none.getItemMeta();
-            m.setDisplayName("-");
-            none.setItemMeta(m);
-            for(int x=0; x<9; x++) i.setItem(x, none);
-            i.setItem(9, MineIt.anvil);
-            player.openInventory(i);
-            return;
-        }
-        l++;
-        if(l>6) {
-            player.sendMessage(MineIt.errorPrefix+"Error, too many mines. Please remove some mines.");
-            return;
-        }
+    private static ItemStack status(Mine mine) {
+        ItemStack item = new ItemStack(Material.FURNACE);
+        ItemMeta m = item.getItemMeta();
+        String s = ChatColor.GREEN + "Start";
+        if(mine.getStart()) s = ChatColor.RED + "Stop";
+        m.setDisplayName(s+" mine");
+        item.setItemMeta(m);
 
-        Inventory i = Bukkit.createInventory(null, l*9, "§cEdit mine");
-        int pos=0;
-        for (Mine mine: Mine.getMines()) {
-            ItemStack mina = new ItemStack(Material.STONE);
-            ItemMeta meta = mina.getItemMeta();
-            meta.setDisplayName(mine.mineName);
-            ArrayList<String> print = new ArrayList<>();
-            for (Stage s : mine.getStages()) print.add(s.toString());
-            meta.setLore(print);
-            mina.setItemMeta(meta);
-
-            i.setItem(pos++, mina);
-        }
-        i.setItem((l-1)*9, MineIt.anvil);
-
-        player.openInventory(i);
-    }
-
-    boolean isEditing(Inventory i) {
-        if(!i.getItem(0).hasItemMeta()) return false;
-        if(!i.getItem(0).getItemMeta().hasLore()) return false;
-        return i.getItem(0).getItemMeta().getLore().get(0).equalsIgnoreCase("Stage 1");
+        return item;
     }
 }

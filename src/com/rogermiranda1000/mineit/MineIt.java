@@ -2,11 +2,14 @@ package com.rogermiranda1000.mineit;
 
 import com.google.gson.JsonSyntaxException;
 import com.rogermiranda1000.mineit.events.BlockBreakEvent;
-import com.rogermiranda1000.mineit.events.ClickEvent;
 import com.rogermiranda1000.mineit.events.CommandEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
+import com.rogermiranda1000.mineit.inventories.BasicInventory;
+import com.rogermiranda1000.mineit.inventories.EditMineInventory;
+import com.rogermiranda1000.mineit.inventories.MainInventory;
+import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
@@ -38,13 +41,9 @@ public class MineIt extends JavaPlugin {
     public static FileConfiguration config;
 
     //Inv
-    public static Inventory inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
-    public static ItemStack item2;
-    public static ItemStack crear;
-    public static ItemStack editar;
-    public static ItemStack anvil;
-    public static ItemStack redstone;
-    public static ItemStack glass;
+    public BasicInventory mainInventory;
+    public BasicInventory selectMineInventory;
+    public BasicInventory editMineInventory;
 
     public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
@@ -127,49 +126,15 @@ public class MineIt extends JavaPlugin {
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
-        anvil = new ItemStack(Material.ANVIL);
-        m = anvil.getItemMeta();
-        m.setDisplayName(ChatColor.GREEN+"Go back");
-        anvil.setItemMeta(m);
-
-        redstone = new ItemStack(Material.REDSTONE_BLOCK);
-        m = redstone.getItemMeta();
-        m.setDisplayName(ChatColor.RED+"Remove mine");
-        redstone.setItemMeta(m);
-
-        glass = new ItemStack(Material.GLASS);
-        m = glass.getItemMeta();
-        m.setDisplayName("-");
-        glass.setItemMeta(m);
-
-        //Inv
-        item2 = item.clone();
-        ItemMeta meta = item2.getItemMeta();
-        List<String> l = new ArrayList<String>();
-        l.add("Get the Mine creator");
-        meta.setLore(l);
-        item2.setItemMeta(meta);
-        inv.setItem(0, item2);
-        crear = new ItemStack(Material.DIAMOND_ORE);
-        meta = crear.getItemMeta();
-        meta.setDisplayName(ChatColor.GREEN+"Create mine");
-        l.clear();
-        l.add("Create a new mine");
-        meta.setLore(l);
-        crear.setItemMeta(meta);
-        inv.setItem(4, crear);
-        editar = new ItemStack(Material.COMPASS);
-        meta = editar.getItemMeta();
-        meta.setDisplayName(ChatColor.GREEN+"Edit mine");
-        l.clear();
-        l.add("Edit current mines");
-        meta.setLore(l);
-        editar.setItemMeta(meta);
-        inv.setItem(8, editar);
+        this.mainInventory = new MainInventory();
+        this.selectMineInventory = new SelectMineInventory();
+        //this.editMineInventory = new EditMineInventory();
 
         getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
-        getServer().getPluginManager().registerEvents(new ClickEvent(), this);
+        getServer().getPluginManager().registerEvents(this.mainInventory, this);
+        getServer().getPluginManager().registerEvents(this.selectMineInventory, this);
+        //getServer().getPluginManager().registerEvents(this.editMineInventory, this);
         getCommand("mineit").setExecutor(new CommandEvent());
     }
 
@@ -183,83 +148,11 @@ public class MineIt extends JavaPlugin {
         for (Mine mina : Mine.getMines()) {
             try {
                 File file = new File(getDataFolder(), mina.mineName +".yml");
-                FileManager.saveMines(file, mina);
+                FileManager.saveMine(file, mina);
             } catch(IOException e){
                 e.printStackTrace();
             }
         }
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    public void edintingMine(Player player, Mine mine) {
-        int lin = mine.getStages().size()/9 + 1;
-        if(lin>2) {
-            if(mine.getStages().size() % 9 > 0) {
-                player.sendMessage(MineIt.errorPrefix + "You've reached the max mines stages! Please, remove some in the mine's config or delete the mine.");
-                return;
-            }
-            lin = mine.getStages().size()/9;
-        }
-        Inventory i = Bukkit.createInventory(null, (lin*2 + 1)*9, "§cEdit mine §d"+mine.mineName);
-
-        for(int x = 0; x<lin*9; x++) {
-            int actualLine = (x/9)*18 + (x%9);
-
-            if(mine.getStages().size()>x) {
-                Stage current = mine.getStages().get(x);
-                ItemStack block = current.getStageItemStack();
-                ItemMeta meta = block.getItemMeta();
-                if (meta == null) {
-                    // AIR
-                    block = new ItemStack(Mine.AIR_STAGE);
-                    meta = block.getItemMeta();
-                    meta.setDisplayName("Air");
-                }
-                List<String> l = new ArrayList<>();
-                l.add("Stage " + (x + 1));
-                if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
-                meta.setLore(l);
-                block.setItemMeta(meta);
-                i.setItem(actualLine, block);
-
-                if(current.getPreviousStage() != null) {
-                    block = current.getPreviousStage().getStageItemStack();
-                    meta = block.getItemMeta();
-                    if (meta == null) {
-                        // AIR
-                        block = new ItemStack(Mine.AIR_STAGE);
-                        meta = block.getItemMeta();
-                        meta.setDisplayName("Air");
-                    }
-                    l = new ArrayList<>();
-                    l.add("On break, go to stage " + current.getPreviousStage().getName());
-                    meta.setLore(l);
-                    block.setItemMeta(meta);
-
-                    i.setItem(actualLine+9, block);
-                }
-            }
-            else {
-                i.setItem(actualLine, glass);
-                i.setItem(actualLine+9, glass);
-            }
-        }
-        i.setItem(lin*18, MineIt.anvil);
-        i.setItem(((lin*2 + 1)*9)-3, MineIt.time(mine));
-        i.setItem(((lin*2 + 1)*9)-2, MineIt.status(mine));
-        i.setItem(((lin*2 + 1)*9)-1, MineIt.redstone);
-        player.openInventory(i);
-    }
-
-    public static ItemStack status(Mine mine) {
-        ItemStack item = new ItemStack(Material.FURNACE);
-        ItemMeta m = item.getItemMeta();
-        String s = ChatColor.GREEN + "Start";
-        if(mine.getStart()) s = ChatColor.RED + "Stop";
-        m.setDisplayName(s+" mine");
-        item.setItemMeta(m);
-
-        return item;
     }
 
     @SuppressWarnings("ConstantConditions")
