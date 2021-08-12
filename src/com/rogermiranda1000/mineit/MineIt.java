@@ -74,7 +74,6 @@ public class MineIt extends JavaPlugin {
         //Config
         HashMap<String,Object> c = new HashMap<>();
         c.put("mine_creator_range", 5);
-        c.put("seconds_per_block", 80);
         c.put("limit_blocks_per_stage", false);
         config = getConfig();
         //Create/actualize config file
@@ -102,8 +101,6 @@ public class MineIt extends JavaPlugin {
             e.printStackTrace();
         }
         rango = config.getInt("mine_creator_range");
-        delay = config.getInt("seconds_per_block");
-        Mine.setMineDelay(this.delay);
         limit = config.getBoolean("limit_blocks_per_stage");
 
         //Minas
