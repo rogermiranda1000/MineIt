@@ -27,8 +27,6 @@ public class BasicMine {
         this.started = mine.isStarted();
         this.delay = mine.getDelay();
 
-        System.out.println(delay);
-
         this.stages = new ArrayList<>();
         for (Stage s : mine.getStages()) this.stages.add(new BasicStage(s));
 

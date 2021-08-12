@@ -27,6 +27,9 @@ permissions:
   mineit.stagelimit:
     description: Change the mine's stage limit
     default: op
+  mineit.time:
+    description: Change the mine's time
+    default: op
   mineit.mine.all:
     description: Mine in all the mines
     default: true

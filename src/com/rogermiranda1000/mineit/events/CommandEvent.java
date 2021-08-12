@@ -42,7 +42,8 @@ public class CommandEvent implements CommandExecutor {
             player.sendMessage(ChatColor.GOLD+"/mineit stop [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit mine [name]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit stagelimit [name] [stage number] [limit blocks number]");
-            player.sendMessage(ChatColor.GOLD+"/mineit reset [name]" + ChatColor.GREEN + ": it sets all the mine's block to " + Mine.STATE_ZERO.toString().toLowerCase() + ChatColor.RED + " [if the mine it's too big it may crash your server]");
+            player.sendMessage(ChatColor.GOLD+"/mineit edit time [name] [time]" + ChatColor.GREEN + ": it changes the time that must pass to change to the next stage");
+            player.sendMessage(ChatColor.GOLD+"/mineit reset [name]" + ChatColor.GREEN + ": it sets all the mine's block to " + Mine.STATE_ZERO.toString().toLowerCase());
             return true;
         }
         if(args[0].equalsIgnoreCase("create")) {
@@ -166,54 +167,87 @@ public class CommandEvent implements CommandExecutor {
                 }
 
                 MineIt.instance.edintingMine(player, m);
-                return true;
             }
-
-            if(!player.hasPermission("mineit.stagelimit")) {
-                player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
-                return true;
-            }
-            if(args.length!=5 || !args[1].equalsIgnoreCase("stagelimit")) {
-                player.sendMessage(MineIt.errorPrefix +"Command error, use /mineit edit stagelimit [name] [stage number] [limit blocks number].");
-                player.sendMessage(MineIt.clearPrefix+"Ex. /mineit edit stagelimit Gold 2 30");
-                return true;
-            }
-
-            Mine m = Mine.getMine(args[2]);
-            if (m == null) {
-                player.sendMessage(MineIt.errorPrefix +"Mine '"+args[2]+"' not found.");
-                return true;
-            }
-
-            int num = -1;
-            int lim = -1;
-            try {
-                num = Integer.valueOf(args[3])-1;
-                if(num<=0) {
-                    player.sendMessage(MineIt.errorPrefix +"The stage number can't be lower to 1.");
+            else if (args[1].equalsIgnoreCase("time")) {
+                if (args.length != 4) {
+                    player.sendMessage(MineIt.errorPrefix + "Command error, use /mineit edit time [name] [time].");
+                    player.sendMessage(MineIt.clearPrefix + "Ex. /mineit edit time Gold 5");
                     return true;
                 }
-            } catch (NumberFormatException e) {
-                player.sendMessage(MineIt.errorPrefix +"'"+args[3]+"' is not a number!");
-                return true;
-            }
-            try {
-                lim = Integer.valueOf(args[4]);
-                if(lim<0) {
-                    player.sendMessage(MineIt.errorPrefix +"The limit number can't be lower to 0.");
+                if (!player.hasPermission("mineit.time")) {
+                    player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                     return true;
                 }
-            } catch (NumberFormatException e) {
-                player.sendMessage(MineIt.errorPrefix +"'"+args[4]+"' is not a number!");
-                return true;
-            }
-            if(m.getStages().size()<=num) {
-                player.sendMessage(MineIt.errorPrefix +"There's only " + m.getStages().size() + " stages!");
-                return true;
-            }
 
-            m.getStages().get(num).setStageLimit(lim);
-            player.sendMessage(MineIt.clearPrefix+"Set "+args[2]+"'s stage "+args[3]+" limit to "+args[4]+".");
+                Mine m = Mine.getMine(args[2]);
+                if (m == null) {
+                    player.sendMessage(MineIt.errorPrefix + "Mine '" + args[2] + "' not found.");
+                    return true;
+                }
+
+                int time;
+                try {
+                    time = Integer.parseInt(args[3]);
+                    if (time < 1) {
+                        player.sendMessage(MineIt.errorPrefix + "The time can't be lower to 1.");
+                        return true;
+                    }
+                } catch (NumberFormatException e) {
+                    player.sendMessage(MineIt.errorPrefix + "'" + args[3] + "' is not a number!");
+                    return true;
+                }
+
+                m.setDelay(time);
+                player.sendMessage(MineIt.clearPrefix + "Set " + args[2] + "'s time to " + args[3] + ".");
+                return true;
+            }
+            else if (args[1].equalsIgnoreCase("stagelimit")) {
+                if (args.length != 5) {
+                    player.sendMessage(MineIt.errorPrefix + "Command error, use /mineit edit stagelimit [name] [stage number] [limit blocks number].");
+                    player.sendMessage(MineIt.clearPrefix + "Ex. /mineit edit stagelimit Gold 2 30");
+                    return true;
+                }
+                if (!player.hasPermission("mineit.stagelimit")) {
+                    player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
+                    return true;
+                }
+
+                Mine m = Mine.getMine(args[2]);
+                if (m == null) {
+                    player.sendMessage(MineIt.errorPrefix + "Mine '" + args[2] + "' not found.");
+                    return true;
+                }
+
+                int num;
+                int lim;
+                try {
+                    num = Integer.parseInt(args[3]) - 1;
+                    if (num <= 0) {
+                        player.sendMessage(MineIt.errorPrefix + "The stage number can't be lower to 1.");
+                        return true;
+                    }
+                } catch (NumberFormatException e) {
+                    player.sendMessage(MineIt.errorPrefix + "'" + args[3] + "' is not a number!");
+                    return true;
+                }
+                try {
+                    lim = Integer.parseInt(args[4]);
+                    if (lim < 0) {
+                        player.sendMessage(MineIt.errorPrefix + "The limit number can't be lower to 0.");
+                        return true;
+                    }
+                } catch (NumberFormatException e) {
+                    player.sendMessage(MineIt.errorPrefix + "'" + args[4] + "' is not a number!");
+                    return true;
+                }
+                if (m.getStages().size() <= num) {
+                    player.sendMessage(MineIt.errorPrefix + "There's only " + m.getStages().size() + " stages!");
+                    return true;
+                }
+
+                m.getStages().get(num).setStageLimit(lim);
+                player.sendMessage(MineIt.clearPrefix + "Set " + args[2] + "'s stage " + args[3] + " limit to " + args[4] + ".");
+            }
             return true;
         }
         if(args[0].equalsIgnoreCase("reset")) {

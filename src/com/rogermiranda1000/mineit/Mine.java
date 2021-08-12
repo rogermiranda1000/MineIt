@@ -48,10 +48,11 @@ public class Mine implements Runnable {
         this.currentTime = 0;
 
         this.mineName = name;
-        this.setStart(started);
         this.blocks = blocks;
         this.stages = stages;
         this.setDelay(delay);
+
+        this.setStart(started);
     }
 
     public Mine(String name, ArrayList<Location> blocks) {
