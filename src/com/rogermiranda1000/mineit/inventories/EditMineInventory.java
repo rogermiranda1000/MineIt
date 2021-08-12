@@ -18,6 +18,8 @@ import java.util.List;
 
 public class EditMineInventory extends BasicInventory {
     public EditMineInventory() {
+        super();
+
         /*
         anvil = new ItemStack(Material.ANVIL);
         m = anvil.getItemMeta();

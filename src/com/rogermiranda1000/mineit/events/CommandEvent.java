@@ -30,7 +30,7 @@ public class CommandEvent implements CommandExecutor {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return true;
             }
-            player.openInventory(MineIt.instance.mainInventory.getInventory());
+            MineIt.instance.mainInventory.openInventory(player);
             return true;
         }
 

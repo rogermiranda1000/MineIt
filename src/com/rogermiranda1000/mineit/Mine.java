@@ -16,6 +16,7 @@ import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 public class Mine implements Runnable {
     public static final Material AIR_STAGE = Material.GLASS;
     public static final Material STATE_ZERO = Material.BEDROCK;
+    public static final ArrayList<MinesChangedEvent> events = new ArrayList<>();
 
     /**
      * Default seconds to chenge the stage
@@ -232,8 +233,17 @@ public class Mine implements Runnable {
         return Mine.mines;
     }
 
+    public static void addMinesListener(MinesChangedEvent e) {
+        Mine.events.add(e);
+    }
+
+    public static void notifyMinesListeners() {
+        for (MinesChangedEvent e : Mine.events) e.onMineChanged();
+    }
+
     synchronized public static void removeMine(Mine m) {
         Mine.mines.remove(m);
+        Mine.notifyMinesListeners();
 
         for (Location loc : m.blocks) Mine.tree = Mine.tree.delete(m, Mine.getPoint(loc));
     }
@@ -246,6 +256,7 @@ public class Mine implements Runnable {
         m.updateStages();
 
         Mine.mines.add(m);
+        Mine.notifyMinesListeners();
 
         for (Location loc : m.blocks) Mine.tree = Mine.tree.add(m, Mine.getPoint(loc));
     }

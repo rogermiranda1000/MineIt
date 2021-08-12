@@ -22,6 +22,8 @@ public class MainInventory extends BasicInventory {
     // create the inventory
     @SuppressWarnings("ConstantConditions")
     public MainInventory() {
+        super();
+
         this.inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
 
         this.mineCreatorTool = MineIt.item.clone();
@@ -88,8 +90,7 @@ public class MainInventory extends BasicInventory {
         }
         else {
             // clicked.equals(this.editMine)
-            player.closeInventory();
-            player.openInventory(MineIt.instance.selectMineInventory.getInventory());
+            MineIt.instance.selectMineInventory.openInventory(player);
         }
     }
 }

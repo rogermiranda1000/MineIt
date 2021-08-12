@@ -140,11 +140,17 @@ public class MineIt extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // close inventories (if it's a reboot the players may be able to keep the items)
+        this.mainInventory.closeInventories();
+        this.selectMineInventory.closeInventories();
+        //this.editMineInventory.closeInventories();
+
         // undo selected blocks
         for(ArrayList<Location> locations : selectedBlocks.values()) {
             for(Location l: locations) l.getBlock().setType(Material.STONE);
         }
 
+        // save mines
         for (Mine mina : Mine.getMines()) {
             try {
                 File file = new File(getDataFolder(), mina.mineName +".yml");
