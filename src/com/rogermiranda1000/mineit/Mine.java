@@ -18,9 +18,9 @@ public class Mine implements Runnable {
     public static final Material STATE_ZERO = Material.BEDROCK;
 
     /**
-     * Ticks per block (seconds per block * 20)
+     * Default seconds to chenge the stage
      */
-    private static int MINE_DELAY;
+    private static final int DEFAULT_DELAY = 30;
 
     /**
      * Used for optimize search
@@ -32,6 +32,11 @@ public class Mine implements Runnable {
      */
     private static final ArrayList<Mine> mines = new ArrayList<>();
 
+    /**
+     * Ticks per block (seconds per block * 20)
+     */
+    private int delay;
+
     private final ArrayList<Location> blocks;
     public int currentTime;
     private final ArrayList<Stage> stages;
@@ -39,17 +44,19 @@ public class Mine implements Runnable {
     private boolean started;
     private int scheduleID;
 
-    public Mine(String name, boolean started, ArrayList<Location> blocks, ArrayList<Stage> stages) {
+    public Mine(String name, boolean started, ArrayList<Location> blocks, ArrayList<Stage> stages, int delay) {
         this.currentTime = 0;
 
         this.mineName = name;
-        this.setStart(started);
         this.blocks = blocks;
         this.stages = stages;
+        this.setDelay(delay);
+
+        this.setStart(started);
     }
 
     public Mine(String name, ArrayList<Location> blocks) {
-        this(name, false, blocks, Mine.getDefaultStages());
+        this(name, false, blocks, Mine.getDefaultStages(), DEFAULT_DELAY);
     }
 
     public void setStart(boolean value) {
@@ -168,8 +175,22 @@ public class Mine implements Runnable {
         }
     }
 
-    public static void setMineDelay(int delay) {
-        Mine.MINE_DELAY = delay * 20;
+    /**
+     * Override the current seconds per block
+     * /!\ If 'delay' is 0 it will be replaced with DEFAULT_DELAY
+     * @param delay Seconds to change the stage
+     */
+    public void setDelay(int delay) {
+        if (delay < 1) delay = DEFAULT_DELAY;
+        this.delay = delay * 20;
+    }
+
+    /**
+     * Get the mine delay
+     * @return Seconds to change the stage
+     */
+    public int getDelay() {
+        return this.delay / 20;
     }
 
     @Nullable
@@ -232,7 +253,7 @@ public class Mine implements Runnable {
     @Override
     public void run() {
         this.currentTime++;
-        int changedBlocks = (this.currentTime * this.getTotalBlocks()) / Mine.MINE_DELAY;
+        int changedBlocks = (this.currentTime * this.getTotalBlocks()) / this.delay;
         if (changedBlocks == 0) return;
 
         this.currentTime = 0;
