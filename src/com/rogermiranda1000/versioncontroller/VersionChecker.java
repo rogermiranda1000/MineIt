@@ -27,26 +27,7 @@ public class VersionChecker {
      * @throws NumberFormatException If the strings are not integers with dots
      */
     public static boolean isLower(String current, String comparing) throws NumberFormatException {
-        String []currentParams = current.split("\\."), comparingParams = comparing.split("\\.");
-        int []currentParamsInteger = new int[3], comparingParamsInteger = new int[3];
-        for (int x = 0; x < 3; x++) {
-            if (x < currentParams.length) currentParamsInteger[x] = Integer.parseInt(currentParams[x]);
-            else currentParamsInteger[x] = 0;
-        }
-        for (int x = 0; x < 3; x++) {
-            if (x < comparingParams.length) comparingParamsInteger[x] = Integer.parseInt(comparingParams[x]);
-            else comparingParamsInteger[x] = 0;
-        }
-
-        if (currentParamsInteger[0] < comparingParamsInteger[0]) return true;
-        else if (currentParamsInteger[0] > comparingParamsInteger[0]) return false;
-        else {
-            if (currentParamsInteger[1] < comparingParamsInteger[1]) return true;
-            else if (currentParamsInteger[1] > comparingParamsInteger[1]) return false;
-            else {
-                if (currentParamsInteger[2] == comparingParamsInteger[2]) return false;
-                else return (currentParamsInteger[2] < comparingParamsInteger[2]);
-            }
-        }
+        Version currentVersion = new Version(current), comparingVersion = new Version(comparing);
+        return (currentVersion.compareTo(comparingVersion) < 0);
     }
 }
