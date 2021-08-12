@@ -86,7 +86,7 @@ public class ClickEvent implements Listener {
             else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.mineName +"'...");
             mine.setStart(!mine.getStart());
             //inventory.setItem(16, MineIt.instance.watch(mine));
-            inventory.setItem(((((mine.getStages().size()/9) + 1)*2 + 1)*9)-2, MineIt.instance.watch(mine));
+            inventory.setItem(((((mine.getStages().size()/9) + 1)*2 + 1)*9)-2, MineIt.status(mine));
             return;
         }
         else if(e.getView().getTitle()/*inventory.getName()*/.equals("§cEdit mine") && clicked.getType()==Material.STONE && !isEditing(inventory)) {

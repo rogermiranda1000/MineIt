@@ -8,6 +8,7 @@ import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -244,17 +245,34 @@ public class MineIt extends JavaPlugin {
             }
         }
         i.setItem(lin*18, MineIt.anvil);
-        i.setItem(((lin*2 + 1)*9)-2, watch(mine));
+        i.setItem(((lin*2 + 1)*9)-3, MineIt.time(mine));
+        i.setItem(((lin*2 + 1)*9)-2, MineIt.status(mine));
         i.setItem(((lin*2 + 1)*9)-1, MineIt.redstone);
         player.openInventory(i);
     }
 
-    public ItemStack watch(Mine mine) {
-        ItemStack clock = new ItemStack(Material.FURNACE);
-        ItemMeta m = clock.getItemMeta();
-        String s = org.bukkit.ChatColor.GREEN+"Start";
-        if(mine.getStart()) s = org.bukkit.ChatColor.RED+"Stop";
+    public static ItemStack status(Mine mine) {
+        ItemStack item = new ItemStack(Material.FURNACE);
+        ItemMeta m = item.getItemMeta();
+        String s = ChatColor.GREEN + "Start";
+        if(mine.getStart()) s = ChatColor.RED + "Stop";
         m.setDisplayName(s+" mine");
+        item.setItemMeta(m);
+
+        return item;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private static ItemStack time(Mine mine) {
+        Material mat;
+        if (VersionController.getVersion() > 12) mat = Material.getMaterial("CLOCK");
+        else mat = Material.getMaterial("WATCH"); // <= 1.12 clock's name is "watch"
+        ItemStack clock = new ItemStack(mat);
+        ItemMeta m = clock.getItemMeta();
+        m.setDisplayName("Mine time");
+        List<String> lore = new ArrayList<>();
+        lore.add(mine.getDelay() + "s per stage");
+        m.setLore(lore);
         clock.setItemMeta(m);
 
         return clock;
