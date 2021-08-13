@@ -1,5 +1,6 @@
 package com.rogermiranda1000.mineit.inventories;
 
+import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
@@ -11,6 +12,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 
@@ -18,8 +20,19 @@ public abstract class BasicInventory implements Listener {
     protected Inventory inv;
     private final ArrayList<HumanEntity> playersWithOpenInventory;
 
+    /**
+     * It initializes the players with the current inventory opened list
+     */
     public BasicInventory() {
         this.playersWithOpenInventory = new ArrayList<>();
+    }
+
+    /**
+     * It registers the inventories event (click & close)
+     * @param p The instanciated plugin
+     */
+    public void registerEvent(Plugin p) {
+        p.getServer().getPluginManager().registerEvents(this, p);
     }
 
     public void openInventory(HumanEntity p) {

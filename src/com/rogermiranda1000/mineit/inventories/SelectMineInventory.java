@@ -36,9 +36,9 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    @SuppressWarnings("ConstantConditions")
     public void onClick(InventoryClickEvent e) {
         if (!e.getInventory().equals(this.inv)) return;
+        if (!this.inv.equals(e.getClickedInventory())) return;
 
         e.setCancelled(true);
 
@@ -51,7 +51,6 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
         }
 
         ItemStack clicked = e.getCurrentItem();
-        if (!this.inv.equals(e.getClickedInventory())) return;
         if(clicked==null) return;
 
         if(clicked.equals(this.back)) MineIt.instance.mainInventory.openInventory(player);

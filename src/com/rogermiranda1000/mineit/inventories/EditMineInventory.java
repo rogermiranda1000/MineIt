@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EditMineInventory extends BasicInventory {
-    public EditMineInventory() {
+    public EditMineInventory(Mine m) {
         super();
 
         /*

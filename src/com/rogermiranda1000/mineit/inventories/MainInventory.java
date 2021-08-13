@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,7 @@ public class MainInventory extends BasicInventory {
     @EventHandler(priority = EventPriority.HIGH)
     public void onClick(InventoryClickEvent e) {
         if (!e.getInventory().equals(this.inv)) return;
+        if (!this.inv.equals(e.getClickedInventory())) return;
 
         e.setCancelled(true);
 
@@ -68,7 +70,6 @@ public class MainInventory extends BasicInventory {
         }
 
         ItemStack clicked = e.getCurrentItem();
-        if (!this.inv.equals(e.getClickedInventory())) return;
         if(clicked==null) return;
         boolean toolClicked = (clicked.equals(this.mineCreatorTool) || clicked.equals(this.editMine) || clicked.equals(this.createMine));
         if (!toolClicked) return;

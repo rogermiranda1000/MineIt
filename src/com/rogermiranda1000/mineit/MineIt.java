@@ -43,7 +43,7 @@ public class MineIt extends JavaPlugin {
     //Inv
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
-    public BasicInventory editMineInventory;
+    private HashMap<Mine,BasicInventory> editMineInventory;
 
     public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
@@ -59,6 +59,7 @@ public class MineIt extends JavaPlugin {
     }
 
     @Override
+    @SuppressWarnings("ConstantConditions")
     public void onEnable() {
         instance = this;
 
@@ -128,13 +129,12 @@ public class MineIt extends JavaPlugin {
 
         this.mainInventory = new MainInventory();
         this.selectMineInventory = new SelectMineInventory();
-        //this.editMineInventory = new EditMineInventory();
 
         getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
-        getServer().getPluginManager().registerEvents(this.mainInventory, this);
-        getServer().getPluginManager().registerEvents(this.selectMineInventory, this);
-        //getServer().getPluginManager().registerEvents(this.editMineInventory, this);
+        this.mainInventory.registerEvent(this);
+        this.selectMineInventory.registerEvent(this);
+
         getCommand("mineit").setExecutor(new CommandEvent());
     }
 
@@ -143,7 +143,7 @@ public class MineIt extends JavaPlugin {
         // close inventories (if it's a reboot the players may be able to keep the items)
         this.mainInventory.closeInventories();
         this.selectMineInventory.closeInventories();
-        //this.editMineInventory.closeInventories();
+        for (Map.Entry<Mine, BasicInventory> mine : this.editMineInventory.entrySet()) mine.getValue().closeInventories();
 
         // undo selected blocks
         for(ArrayList<Location> locations : selectedBlocks.values()) {
@@ -159,6 +159,15 @@ public class MineIt extends JavaPlugin {
                 e.printStackTrace();
             }
         }
+    }
+
+    public BasicInventory getEditMineInventory(Mine m) {
+        BasicInventory inv = this.editMineInventory.get(m);
+        if (inv == null) {
+            inv = new EditMineInventory(m);
+            inv.registerEvent(this);
+        }
+        return inv;
     }
 
     @SuppressWarnings("ConstantConditions")
