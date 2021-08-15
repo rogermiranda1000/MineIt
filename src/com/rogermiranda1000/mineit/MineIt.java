@@ -101,6 +101,14 @@ public class MineIt extends JavaPlugin {
         rango = config.getInt("mine_creator_range");
         limit = config.getBoolean("limit_blocks_per_stage");
 
+        // Create tool
+        // @pre before inventory creation
+        item = new ItemStack(Material.STICK);
+        ItemMeta m = item.getItemMeta();
+        m.setDisplayName(ChatColor.GOLD+""+ChatColor.BOLD+"Mine creator");
+        item.setItemMeta(m);
+        item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
+
         // @pre before mine import
         this.mainInventory = new MainInventory();
         this.selectMineInventory = new SelectMineInventory();
@@ -120,13 +128,6 @@ public class MineIt extends JavaPlugin {
                 this.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
             }
         }
-
-        //Crear herramienta
-        item = new ItemStack(Material.STICK);
-        ItemMeta m = item.getItemMeta();
-        m.setDisplayName(ChatColor.GOLD+""+ChatColor.BOLD+"Mine creator");
-        item.setItemMeta(m);
-        item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
         getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
