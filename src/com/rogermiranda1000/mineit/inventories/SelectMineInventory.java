@@ -7,6 +7,7 @@ import com.rogermiranda1000.mineit.Stage;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,24 +16,31 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class SelectMineInventory extends BasicInventory implements MinesChangedEvent {
     private static final String INVENTORY_NAME = "§cEdit mine";
+    private final HashMap<Mine,BasicInventory> editMineInventory;
     private final ItemStack back;
 
     @SuppressWarnings("ConstantConditions")
     public SelectMineInventory() {
         super();
 
+        this.editMineInventory = new HashMap<>();
+
         this.back = new ItemStack(Material.ANVIL);
         ItemMeta m = this.back.getItemMeta();
         m.setDisplayName(ChatColor.GREEN + "Go back");
         this.back.setItemMeta(m);
 
-        this.onMineChanged(); // create the inventory for the first time
+        this.onMinesChanged(); // create the inventory for the first time
 
         Mine.addMinesListener(this);
+    }
+
+    public Collection<BasicInventory> getMinesInventories() {
+        return this.editMineInventory.values();
     }
 
     @EventHandler(priority = EventPriority.HIGH)
@@ -51,14 +59,26 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
         }
 
         ItemStack clicked = e.getCurrentItem();
-        if(clicked==null) return;
+        if(clicked == null || clicked.getItemMeta() == null) return;
 
         if(clicked.equals(this.back)) MineIt.instance.mainInventory.openInventory(player);
+        else {
+            BasicInventory m = this.searchMine(clicked.getItemMeta().getDisplayName());
+            if (m != null) m.openInventory(player);
+        }
+    }
+
+    @Nullable
+    private BasicInventory searchMine(String title) {
+        for (Map.Entry<Mine,BasicInventory> m : this.editMineInventory.entrySet()) {
+            if (m.getKey().mineName.equalsIgnoreCase(title)) return m.getValue();
+        }
+        return null; // not found
     }
 
     @Override
     @SuppressWarnings("ConstantConditions")
-    public void onMineChanged() {
+    public void onMinesChanged() {
         Inventory newInventory;
 
         int l = (int)Math.ceil(Mine.getMinesLength()/9.0);
@@ -102,5 +122,17 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
 
         if (this.inv != null) this.newInventory(newInventory); // only if it's not the first time
         this.inv = newInventory;
+    }
+
+    @Override
+    public void onMineRemoved(Mine m) {
+        this.editMineInventory.remove(m);
+        this.onMinesChanged();
+    }
+
+    @Override
+    public void onMineAdded(Mine m) {
+        this.editMineInventory.put(m, new EditMineInventory(m));
+        this.onMinesChanged();
     }
 }

@@ -16,7 +16,7 @@ import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 public class Mine implements Runnable {
     public static final Material AIR_STAGE = Material.GLASS;
     public static final Material STATE_ZERO = Material.BEDROCK;
-    public static final ArrayList<MinesChangedEvent> events = new ArrayList<>();
+    public static final ArrayList<MinesChangedEvent> globalEvents = new ArrayList<>();
 
     /**
      * Default seconds to chenge the stage
@@ -37,6 +37,7 @@ public class Mine implements Runnable {
      * Ticks per block (seconds per block * 20)
      */
     private int delay;
+    private final ArrayList<MineChangedEvent> events;
 
     private final ArrayList<Location> blocks;
     public int currentTime;
@@ -47,6 +48,7 @@ public class Mine implements Runnable {
 
     public Mine(String name, boolean started, ArrayList<Location> blocks, ArrayList<Stage> stages, int delay) {
         this.currentTime = 0;
+        this.events = new ArrayList<>();
 
         this.mineName = name;
         this.blocks = blocks;
@@ -66,6 +68,8 @@ public class Mine implements Runnable {
         this.started = value;
         if (value) this.scheduleID = Bukkit.getScheduler().scheduleSyncRepeatingTask(MineIt.instance, this, 1, 1);
         else Bukkit.getServer().getScheduler().cancelTask(this.scheduleID);
+
+        this.notifyMineListeners();
     }
 
     public boolean getStart() {
@@ -123,6 +127,9 @@ public class Mine implements Runnable {
         this.stages.remove(index);
         this.updateStages();
         // TODO quitar bloques del estado eliminado?
+
+        Mine.notifyMinesListeners();
+        this.notifyMineListeners();
     }
 
     public void addStage(Stage stage) {
@@ -132,6 +139,9 @@ public class Mine implements Runnable {
 
         this.stages.add(stage);
         this.updateStages();
+
+        Mine.notifyMinesListeners();
+        this.notifyMineListeners();
     }
 
     /**
@@ -184,6 +194,8 @@ public class Mine implements Runnable {
     public void setDelay(int delay) {
         if (delay < 1) delay = DEFAULT_DELAY;
         this.delay = delay * 20;
+
+        this.notifyMineListeners();
     }
 
     /**
@@ -234,16 +246,29 @@ public class Mine implements Runnable {
     }
 
     public static void addMinesListener(MinesChangedEvent e) {
-        Mine.events.add(e);
+        Mine.globalEvents.add(e);
     }
 
-    public static void notifyMinesListeners() {
-        for (MinesChangedEvent e : Mine.events) e.onMineChanged();
+    private static void notifyMinesListeners() {
+        for (MinesChangedEvent e : Mine.globalEvents) e.onMinesChanged();
+    }
+
+    public void addMineListener(MineChangedEvent e) {
+        this.events.add(e);
+    }
+
+    public void removeMineListener(MineChangedEvent e) {
+        this.events.remove(e);
+    }
+
+    private void notifyMineListeners() {
+        for (MineChangedEvent e : this.events) e.onMineChanged();
     }
 
     synchronized public static void removeMine(Mine m) {
         Mine.mines.remove(m);
-        Mine.notifyMinesListeners();
+        for (MinesChangedEvent e : Mine.globalEvents) e.onMineRemoved(m);
+        for (MineChangedEvent e : m.events) e.onMineRemoved();
 
         for (Location loc : m.blocks) Mine.tree = Mine.tree.delete(m, Mine.getPoint(loc));
     }
@@ -256,7 +281,7 @@ public class Mine implements Runnable {
         m.updateStages();
 
         Mine.mines.add(m);
-        Mine.notifyMinesListeners();
+        for (MinesChangedEvent e : Mine.globalEvents) e.onMineAdded(m);
 
         for (Location loc : m.blocks) Mine.tree = Mine.tree.add(m, Mine.getPoint(loc));
     }

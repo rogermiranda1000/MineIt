@@ -241,12 +241,12 @@ public class CommandEvent implements CommandExecutor {
                     player.sendMessage(MineIt.errorPrefix + "'" + args[4] + "' is not a number!");
                     return true;
                 }
-                if (m.getStages().size() <= num) {
-                    player.sendMessage(MineIt.errorPrefix + "There's only " + m.getStages().size() + " stages!");
+                if (m.getStageCount() <= num) {
+                    player.sendMessage(MineIt.errorPrefix + "There's only " + m.getStageCount() + " stages!");
                     return true;
                 }
 
-                m.getStages().get(num).setStageLimit(lim);
+                m.getStages().get(num).setStageLimit(lim); // TODO notify
                 player.sendMessage(MineIt.clearPrefix + "Set " + args[2] + "'s stage " + args[3] + " limit to " + args[4] + ".");
             }
             return true;

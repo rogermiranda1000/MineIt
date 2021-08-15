@@ -19,8 +19,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -43,7 +41,6 @@ public class MineIt extends JavaPlugin {
     //Inv
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
-    private HashMap<Mine,BasicInventory> editMineInventory;
 
     public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
@@ -104,6 +101,10 @@ public class MineIt extends JavaPlugin {
         rango = config.getInt("mine_creator_range");
         limit = config.getBoolean("limit_blocks_per_stage");
 
+        // @pre before mine import
+        this.mainInventory = new MainInventory();
+        this.selectMineInventory = new SelectMineInventory();
+
         //Minas
         for(File archivo: getDataFolder().listFiles()) {
             if(archivo.getName().equalsIgnoreCase("config.yml")) continue;
@@ -127,9 +128,6 @@ public class MineIt extends JavaPlugin {
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
-        this.mainInventory = new MainInventory();
-        this.selectMineInventory = new SelectMineInventory();
-
         getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
         this.mainInventory.registerEvent(this);
@@ -143,7 +141,7 @@ public class MineIt extends JavaPlugin {
         // close inventories (if it's a reboot the players may be able to keep the items)
         this.mainInventory.closeInventories();
         this.selectMineInventory.closeInventories();
-        for (Map.Entry<Mine, BasicInventory> mine : this.editMineInventory.entrySet()) mine.getValue().closeInventories();
+        for (BasicInventory mine : ((SelectMineInventory)this.selectMineInventory).getMinesInventories()) mine.closeInventories();
 
         // undo selected blocks
         for(ArrayList<Location> locations : selectedBlocks.values()) {
@@ -159,30 +157,5 @@ public class MineIt extends JavaPlugin {
                 e.printStackTrace();
             }
         }
-    }
-
-    public BasicInventory getEditMineInventory(Mine m) {
-        BasicInventory inv = this.editMineInventory.get(m);
-        if (inv == null) {
-            inv = new EditMineInventory(m);
-            inv.registerEvent(this);
-        }
-        return inv;
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    private static ItemStack time(Mine mine) {
-        Material mat;
-        if (VersionController.version.compareTo(Version.MC_1_12) > 0) mat = Material.getMaterial("CLOCK");
-        else mat = Material.getMaterial("WATCH"); // <= 1.12 clock's name is "watch"
-        ItemStack clock = new ItemStack(mat);
-        ItemMeta m = clock.getItemMeta();
-        m.setDisplayName("Mine time");
-        List<String> lore = new ArrayList<>();
-        lore.add(mine.getDelay() + "s per stage");
-        m.setLore(lore);
-        clock.setItemMeta(m);
-
-        return clock;
     }
 }
