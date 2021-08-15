@@ -246,7 +246,7 @@ public class CommandEvent implements CommandExecutor {
                     return true;
                 }
 
-                m.getStages().get(num).setStageLimit(lim); // TODO notify
+                m.setStageLimit(num, lim);
                 player.sendMessage(MineIt.clearPrefix + "Set " + args[2] + "'s stage " + args[3] + " limit to " + args[4] + ".");
             }
             return true;

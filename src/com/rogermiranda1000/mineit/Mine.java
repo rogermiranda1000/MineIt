@@ -104,6 +104,13 @@ public class Mine implements Runnable {
         return this.stages;
     }
 
+    public void setStageLimit(int index, int limit) {
+        this.stages.get(index).setStageLimit(limit);
+
+        Mine.notifyMinesListeners();
+        this.notifyMineListeners();
+    }
+
     public Stage getStage(int i) {
         return this.stages.get(i);
     }

@@ -58,7 +58,7 @@ public class MineIt extends JavaPlugin {
     @Override
     @SuppressWarnings("ConstantConditions")
     public void onEnable() {
-        instance = this;
+        MineIt.instance = this;
 
         Bukkit.getScheduler().runTaskAsynchronously(this,()->{
             try {
