@@ -56,19 +56,16 @@ public abstract class BasicInventory implements Listener {
         synchronized (this) {
             this.swappingInventories = true;
 
-            for (HumanEntity player : this.playersWithOpenInventory) {
-                player.closeInventory();
-
-                // run on next tick
-                Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(MineIt.instance, ()->player.openInventory(other), 1L);
-            }
+            for (HumanEntity player : this.playersWithOpenInventory) player.closeInventory();
         }
 
+        // run on next tick
         Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(MineIt.instance, ()->{
             synchronized (this) {
+                for (HumanEntity player : this.playersWithOpenInventory) player.openInventory(other);
                 this.swappingInventories = false;
             }
-        }, 2L);
+        }, 1L);
     }
 
     public synchronized void closeInventories() {
