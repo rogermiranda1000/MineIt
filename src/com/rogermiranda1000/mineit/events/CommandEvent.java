@@ -2,6 +2,8 @@ package com.rogermiranda1000.mineit.events;
 
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
+import com.rogermiranda1000.mineit.inventories.BasicInventory;
+import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -44,9 +46,8 @@ public class CommandEvent implements CommandExecutor {
             player.sendMessage(ChatColor.GOLD+"/mineit edit stagelimit [name] [stage number] [limit blocks number]");
             player.sendMessage(ChatColor.GOLD+"/mineit edit time [name] [time]" + ChatColor.GREEN + ": it changes the time that must pass to change to the next stage");
             player.sendMessage(ChatColor.GOLD+"/mineit reset [name]" + ChatColor.GREEN + ": it sets all the mine's block to " + Mine.STATE_ZERO.toString().toLowerCase());
-            return true;
         }
-        if(args[0].equalsIgnoreCase("create")) {
+        else if(args[0].equalsIgnoreCase("create")) {
             if(!player.hasPermission("mineit.create")) {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return true;
@@ -79,9 +80,8 @@ public class CommandEvent implements CommandExecutor {
 
             player.sendMessage(MineIt.clearPrefix+ChatColor.GREEN+"Mine created successfully.");
             player.sendMessage(MineIt.clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit start " + args[1]);
-            return true;
         }
-        if(args[0].equalsIgnoreCase("remove")) {
+        else if(args[0].equalsIgnoreCase("remove")) {
             if(!player.hasPermission("mineit.remove")) {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return true;
@@ -103,9 +103,8 @@ public class CommandEvent implements CommandExecutor {
             }
             catch (Exception e) { e.printStackTrace(); }
             player.sendMessage(MineIt.clearPrefix+"Mine '"+args[1]+"' removed.");
-            return true;
         }
-        if (args[0].equalsIgnoreCase("start")) {
+        else if (args[0].equalsIgnoreCase("start")) {
             if(!player.hasPermission("mineit.start")) {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return true;
@@ -122,9 +121,8 @@ public class CommandEvent implements CommandExecutor {
 
             m.setStart(true);
             player.sendMessage(MineIt.clearPrefix+"Mine "+args[1]+" started.");
-            return true;
         }
-        if (args[0].equalsIgnoreCase("stop")) {
+        else if (args[0].equalsIgnoreCase("stop")) {
             if(!player.hasPermission("mineit.stop")) {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return true;
@@ -141,9 +139,8 @@ public class CommandEvent implements CommandExecutor {
 
             m.setStart(false);
             player.sendMessage(MineIt.clearPrefix+"Mine "+args[1]+" stopped.");
-            return true;
         }
-        if(args[0].equalsIgnoreCase("edit")) {
+        else if(args[0].equalsIgnoreCase("edit")) {
             if (args.length == 1) {
                 player.sendMessage(MineIt.errorPrefix +"Invalid syntax, use /mineit ?");
                 return true;
@@ -160,14 +157,12 @@ public class CommandEvent implements CommandExecutor {
                     return true;
                 }
 
-                Mine m = Mine.getMine(args[2]);
-                if (m == null) {
+                BasicInventory mineInv = ((SelectMineInventory)MineIt.instance.selectMineInventory).searchMine(args[2]);
+                if (mineInv == null) {
                     player.sendMessage(MineIt.errorPrefix +"Mine '"+args[2]+"' not found.");
                     return true;
                 }
-
-                // TODO
-                //MineIt.instance.edintingMine(player, m);
+                mineInv.openInventory(player);
             }
             else if (args[1].equalsIgnoreCase("time")) {
                 if (args.length != 4) {
@@ -200,7 +195,6 @@ public class CommandEvent implements CommandExecutor {
 
                 m.setDelay(time);
                 player.sendMessage(MineIt.clearPrefix + "Set " + args[2] + "'s time to " + args[3] + ".");
-                return true;
             }
             else if (args[1].equalsIgnoreCase("stagelimit")) {
                 if (args.length != 5) {
@@ -249,9 +243,8 @@ public class CommandEvent implements CommandExecutor {
                 m.setStageLimit(num, lim);
                 player.sendMessage(MineIt.clearPrefix + "Set " + args[2] + "'s stage " + args[3] + " limit to " + args[4] + ".");
             }
-            return true;
         }
-        if(args[0].equalsIgnoreCase("reset")) {
+        else if(args[0].equalsIgnoreCase("reset")) {
             if(args.length!=2) {
                 player.sendMessage(MineIt.errorPrefix +"Use /mineit reset [name]");
                 return true;
@@ -268,10 +261,8 @@ public class CommandEvent implements CommandExecutor {
             }
 
             m.resetBlocksMine();
-            return true;
         }
-
-        player.sendMessage(MineIt.errorPrefix +"Use "+ChatColor.GOLD+"/mineit ?"+ChatColor.RED+".");
+        else player.sendMessage(MineIt.errorPrefix +"Use "+ChatColor.GOLD+"/mineit ?"+ChatColor.RED+".");
         return true;
     }
 }

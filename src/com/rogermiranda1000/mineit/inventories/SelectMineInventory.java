@@ -69,7 +69,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     }
 
     @Nullable
-    private BasicInventory searchMine(String title) {
+    public BasicInventory searchMine(String title) {
         for (Map.Entry<Mine,BasicInventory> m : this.editMineInventory.entrySet()) {
             if (m.getKey().mineName.equalsIgnoreCase(title)) return m.getValue();
         }
