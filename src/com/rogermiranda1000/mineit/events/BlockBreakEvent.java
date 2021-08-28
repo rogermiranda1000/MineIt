@@ -15,7 +15,6 @@ public class BlockBreakEvent implements Listener {
     public void onBlockBreak(org.bukkit.event.block.BlockBreakEvent e) {
         if(e.isCancelled()) return;
 
-        // TODO optimizar
         Mine m = Mine.getMine(e.getBlock().getLocation());
         if (m == null) return;
 
