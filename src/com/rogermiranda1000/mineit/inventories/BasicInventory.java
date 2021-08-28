@@ -68,8 +68,12 @@ public abstract class BasicInventory implements Listener {
         }, 1L);
     }
 
-    public synchronized void closeInventories() {
-        for (HumanEntity player : this.playersWithOpenInventory) player.closeInventory();
+    public void closeInventories() {
+        ArrayList<HumanEntity> copy;
+        synchronized (this) {
+            copy = new ArrayList<>(this.playersWithOpenInventory);
+        }
+        for (HumanEntity player : copy) player.closeInventory();
     }
 
     @EventHandler

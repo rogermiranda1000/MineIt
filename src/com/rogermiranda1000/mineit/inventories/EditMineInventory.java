@@ -89,7 +89,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 FileManager.removeMine(mine);
             } catch (Exception ignored) {}
             player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' removed.");
-            player.closeInventory();
+            // onMineRemoved event closes the inventories
         }
         else if(clicked.getType()==Material.FURNACE) {
             Mine mine = Mine.getMine(e.getView().getTitle().substring(14));
@@ -279,7 +279,6 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
 
     @Override
     public void onMineRemoved() {
-        this.listening.removeMineListener(this);
         this.closeInventories();
     }
 
