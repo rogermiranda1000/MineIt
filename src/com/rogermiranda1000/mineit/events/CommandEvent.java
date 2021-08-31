@@ -6,6 +6,11 @@ import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -54,7 +59,14 @@ public class CommandEvent implements CommandExecutor {
             MineIt.instance.selectedBlocks.remove(player.getName());
 
             player.sendMessage(MineIt.clearPrefix+ChatColor.GREEN+"Mine created successfully.");
-            player.sendMessage(MineIt.clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with " + ChatColor.GREEN + "/mineit edit mine " + args[1] + ChatColor.RED + " and then enable it with " + ChatColor.GREEN + "/mineit start " + args[1]);
+
+            TextComponent edit = new TextComponent(ChatColor.GREEN + "/mineit edit mine " + args[1]);
+            edit.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.AQUA + "Click to run the command")));
+            edit.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mineit edit mine " + args[1]));
+            TextComponent enable = new TextComponent(ChatColor.GREEN + "/mineit start " + args[1]);
+            enable.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.AQUA + "Click to run the command")));
+            enable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mineit start " + args[1]));
+            player.spigot().sendMessage(new TextComponent(MineIt.clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with "), edit, new TextComponent(ChatColor.RED + " and then enable it with "), enable);
         }),
         new CustomCommand("mineit remove \\S+", "mineit.remove", true, ChatColor.GOLD+"/mineit remove [name]", (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[1]);
