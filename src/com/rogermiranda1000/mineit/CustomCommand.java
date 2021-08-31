@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit;
 
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -23,11 +24,17 @@ public class CustomCommand {
         INVALID_LENGTH
     }
 
-    private final Pattern command;
+    private final Pattern commandPattern;
+    private Pattern[] partialPattern;
     @Nullable private final String permission;
-    @NotNull private final String description;
+    @NotNull private final String usage;
+    private final String[] partialUsage;
+    @Nullable private final String description;
     public final MatchCommandNotifier notifier;
     private final byte argLength;
+    /**
+     * It returns if the command can be used by the console (true), or not (false)
+     */
     private final boolean consoleUsage;
 
 
@@ -39,10 +46,12 @@ public class CustomCommand {
      * @param consoleUsage Can the command be used by the console?
      * @param description Command show + description. If null it takes the command itself
      */
-    public CustomCommand(String command, int argLength, @Nullable String permission, boolean consoleUsage, @Nullable String description, MatchCommandNotifier notifier) throws PatternSyntaxException {
-        this.command = Pattern.compile("^" + command + "$");
+    public CustomCommand(String command, int argLength, @Nullable String permission, boolean consoleUsage, @Nullable String usage, @Nullable String description, MatchCommandNotifier notifier) throws PatternSyntaxException {
+        this.commandPattern = Pattern.compile(command); // .matches() adds '^', '$'
         this.permission = permission;
-        this.description = (description == null) ? command : description;
+        this.usage = (usage == null) ? command : usage;
+        this.partialUsage = this.usage.substring(1).split(" ");
+        this.description = description;
         this.notifier = notifier;
         this.consoleUsage = consoleUsage;
 
@@ -56,8 +65,11 @@ public class CustomCommand {
      * @param consoleUsage Can the command be used by the console?
      * @param description Command show + description. If null it takes the command itself
      */
-    public CustomCommand(String command, @Nullable String permission, boolean consoleUsage, @Nullable String description, MatchCommandNotifier notifier) throws PatternSyntaxException {
-        this(command, StringUtils.countMatches(command, " "), permission, consoleUsage, description, notifier);
+    public CustomCommand(String command, @Nullable String permission, boolean consoleUsage, @Nullable String usage, @Nullable String description, MatchCommandNotifier notifier) throws PatternSyntaxException {
+        this(command, StringUtils.countMatches(command, " "), permission, consoleUsage, usage, description, notifier);
+        String[] split = command.split(" ");
+        this.partialPattern = new Pattern[split.length];
+        for (int x = 0; x < this.partialPattern.length; x++) this.partialPattern[x] = Pattern.compile(split[x]);
     }
 
     private static String merge(@NotNull String cmd, @NotNull String[] args) {
@@ -73,7 +85,7 @@ public class CustomCommand {
     }
 
     public CustomCommandReturns search(@Nullable Player player, @NotNull String cmd, @NotNull String[] args) {
-        if (!this.command.matcher(CustomCommand.merge(cmd, args)).matches()) return CustomCommandReturns.NO_MATCH;
+        if (!this.commandPattern.matcher(CustomCommand.merge(cmd, args)).matches()) return CustomCommandReturns.NO_MATCH;
 
         if (args.length != this.argLength) return CustomCommandReturns.INVALID_LENGTH;
         if (player != null) {
@@ -88,20 +100,21 @@ public class CustomCommand {
         return CustomCommandReturns.MATCH;
     }
 
-    @Nullable
-    public String getPermission() {
-        return this.permission;
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
     /**
-     * It returns if the command can be used by the console
-     * @return Used by the console (true), or not (false)
+     * It returns the portion of this command that fits
+     * @param cmd 'mineit ...'
+     * @return null if no match, string to append to hints if found
      */
-    public boolean getConsoleUsage() {
-        return this.consoleUsage;
+    @Nullable
+    public String candidate(String cmd) {
+        for (int x = 0; x < this.partialPattern.length; x++) {
+            //if (this.partialPattern[x]);
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return ChatColor.GOLD + this.usage + ((this.description != null) ? ChatColor.GREEN + ": " + this.description : "");
     }
 }
