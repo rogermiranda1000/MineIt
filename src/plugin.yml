@@ -15,11 +15,8 @@ permissions:
   mineit.remove:
     description: Remove mines
     default: op
-  mineit.start:
-    description: Starts a mine
-    default: op
-  mineit.stop:
-    description: Stops a mine
+  mineit.state:
+    description: Starts/stops a mine
     default: op
   mineit.open:
     description: Open the MineIt inventory
