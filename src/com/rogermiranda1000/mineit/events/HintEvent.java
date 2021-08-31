@@ -12,8 +12,9 @@ public class HintEvent implements Listener {
     public void onTabComplete(TabCompleteEvent e) {
         if (!e.getBuffer().matches("^/mineit(:mineit)? ")) return;
 
-        String rawCmd = e.getBuffer().replaceFirst("^/mineit(:mineit)? ", "mineit ");
+        String []rawCmd = e.getBuffer().replaceFirst("^/mineit(:mineit)? ", "mineit ").split(" ");
         List<String> hints = e.getCompletions();
+        hints.clear(); // mineit commands doesn't use players
         for (CustomCommand cmd : CommandEvent.commands) {
             String match = cmd.candidate(rawCmd);
             if (match != null) hints.add(match);

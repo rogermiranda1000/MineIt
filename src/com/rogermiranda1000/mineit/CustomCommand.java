@@ -25,7 +25,6 @@ public class CustomCommand {
     }
 
     private final Pattern commandPattern;
-    private Pattern[] partialPattern;
     @Nullable private final String permission;
     @NotNull private final String usage;
     private final String[] partialUsage;
@@ -67,9 +66,6 @@ public class CustomCommand {
      */
     public CustomCommand(String command, @Nullable String permission, boolean consoleUsage, @Nullable String usage, @Nullable String description, MatchCommandNotifier notifier) throws PatternSyntaxException {
         this(command, StringUtils.countMatches(command, " "), permission, consoleUsage, usage, description, notifier);
-        String[] split = command.split(" ");
-        this.partialPattern = new Pattern[split.length];
-        for (int x = 0; x < this.partialPattern.length; x++) this.partialPattern[x] = Pattern.compile(split[x]);
     }
 
     private static String merge(@NotNull String cmd, @NotNull String[] args) {
@@ -102,15 +98,35 @@ public class CustomCommand {
 
     /**
      * It returns the portion of this command that fits
-     * @param cmd 'mineit ...'
+     * @param splittedCmd 'mineit ...'.split(" ")
      * @return null if no match, string to append to hints if found
      */
     @Nullable
-    public String candidate(String cmd) {
-        for (int x = 0; x < this.partialPattern.length; x++) {
-            //if (this.partialPattern[x]);
+    public String candidate(String[] splittedCmd) {
+        if (splittedCmd.length > this.partialUsage.length) return null; // you have written more than the actual command
+
+        int x;
+        for (x = 0; x < splittedCmd.length-1; x++) {
+            if (!splittedCmd[x].matches(this.partialUsage[x])) return null;
         }
-        return null;
+
+        // last text is the one that may be recommended
+        if (this.partialUsage[x].matches("[a-zA-Z]+")) {
+            // text
+            if (splittedCmd[x].length() >= this.partialUsage[x].length()) return null; // you have written more than the actual command
+
+            int n = 0;
+            while (n < splittedCmd[x].length() && splittedCmd[x].charAt(n) != this.partialUsage[x].charAt(n)) n++;
+            if (n != splittedCmd[x].length()) return null; // different character before finishing
+
+            return this.partialUsage[x].substring(n); // get the reminder part
+        }
+        else {
+            // Regex
+            // TODO
+            //splittedCmd[x].matches(this.partialUsage[x])
+            return null;
+        }
     }
 
     @Override
