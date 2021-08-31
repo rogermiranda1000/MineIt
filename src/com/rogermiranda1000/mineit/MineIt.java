@@ -4,6 +4,7 @@ import com.google.gson.JsonSyntaxException;
 import com.rogermiranda1000.mineit.events.BlockBreakEvent;
 import com.rogermiranda1000.mineit.events.CommandEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
+import com.rogermiranda1000.mineit.events.HintEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
@@ -128,6 +129,7 @@ public class MineIt extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
+        getServer().getPluginManager().registerEvents(new HintEvent(), this);
         this.mainInventory.registerEvent(this);
         this.selectMineInventory.registerEvent(this);
 
