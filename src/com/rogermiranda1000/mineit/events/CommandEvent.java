@@ -7,7 +7,6 @@ import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
@@ -83,7 +82,7 @@ public class CommandEvent implements CommandExecutor {
             catch (Exception e) { e.printStackTrace(); }
             sender.sendMessage(MineIt.clearPrefix+"Mine '"+cmd[1]+"' removed.");
         }),
-        new CustomCommand("mineit (start)|(stop) \\S+", "mineit.state", true, ChatColor.GOLD+"/mineit start [name]\n/mineit stop [name]", (sender, cmd) -> {
+        new CustomCommand("mineit ((start)|(stop)) \\S+", "mineit.state", true, ChatColor.GOLD+"/mineit start [name]\n/mineit stop [name]", (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[1]);
             if(m == null) {
                 sender.sendMessage(MineIt.errorPrefix +"The mine '"+cmd[1]+"' doesn't exist.");
