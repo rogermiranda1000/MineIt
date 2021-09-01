@@ -25,14 +25,14 @@ public class CommandEvent implements CommandExecutor {
      * Regex command > Permision to run
      */
     public static final CustomCommand[] commands = {
-        new CustomCommand("mineit \\?", null, true, "/mineit ?", null, (sender, args) -> {
+        new CustomCommand("mineit \\?", null, true, "mineit ?", null, (sender, args) -> {
             sender.sendMessage(ChatColor.GOLD+"--Mine It--");
             for (CustomCommand command : CommandEvent.commands) sender.sendMessage(command.toString());
         }),
-        new CustomCommand("mineit", "mineit.open", false, "/mineit", null, (sender, cmd) -> {
+        new CustomCommand("mineit", "mineit.open", false, "mineit", null, (sender, cmd) -> {
             MineIt.instance.mainInventory.openInventory((Player)sender);
         }),
-        new CustomCommand("mineit create \\S+", "mineit.create", false, "/mineit create [mine]", null, (sender, args) -> {
+        new CustomCommand("mineit create \\S+", "mineit.create", false, "mineit create [name]", null, (sender, args) -> {
             Player player = (Player) sender; // not for console usage
 
             if(!MineIt.instance.selectedBlocks.containsKey(player.getName()) || MineIt.instance.selectedBlocks.get(player.getName()).size()==0) {
@@ -67,7 +67,7 @@ public class CommandEvent implements CommandExecutor {
             enable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mineit start " + args[1]));
             player.spigot().sendMessage(new TextComponent(MineIt.clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with "), edit, new TextComponent(ChatColor.RED + " and then enable it with "), enable);
         }),
-        new CustomCommand("mineit remove \\S+", "mineit.remove", true, "/mineit remove [mine]", null, (sender, cmd) -> {
+        new CustomCommand("mineit remove \\S+", "mineit.remove", true, "mineit remove [mine]", null, (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[1]);
             if(m == null) {
                 sender.sendMessage(MineIt.errorPrefix +"The mine '"+cmd[1]+"' doesn't exist.");
@@ -82,7 +82,7 @@ public class CommandEvent implements CommandExecutor {
             catch (Exception e) { e.printStackTrace(); }
             sender.sendMessage(MineIt.clearPrefix+"Mine '"+cmd[1]+"' removed.");
         }),
-        new CustomCommand("mineit start \\S+", "mineit.state", true, "/mineit start [mine]", null, (sender, cmd) -> {
+        new CustomCommand("mineit start \\S+", "mineit.state", true, "mineit start [mine]", null, (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[1]);
             if(m == null) {
                 sender.sendMessage(MineIt.errorPrefix +"The mine '"+cmd[1]+"' doesn't exist.");
@@ -92,7 +92,7 @@ public class CommandEvent implements CommandExecutor {
             m.setStart(true);
             sender.sendMessage(MineIt.clearPrefix + "Mine " + cmd[1] + " started.");
         }),
-        new CustomCommand("mineit stop \\S+", "mineit.state", true, "/mineit stop [mine]", null, (sender, cmd) -> {
+        new CustomCommand("mineit stop \\S+", "mineit.state", true, "mineit stop [mine]", null, (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[1]);
             if(m == null) {
                 sender.sendMessage(MineIt.errorPrefix +"The mine '"+cmd[1]+"' doesn't exist.");
@@ -102,7 +102,7 @@ public class CommandEvent implements CommandExecutor {
             m.setStart(false);
             sender.sendMessage(MineIt.clearPrefix + "Mine " + cmd[1] + " stopped.");
         }),
-        new CustomCommand("mineit edit mine \\S+", "mineit.open", false, "/mineit edit mine [mine]", null, (sender, cmd) -> {
+        new CustomCommand("mineit edit mine \\S+", "mineit.open", false, "mineit edit mine [mine]", null, (sender, cmd) -> {
             BasicInventory mineInv = ((SelectMineInventory)MineIt.instance.selectMineInventory).searchMine(cmd[2]);
             if (mineInv == null) {
                 sender.sendMessage(MineIt.errorPrefix +"Mine '"+cmd[2]+"' not found.");
@@ -111,7 +111,7 @@ public class CommandEvent implements CommandExecutor {
 
             mineInv.openInventory((Player)sender);
         }),
-        new CustomCommand("mineit edit time \\S+ \\d+", "mineit.time", true, "/mineit edit time [mine] [time]", "it changes the time that must pass to change to the next stage", (sender, cmd) -> {
+        new CustomCommand("mineit edit time \\S+ \\d+", "mineit.time", true, "mineit edit time [mine] [time]", "it changes the time that must pass to change to the next stage", (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[2]);
             if (m == null) {
                 sender.sendMessage(MineIt.errorPrefix + "Mine '" + cmd[2] + "' not found.");
@@ -133,7 +133,7 @@ public class CommandEvent implements CommandExecutor {
             m.setDelay(time);
             sender.sendMessage(MineIt.clearPrefix + "Set " + cmd[2] + "'s time to " + cmd[3] + ".");
         }),
-        new CustomCommand("mineit edit stagelimit \\S+ \\d+ \\d+", "mineit.stagelimit", true, "/mineit edit stagelimit [mine] [stage number] [limit blocks number]", null, (sender, cmd) -> {
+        new CustomCommand("mineit edit stagelimit \\S+ \\d+ \\d+", "mineit.stagelimit", true, "mineit edit stagelimit [mine] [stage_number] [limit_blocks_number]", null, (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[2]);
             if (m == null) {
                 sender.sendMessage(MineIt.errorPrefix + "Mine '" + cmd[2] + "' not found.");
@@ -172,7 +172,7 @@ public class CommandEvent implements CommandExecutor {
             m.setStageLimit(num, lim);
             sender.sendMessage(MineIt.clearPrefix + "Set " + cmd[2] + "'s stage " + cmd[3] + " limit to " + cmd[4] + ".");
         }),
-        new CustomCommand("mineit reset \\S+", "mineit.reset", true, "/mineit reset [name]", "it sets all the mine's block to " + Mine.STATE_ZERO.toString().toLowerCase(), (sender, cmd) -> {
+        new CustomCommand("mineit reset \\S+", "mineit.reset", true, "mineit reset [mine]", "it sets all the mine's block to " + Mine.STATE_ZERO.toString().toLowerCase(), (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[1]);
             if (m == null) {
                 sender.sendMessage(MineIt.errorPrefix +"Mine '"+cmd[1]+"' not found.");

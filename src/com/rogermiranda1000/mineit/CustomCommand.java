@@ -6,6 +6,8 @@ import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -25,9 +27,10 @@ public class CustomCommand {
     }
 
     private final Pattern commandPattern;
+    @Nullable private Pattern[] partialPattern;
     @Nullable private final String permission;
     @NotNull private final String usage;
-    private final String[] partialUsage;
+    @Nullable private String[] partialUsage;
     @Nullable private final String description;
     public final MatchCommandNotifier notifier;
     private final byte argLength;
@@ -49,7 +52,6 @@ public class CustomCommand {
         this.commandPattern = Pattern.compile(command); // .matches() adds '^', '$'
         this.permission = permission;
         this.usage = (usage == null) ? command : usage;
-        this.partialUsage = this.usage.substring(1).split(" ");
         this.description = description;
         this.notifier = notifier;
         this.consoleUsage = consoleUsage;
@@ -66,6 +68,11 @@ public class CustomCommand {
      */
     public CustomCommand(String command, @Nullable String permission, boolean consoleUsage, @Nullable String usage, @Nullable String description, MatchCommandNotifier notifier) throws PatternSyntaxException {
         this(command, StringUtils.countMatches(command, " "), permission, consoleUsage, usage, description, notifier);
+
+        String []pattern = command.split(" ");
+        this.partialPattern = new Pattern[pattern.length];
+        for (int x = 0; x < pattern.length; x++) this.partialPattern[x] = Pattern.compile(pattern[x]);
+        this.partialUsage = this.usage.split(" ");
     }
 
     private static String merge(@NotNull String cmd, @NotNull String[] args) {
@@ -102,35 +109,41 @@ public class CustomCommand {
      * @return null if no match, string to append to hints if found
      */
     @Nullable
-    public String candidate(String[] splittedCmd) {
-        if (splittedCmd.length > this.partialUsage.length) return null; // you have written more than the actual command
+    public Collection<String> candidate(String[] splittedCmd) {
+        Collection<String> r = new ArrayList<>();
+        if (this.partialPattern == null || this.partialUsage == null) return r;
+        if (splittedCmd.length > this.partialUsage.length) return r; // you have written more than the actual command
 
         int x;
         for (x = 0; x < splittedCmd.length-1; x++) {
-            if (!splittedCmd[x].matches(this.partialUsage[x])) return null;
+            if (!this.partialPattern[x].matcher(splittedCmd[x]).matches()) return r;
         }
 
-        // last text is the one that may be recommended
-        if (this.partialUsage[x].matches("[a-zA-Z]+")) {
+        // last text is the one that should be recommended
+        if (this.partialUsage[x].matches("[a-zA-Z?]+")) {
             // text
-            if (splittedCmd[x].length() >= this.partialUsage[x].length()) return null; // you have written more than the actual command
+            if (splittedCmd[x].length() >= this.partialUsage[x].length()) return r; // you have written more than the actual command
 
             int n = 0;
-            while (n < splittedCmd[x].length() && splittedCmd[x].charAt(n) != this.partialUsage[x].charAt(n)) n++;
-            if (n != splittedCmd[x].length()) return null; // different character before finishing
+            while (n < splittedCmd[x].length() && splittedCmd[x].charAt(n) == this.partialUsage[x].charAt(n)) n++;
+            if (n != splittedCmd[x].length()) return r; // different character before finishing
 
-            return this.partialUsage[x].substring(n); // get the reminder part
+            r.add(this.partialUsage[x]);
+            return r;
         }
         else {
             // Regex
-            // TODO
-            //splittedCmd[x].matches(this.partialUsage[x])
-            return null;
+            if (this.partialUsage[x].equalsIgnoreCase("[mine]")) {
+                // add all matching mines
+                // TODO only matching mines, not all
+                for (Mine m : Mine.getMines()) r.add(m.getName());
+            }
+            return r;
         }
     }
 
     @Override
     public String toString() {
-        return ChatColor.GOLD + this.usage + ((this.description != null) ? ChatColor.GREEN + ": " + this.description : "");
+        return ChatColor.GOLD + "/" + this.usage + ((this.description != null) ? ChatColor.GREEN + ": " + this.description : "");
     }
 }

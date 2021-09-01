@@ -294,6 +294,11 @@ public class Mine implements Runnable {
     }
 
     @Override
+    public String toString() {
+        return this.mineName;
+    }
+
+    @Override
     public void run() {
         this.currentTime++;
         int changedBlocks = (this.currentTime * this.getTotalBlocks()) / this.delay;

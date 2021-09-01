@@ -129,11 +129,11 @@ public class MineIt extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
-        getServer().getPluginManager().registerEvents(new HintEvent(), this);
         this.mainInventory.registerEvent(this);
         this.selectMineInventory.registerEvent(this);
 
         getCommand("mineit").setExecutor(new CommandEvent());
+        getCommand("mineit").setTabCompleter(new HintEvent());
     }
 
     @Override
