@@ -122,13 +122,7 @@ public class CustomCommand {
         // last text is the one that should be recommended
         if (this.partialUsage[x].matches("[a-zA-Z?]+")) {
             // text
-            if (splittedCmd[x].length() >= this.partialUsage[x].length()) return r; // you have written more than the actual command
-
-            int n = 0;
-            while (n < splittedCmd[x].length() && splittedCmd[x].charAt(n) == this.partialUsage[x].charAt(n)) n++;
-            if (n != splittedCmd[x].length()) return r; // different character before finishing
-
-            r.add(this.partialUsage[x]);
+            if (CustomCommand.partiallyMatches(splittedCmd[x], this.partialUsage[x])) r.add(this.partialUsage[x]);
             return r;
         }
         else {
@@ -136,10 +130,21 @@ public class CustomCommand {
             if (this.partialUsage[x].equalsIgnoreCase("[mine]")) {
                 // add all matching mines
                 // TODO only matching mines, not all
-                for (Mine m : Mine.getMines()) r.add(m.getName());
+                for (Mine m : Mine.getMines()) {
+                    String name = m.getName();
+                    if (CustomCommand.partiallyMatches(splittedCmd[x], name)) r.add(name);
+                }
             }
             return r;
         }
+    }
+
+    private static boolean partiallyMatches(String s1, String s2) {
+        if (s1.length() >= s2.length()) return false; // you have written more than the actual command
+
+        int n = 0;
+        while (n < s1.length() && s1.charAt(n) == s2.charAt(n)) n++;
+        return (n == s1.length()); // false -> different character before finishing
     }
 
     @Override
