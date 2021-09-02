@@ -111,8 +111,6 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 if(this.inv.getItem(x) == null) continue; // en ese slot no hay nada
                 if(!clicked.equals(this.inv.getItem(x))) continue; // no es el elemento que ha pulsado
 
-                e.setCancelled(true);
-
                 ItemStack item = new ItemStack(player.getItemOnCursor().getType());
                 if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
 
@@ -145,7 +143,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                             // already exists?
                             String name = VersionController.get().getName(stageMaterial);
                             if (mine.getStage(name) != null) {
-                                player.sendMessage(MineIt.errorPrefix+"There's already a "+name+" stage!");
+                                player.sendMessage(MineIt.errorPrefix+"There's already a " + name.toLowerCase() + " stage!");
                                 return;
                             }
 
@@ -199,7 +197,6 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
 
                 return;
             }
-            e.setCancelled(false);
         }
     }
 
