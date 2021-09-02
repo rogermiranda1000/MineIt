@@ -6,9 +6,14 @@ import org.jetbrains.annotations.NotNull;
  * A Minecraft version (ex: 1.8 or 1.12.2)
  */
 public class Version implements Comparable<Version> {
-    public static final Version MC_1_13 = new Version(1,13);
-    public static final Version MC_1_12 = new Version(1,12);
     public static final Version MC_1_9 = new Version(1,9);
+    public static final Version MC_1_10 = new Version(1,10);
+    public static final Version MC_1_11 = new Version(1,11);
+    public static final Version MC_1_12 = new Version(1,12);
+    public static final Version MC_1_13 = new Version(1,13);
+    public static final Version MC_1_15 = new Version(1,15);
+    public static final Version MC_1_16_2 = new Version(1,16,2);
+    public static final Version MC_1_17 = new Version(1,17);
     private final byte []version;
 
     /**
@@ -55,5 +60,12 @@ public class Version implements Comparable<Version> {
             x++;
         } while (x < this.version.length && tmp == 0);
         return tmp;
+    }
+
+    @Override
+    public String toString() {
+        String r = this.version[0] + "." + this.version[1];
+        if (this.version[2] != 0) r += "." + this.version[2];
+        return r;
     }
 }

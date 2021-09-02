@@ -4,12 +4,15 @@ import com.google.gson.JsonSyntaxException;
 import com.rogermiranda1000.mineit.events.BlockBreakEvent;
 import com.rogermiranda1000.mineit.events.CommandEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
+import com.rogermiranda1000.mineit.events.HintEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
+import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -132,6 +135,7 @@ public class MineIt extends JavaPlugin {
         this.selectMineInventory.registerEvent(this);
 
         getCommand("mineit").setExecutor(new CommandEvent());
+        if (VersionController.version.compareTo(Version.MC_1_10) >= 0) getCommand("mineit").setTabCompleter(new HintEvent());
     }
 
     @Override
