@@ -10,7 +10,9 @@ import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
+import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -133,7 +135,7 @@ public class MineIt extends JavaPlugin {
         this.selectMineInventory.registerEvent(this);
 
         getCommand("mineit").setExecutor(new CommandEvent());
-        getCommand("mineit").setTabCompleter(new HintEvent());
+        if (VersionController.version.compareTo(Version.MC_1_10) >= 0) getCommand("mineit").setTabCompleter(new HintEvent());
     }
 
     @Override

@@ -120,16 +120,15 @@ public class CustomCommand {
         }
 
         // last text is the one that should be recommended
-        if (this.partialUsage[x].matches("[a-zA-Z?]+")) {
-            // text
+        if (!this.partialUsage[x].startsWith("[")) {
+            // literal text
             if (CustomCommand.partiallyMatches(splittedCmd[x], this.partialUsage[x])) r.add(this.partialUsage[x]);
             return r;
         }
         else {
-            // Regex
+            // special text ("[something]")
             if (this.partialUsage[x].equalsIgnoreCase("[mine]")) {
                 // add all matching mines
-                // TODO only matching mines, not all
                 for (Mine m : Mine.getMines()) {
                     String name = m.getName();
                     if (CustomCommand.partiallyMatches(splittedCmd[x], name)) r.add(name);
