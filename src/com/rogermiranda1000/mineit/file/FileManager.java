@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.MineIt;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,10 +19,17 @@ public class FileManager {
         return FileManager.gson.fromJson(FileManager.getFileContents(f), BasicMine.class).getMine();
     }
 
-    public static void saveMines(File f, Mine mines) throws IOException {
+    public static void saveMine(File f, Mine mine) throws IOException {
         FileWriter fw = new FileWriter(f);
-        FileManager.gson.toJson(new BasicMine(mines), fw);
+        FileManager.gson.toJson(new BasicMine(mine), fw);
         fw.close();
+    }
+
+    public static void removeMine(Mine mine) throws Exception {
+        File f = new File(MineIt.instance.getDataFolder(), mine.mineName + ".yml");
+        if (f.exists()) {
+            if (!f.delete()) throw new IOException("error deleting the file");
+        }
     }
 
     private static String getFileContents(File f) throws FileNotFoundException {

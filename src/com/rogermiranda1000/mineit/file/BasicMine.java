@@ -20,10 +20,12 @@ public class BasicMine {
     private final ArrayList<BasicStage> stages;
     private final String mineName;
     private final boolean started;
+    private final int delay;
 
     public BasicMine(Mine mine) {
         this.mineName = mine.getName();
         this.started = mine.isStarted();
+        this.delay = mine.getDelay();
 
         this.stages = new ArrayList<>();
         for (Stage s : mine.getStages()) this.stages.add(new BasicStage(s));
@@ -46,6 +48,6 @@ public class BasicMine {
         for (Map.Entry<String, ArrayList<BasicLocation>> basicLocationList : this.blocks.entrySet()) {
             blocks.addAll(BasicLocation.getLocations(basicLocationList.getKey(), basicLocationList.getValue()));
         }
-        return new Mine(this.mineName, this.started, blocks, BasicStage.getStages(this.stages));
+        return new Mine(this.mineName, this.started, blocks, BasicStage.getStages(this.stages), this.delay);
     }
 }

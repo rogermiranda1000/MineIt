@@ -1,10 +1,9 @@
 package com.rogermiranda1000.mineit.events;
 
-import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -22,10 +21,8 @@ public class InteractEvent implements Listener {
         Player ply = e.getPlayer();
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if(e.isCancelled()) return;
-        //if(MineIt.instance.version=="1.8") {
-            if(!ply.getItemInHand().equals(MineIt.item)) return;
-        /*}
-        else if(!ply.getInventory().getItemInMainHand().equals(MineIt.item) && !ply.getInventory().getItemInOffHand().equals(MineIt.item)) return;*/
+        if (!VersionController.get().hasItemInHand(ply, MineIt.item, true)) return;
+
         e.setCancelled(true);
         if(e.getClickedBlock().getType()!=Material.STONE) {
             ply.sendMessage(MineIt.errorPrefix+"You can only hit stone with the Mine Creator!");
