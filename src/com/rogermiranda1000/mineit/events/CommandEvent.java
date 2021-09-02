@@ -60,11 +60,14 @@ public class CommandEvent implements CommandExecutor {
             player.sendMessage(MineIt.clearPrefix+ChatColor.GREEN+"Mine created successfully.");
 
             TextComponent edit = new TextComponent(ChatColor.GREEN + "/mineit edit mine " + args[1]);
-            edit.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.AQUA + "Click to run the command")));
             edit.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mineit edit mine " + args[1]));
             TextComponent enable = new TextComponent(ChatColor.GREEN + "/mineit start " + args[1]);
-            enable.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.AQUA + "Click to run the command")));
             enable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mineit start " + args[1]));
+            try {
+                Class.forName("net.md_5.bungee.api.chat.hover.content.Content");
+                edit.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.AQUA + "Click to run the command")));
+                enable.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ChatColor.AQUA + "Click to run the command")));
+            } catch (ClassNotFoundException ignored) {}
             player.spigot().sendMessage(new TextComponent(MineIt.clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with "), edit, new TextComponent(ChatColor.RED + " and then enable it with "), enable);
         }),
         new CustomCommand("mineit remove \\S+", "mineit.remove", true, "mineit remove [mine]", null, (sender, cmd) -> {
