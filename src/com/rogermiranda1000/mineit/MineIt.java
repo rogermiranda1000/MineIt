@@ -10,6 +10,8 @@ import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
+import com.rogermiranda1000.mineit.protections.ProtectionOverrider;
+import com.rogermiranda1000.mineit.protections.ResidenceProtectionOverrider;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
@@ -40,6 +42,8 @@ public class MineIt extends JavaPlugin {
     //Inv
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
+
+    public ProtectionOverrider protectionOverrider;
 
     public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
@@ -102,6 +106,14 @@ public class MineIt extends JavaPlugin {
         this.rango = config.getInt("mine_creator_range");
         this.limit = config.getBoolean("limit_blocks_per_stage");
         this.overrideProtection = config.getBoolean("override_protections");
+
+        // Protections
+        if (this.overrideProtection) {
+            if (getServer().getPluginManager().getPlugin("Residence") != null) {
+                this.protectionOverrider = new ResidenceProtectionOverrider();
+                this.getLogger().info("Residence plugin detected.");
+            }
+        }
 
         // Create tool
         // @pre before inventory creation

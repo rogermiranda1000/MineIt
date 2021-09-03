@@ -16,11 +16,10 @@ import java.util.ArrayList;
 public class InteractEvent implements Listener {
     private static final Material SELECTED_BLOCK = Material.EMERALD_BLOCK;
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent e) {
         Player ply = e.getPlayer();
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if(e.isCancelled()) return;
         if (!VersionController.get().hasItemInHand(ply, MineIt.item, true)) return;
 
         e.setCancelled(true);

@@ -8,10 +8,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 public class BlockBreakEvent implements Listener {
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onBlockBreak(org.bukkit.event.block.BlockBreakEvent e) {
         if(!MineIt.instance.overrideProtection && e.isCancelled()) return;
 
@@ -25,6 +26,7 @@ public class BlockBreakEvent implements Listener {
             return;
         }
 
+        if (e.isCancelled()) MineIt.instance.protectionOverrider.overrideProtection(e);
         e.setCancelled(false);
 
         Stage s = m.getStage(e.getBlock().getType().toString());
