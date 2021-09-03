@@ -36,7 +36,6 @@ public class MineIt extends JavaPlugin {
             errorPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.RED;
     public static ItemStack item;
     public static MineIt instance;
-    public static FileConfiguration config;
 
     //Inv
     public BasicInventory mainInventory;
@@ -46,6 +45,7 @@ public class MineIt extends JavaPlugin {
 
     public int rango;
     public boolean limit;
+    public boolean overrideProtection;
 
     public void printConsoleErrorMessage(String msg) {
         this.getLogger().warning(MineIt.ERROR_COLOR + msg + MineIt.NO_COLOR);
@@ -73,7 +73,8 @@ public class MineIt extends JavaPlugin {
         HashMap<String,Object> c = new HashMap<>();
         c.put("mine_creator_range", 5);
         c.put("limit_blocks_per_stage", false);
-        config = getConfig();
+        c.put("override_protections", true);
+        FileConfiguration config = getConfig();
         //Create/actualize config file
         try {
             if (!getDataFolder().exists()) getDataFolder().mkdirs();
@@ -98,8 +99,9 @@ public class MineIt extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        rango = config.getInt("mine_creator_range");
-        limit = config.getBoolean("limit_blocks_per_stage");
+        this.rango = config.getInt("mine_creator_range");
+        this.limit = config.getBoolean("limit_blocks_per_stage");
+        this.overrideProtection = config.getBoolean("override_protections");
 
         // Create tool
         // @pre before inventory creation

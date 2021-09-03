@@ -13,7 +13,7 @@ import org.bukkit.event.Listener;
 public class BlockBreakEvent implements Listener {
     @EventHandler
     public void onBlockBreak(org.bukkit.event.block.BlockBreakEvent e) {
-        if(e.isCancelled()) return;
+        if(!MineIt.instance.overrideProtection && e.isCancelled()) return;
 
         Mine m = Mine.getMine(e.getBlock().getLocation());
         if (m == null) return;
@@ -24,6 +24,8 @@ public class BlockBreakEvent implements Listener {
             e.setCancelled(true);
             return;
         }
+
+        e.setCancelled(false);
 
         Stage s = m.getStage(e.getBlock().getType().toString());
         if (s == null) {
