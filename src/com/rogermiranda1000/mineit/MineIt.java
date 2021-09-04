@@ -12,6 +12,7 @@ import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.protections.ProtectionOverrider;
 import com.rogermiranda1000.mineit.protections.ResidenceProtectionOverrider;
+import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverrider;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
@@ -112,6 +113,10 @@ public class MineIt extends JavaPlugin {
             if (getServer().getPluginManager().getPlugin("Residence") != null) {
                 this.protectionOverrider = new ResidenceProtectionOverrider();
                 this.getLogger().info("Residence plugin detected.");
+            }
+            else if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
+                this.protectionOverrider = new WorldGuardProtectionOverrider();
+                this.getLogger().info("WorldGuard plugin detected.");
             }
         }
 
