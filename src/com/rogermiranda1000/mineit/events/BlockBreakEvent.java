@@ -3,6 +3,7 @@ package com.rogermiranda1000.mineit.events;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.mineit.protections.ProtectionOverrider;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -26,7 +27,9 @@ public class BlockBreakEvent implements Listener {
             return;
         }
 
-        if (e.isCancelled() && MineIt.instance.protectionOverrider != null) MineIt.instance.protectionOverrider.overrideProtection(e);
+        if (e.isCancelled()) {
+            for (ProtectionOverrider prot : MineIt.instance.protectionOverrider) prot.overrideProtection(e);
+        }
         e.setCancelled(false);
 
         Stage s = m.getStage(e.getBlock().getType().toString());

@@ -44,7 +44,7 @@ public class MineIt extends JavaPlugin {
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
 
-    public ProtectionOverrider protectionOverrider;
+    public ArrayList<ProtectionOverrider> protectionOverrider = new ArrayList<>();
 
     public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
@@ -111,11 +111,11 @@ public class MineIt extends JavaPlugin {
         // Protections
         if (this.overrideProtection) {
             if (getServer().getPluginManager().getPlugin("Residence") != null) {
-                this.protectionOverrider = new ResidenceProtectionOverrider();
+                this.protectionOverrider.add(new ResidenceProtectionOverrider());
                 this.getLogger().info("Residence plugin detected.");
             }
-            else if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
-                this.protectionOverrider = new WorldGuardProtectionOverrider();
+            if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
+                this.protectionOverrider.add(new WorldGuardProtectionOverrider());
                 this.getLogger().info("WorldGuard plugin detected.");
             }
         }
