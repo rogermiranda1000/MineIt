@@ -11,11 +11,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 
-public class BlockBreakEvent implements Listener {
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockBreak(org.bukkit.event.block.BlockBreakEvent e) {
-        if(!MineIt.instance.overrideProtection && e.isCancelled()) return;
+public class BreakEvent implements Listener {
+    @EventHandler(priority = EventPriority.MONITOR/*, ignoreCancelled = true*/)
+    public void onBlockBreak(BlockBreakEvent e) {
+        System.out.println(e.isCancelled());
+        if(!MineIt.instance.overrideProtection) return;
 
         Mine m = Mine.getMine(e.getBlock().getLocation());
         if (m == null) return;
@@ -27,31 +29,22 @@ public class BlockBreakEvent implements Listener {
             return;
         }
 
-        if (e.isCancelled()) {
-            for (ProtectionOverrider prot : MineIt.instance.protectionOverrider) prot.overrideProtection(e);
-        }
-        e.setCancelled(false);
+        for (ProtectionOverrider prot : MineIt.instance.protectionOverrider) prot.overrideProtection(e);
 
         Stage s = m.getStage(e.getBlock().getType().toString());
-        if (s == null) {
-            // unstaged block in mine
-            establecer(e.getBlock(), m.getStages().get(0).getStageMaterial());
-            return;
-        }
-
-        Stage prev = s.getPreviousStage();
-        if(prev == null) {
-            // first stage mined
-            establecer(e.getBlock(), m.getStages().get(0).getStageMaterial());
+        Stage prev;
+        if (s == null || (prev = s.getPreviousStage()) == null) {
+            // unstaged block in mine or first stage mined
+            BreakEvent.changeBlock(e.getBlock(), m.getStage(0).getStageMaterial());
             return;
         }
 
         s.decrementStageBlocks();
         prev.incrementStageBlocks();
-        establecer(e.getBlock(), prev.getStageMaterial());
+        BreakEvent.changeBlock(e.getBlock(), prev.getStageMaterial());
     }
 
-    private static void establecer(Block b,Object type){
+    private static void changeBlock(Block b, Object type){
         Bukkit.getScheduler().runTaskLater(MineIt.instance,()->VersionController.get().setType(b, type),1);
     }
 }

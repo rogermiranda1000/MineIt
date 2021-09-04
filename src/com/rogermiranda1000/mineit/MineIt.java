@@ -1,7 +1,7 @@
 package com.rogermiranda1000.mineit;
 
 import com.google.gson.JsonSyntaxException;
-import com.rogermiranda1000.mineit.events.BlockBreakEvent;
+import com.rogermiranda1000.mineit.events.BreakEvent;
 import com.rogermiranda1000.mineit.events.CommandEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.events.HintEvent;
@@ -124,7 +124,7 @@ public class MineIt extends JavaPlugin {
         // @pre before inventory creation
         item = new ItemStack(Material.STICK);
         ItemMeta m = item.getItemMeta();
-        m.setDisplayName(ChatColor.GOLD+""+ChatColor.BOLD+"Mine creator");
+        m.setDisplayName(ChatColor.GOLD.toString()+ChatColor.BOLD+"Mine creator");
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
@@ -148,7 +148,7 @@ public class MineIt extends JavaPlugin {
             }
         }
 
-        getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
+        getServer().getPluginManager().registerEvents(new BreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
         this.mainInventory.registerEvent(this);
         this.selectMineInventory.registerEvent(this);
