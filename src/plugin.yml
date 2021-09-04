@@ -3,7 +3,7 @@ main: com.rogermiranda1000.mineit.MineIt
 version: 1.2
 author: rogermiranda1000
 api-version: 1.13
-softdepend: [Multiverse-Core,Residence]
+softdepend: [Multiverse-Core,Residence,WorldGuard]
 commands:
   mineit:
     description: Create mines
