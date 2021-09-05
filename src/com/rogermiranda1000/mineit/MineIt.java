@@ -73,6 +73,7 @@ public class MineIt extends JavaPlugin {
         HashMap<String,Object> c = new HashMap<>();
         c.put("mine_creator_range", 5);
         c.put("limit_blocks_per_stage", false);
+        c.put("air_stage", Material.STONE_BUTTON.name());
         config = getConfig();
         //Create/actualize config file
         try {
@@ -100,6 +101,12 @@ public class MineIt extends JavaPlugin {
         }
         rango = config.getInt("mine_creator_range");
         limit = config.getBoolean("limit_blocks_per_stage");
+        String airStage = config.getString("air_stage");
+        try {
+            Mine.AIR_STAGE = Material.getMaterial(airStage);
+        } catch (ClassCastException ex) {
+            this.printConsoleErrorMessage("The air stage material '" + airStage + "' does not exist!");
+        }
 
         // Create tool
         // @pre before inventory creation

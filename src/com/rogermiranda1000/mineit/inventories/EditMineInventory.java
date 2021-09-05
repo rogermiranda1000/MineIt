@@ -138,7 +138,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                             mine.removeStage(stageNum);
                         }
                         else {
-                            Object stageMaterial = VersionController.get().getObject(item);
+                            Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item);
                             ItemMeta m = item.getItemMeta();
                             // already exists?
                             String name = VersionController.get().getName(stageMaterial);
@@ -174,7 +174,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         // segunda fila (la de on break go to X stage)
                         if (stageNum <= 1) return; // you can't edit the 1st nor 2nd stage
 
-                        Stage match = mine.getStage(item.getType().name());
+                        Stage match = mine.getStage(item.getType().equals(Mine.AIR_STAGE) ? Material.AIR.name() : item.getType().name());
                         if(match == null) {
                             player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
                             return;
@@ -230,7 +230,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 Stage current = this.listening.getStages().get(x);
                 ItemStack block = current.getStageItemStack();
                 ItemMeta meta = block.getItemMeta();
-                if (meta == null) {
+                if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {
                     // AIR
                     block = new ItemStack(Mine.AIR_STAGE);
                     meta = block.getItemMeta();
@@ -246,7 +246,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 if(current.getPreviousStage() != null) {
                     block = current.getPreviousStage().getStageItemStack();
                     meta = block.getItemMeta();
-                    if (meta == null) {
+                    if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {
                         // AIR
                         block = new ItemStack(Mine.AIR_STAGE);
                         meta = block.getItemMeta();
