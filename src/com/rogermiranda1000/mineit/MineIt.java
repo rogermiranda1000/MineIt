@@ -154,7 +154,7 @@ public class MineIt extends JavaPlugin {
 
         // undo selected blocks
         for(ArrayList<Location> locations : selectedBlocks.values()) {
-            for(Location l: locations) l.getBlock().setType(Material.STONE);
+            for(Location l: locations) l.getBlock().setType(Mine.SELECT_BLOCK);
         }
 
         // save mines

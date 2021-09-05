@@ -15,6 +15,7 @@ import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 public class Mine implements Runnable {
     @Nullable public static Material AIR_STAGE;
+    public static final Material SELECT_BLOCK = Material.STONE;
     public static final Material STATE_ZERO = Material.BEDROCK;
     public static final ArrayList<MinesChangedEvent> globalEvents = new ArrayList<>();
 
