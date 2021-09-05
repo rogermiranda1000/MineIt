@@ -104,7 +104,7 @@ public class CommandEvent implements CommandExecutor {
             }
 
             m.setStart(true);
-            sender.sendMessage(MineIt.clearPrefix + "Mine " + cmd[1] + " started.");
+            sender.sendMessage(MineIt.clearPrefix + "Mine '" + cmd[1] + "' started.");
         }),
         new CustomCommand("mineit stop \\S+", "mineit.state", true, "mineit stop [mine]", null, (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[1]);
@@ -114,7 +114,7 @@ public class CommandEvent implements CommandExecutor {
             }
 
             m.setStart(false);
-            sender.sendMessage(MineIt.clearPrefix + "Mine " + cmd[1] + " stopped.");
+            sender.sendMessage(MineIt.clearPrefix + "Mine '" + cmd[1] + "' stopped.");
         }),
         new CustomCommand("mineit edit mine \\S+", "mineit.open", false, "mineit edit mine [mine]", null, (sender, cmd) -> {
             BasicInventory mineInv = ((SelectMineInventory)MineIt.instance.selectMineInventory).searchMine(cmd[2]);
@@ -194,7 +194,7 @@ public class CommandEvent implements CommandExecutor {
             }
 
             m.resetBlocksMine();
-            sender.sendMessage(MineIt.clearPrefix + "Mine " + cmd[1] + " restarted.");
+            sender.sendMessage(MineIt.clearPrefix + "Mine '" + cmd[1] + "' restarted.");
         })
     };
 
