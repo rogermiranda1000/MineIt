@@ -21,6 +21,13 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class CommandEvent implements CommandExecutor {
+    private static final ArrayList<String> RESERVED_NAMES = new ArrayList<>();
+
+    static {
+        CommandEvent.RESERVED_NAMES.add("config"); // config yml file
+        CommandEvent.RESERVED_NAMES.add("all"); // permission conflict
+    }
+
     /**
      * Regex command > Permision to run
      */
@@ -41,6 +48,10 @@ public class CommandEvent implements CommandExecutor {
             }
             if(Mine.getMinesLength()>=45) {
                 player.sendMessage(MineIt.errorPrefix +"You've reached the current mines limit!");
+                return;
+            }
+            if (CommandEvent.RESERVED_NAMES.contains(args[1])) {
+                player.sendMessage(MineIt.errorPrefix +"You're using a reserved name!");
                 return;
             }
             if(Mine.getMine(args[1]) != null) {
@@ -93,7 +104,7 @@ public class CommandEvent implements CommandExecutor {
             }
 
             m.setStart(true);
-            sender.sendMessage(MineIt.clearPrefix + "Mine " + cmd[1] + " started.");
+            sender.sendMessage(MineIt.clearPrefix + "Mine '" + cmd[1] + "' started.");
         }),
         new CustomCommand("mineit stop \\S+", "mineit.state", true, "mineit stop [mine]", null, (sender, cmd) -> {
             Mine m = Mine.getMine(cmd[1]);
@@ -103,7 +114,7 @@ public class CommandEvent implements CommandExecutor {
             }
 
             m.setStart(false);
-            sender.sendMessage(MineIt.clearPrefix + "Mine " + cmd[1] + " stopped.");
+            sender.sendMessage(MineIt.clearPrefix + "Mine '" + cmd[1] + "' stopped.");
         }),
         new CustomCommand("mineit edit mine \\S+", "mineit.open", false, "mineit edit mine [mine]", null, (sender, cmd) -> {
             BasicInventory mineInv = ((SelectMineInventory)MineIt.instance.selectMineInventory).searchMine(cmd[2]);
@@ -183,7 +194,7 @@ public class CommandEvent implements CommandExecutor {
             }
 
             m.resetBlocksMine();
-            sender.sendMessage(MineIt.clearPrefix + "Mine " + cmd[1] + " restarted.");
+            sender.sendMessage(MineIt.clearPrefix + "Mine '" + cmd[1] + "' restarted.");
         })
     };
 

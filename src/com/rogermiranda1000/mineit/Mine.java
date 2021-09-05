@@ -273,6 +273,8 @@ public class Mine implements Runnable {
     }
 
     synchronized public static void removeMine(Mine m) {
+        m.setStart(false); // stop the mine
+
         Mine.mines.remove(m);
         for (MinesChangedEvent e : Mine.globalEvents) e.onMineRemoved(m);
         for (MineChangedEvent e : m.events) e.onMineRemoved();
