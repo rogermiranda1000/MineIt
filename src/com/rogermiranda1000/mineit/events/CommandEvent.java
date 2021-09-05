@@ -21,6 +21,13 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class CommandEvent implements CommandExecutor {
+    private static final ArrayList<String> RESERVED_NAMES = new ArrayList<>();
+
+    static {
+        CommandEvent.RESERVED_NAMES.add("config"); // config yml file
+        CommandEvent.RESERVED_NAMES.add("all"); // permission conflict
+    }
+
     /**
      * Regex command > Permision to run
      */
@@ -41,6 +48,10 @@ public class CommandEvent implements CommandExecutor {
             }
             if(Mine.getMinesLength()>=45) {
                 player.sendMessage(MineIt.errorPrefix +"You've reached the current mines limit!");
+                return;
+            }
+            if (CommandEvent.RESERVED_NAMES.contains(args[1])) {
+                player.sendMessage(MineIt.errorPrefix +"You're using a reserved name!");
                 return;
             }
             if(Mine.getMine(args[1]) != null) {
