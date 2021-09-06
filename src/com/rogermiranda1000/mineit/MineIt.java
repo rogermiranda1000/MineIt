@@ -116,15 +116,13 @@ public class MineIt extends JavaPlugin {
         }
 
         // Protections
-        if (this.overrideProtection) {
-            if (getServer().getPluginManager().getPlugin("Residence") != null) {
-                this.protectionOverrider.add(new ResidenceProtectionOverrider());
-                this.getLogger().info("Residence plugin detected.");
-            }
-            if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
-                this.protectionOverrider.add(new WorldGuardProtectionOverrider());
-                this.getLogger().info("WorldGuard plugin detected.");
-            }
+        if (getServer().getPluginManager().getPlugin("Residence") != null) {
+            this.protectionOverrider.add(new ResidenceProtectionOverrider());
+            this.getLogger().info("Residence plugin detected.");
+        }
+        if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
+            this.protectionOverrider.add(new WorldGuardProtectionOverrider());
+            this.getLogger().info("WorldGuard plugin detected.");
         }
 
         // Create tool

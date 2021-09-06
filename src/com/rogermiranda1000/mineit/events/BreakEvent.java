@@ -17,8 +17,6 @@ import org.jetbrains.annotations.NotNull;
 public class BreakEvent implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
-        if(!MineIt.instance.overrideProtection) return;
-
         Mine m = Mine.getMine(e.getBlock().getLocation());
         if (m == null) return;
 
@@ -29,7 +27,13 @@ public class BreakEvent implements Listener {
             return;
         }
 
-        for (ProtectionOverrider prot : MineIt.instance.protectionOverrider) prot.overrideProtection(e);
+        for (ProtectionOverrider prot : MineIt.instance.protectionOverrider) {
+            Object region = prot.getProtection(e);
+            if (region == null) continue;
+
+            if (!MineIt.instance.overrideProtection) return; // it's in a protected region, but in the config it's set to not change the protections
+            prot.overrideProtection(region, ply);
+        }
 
         Stage s = m.getStage(e.getBlock().getType().toString());
         Stage prev;
