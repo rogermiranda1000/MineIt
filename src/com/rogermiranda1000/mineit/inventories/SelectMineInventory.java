@@ -105,7 +105,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
             newInventory = Bukkit.createInventory(null, l * 9, SelectMineInventory.INVENTORY_NAME);
             int pos = 0, backPos = (l - 1) * 9;
             for (Mine mine : Mine.getMines()) {
-                ItemStack mina = new ItemStack(Material.STONE); // TODO mine block
+                ItemStack mina = new ItemStack(Mine.SELECT_BLOCK); // TODO mine block
                 ItemMeta meta = mina.getItemMeta();
                 meta.setDisplayName(mine.mineName);
                 ArrayList<String> lore = new ArrayList<>();

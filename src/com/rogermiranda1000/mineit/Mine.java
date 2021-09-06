@@ -14,7 +14,8 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 public class Mine implements Runnable {
-    public static final Material AIR_STAGE = Material.GLASS;
+    @Nullable public static Material AIR_STAGE;
+    public static final Material SELECT_BLOCK = Material.STONE;
     public static final Material STATE_ZERO = Material.BEDROCK;
     public static final ArrayList<MinesChangedEvent> globalEvents = new ArrayList<>();
 
@@ -273,6 +274,8 @@ public class Mine implements Runnable {
     }
 
     synchronized public static void removeMine(Mine m) {
+        m.setStart(false); // stop the mine
+
         Mine.mines.remove(m);
         for (MinesChangedEvent e : Mine.globalEvents) e.onMineRemoved(m);
         for (MineChangedEvent e : m.events) e.onMineRemoved();

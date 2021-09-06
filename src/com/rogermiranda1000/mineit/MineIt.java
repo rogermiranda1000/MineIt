@@ -78,6 +78,7 @@ public class MineIt extends JavaPlugin {
         HashMap<String,Object> c = new HashMap<>();
         c.put("mine_creator_range", 5);
         c.put("limit_blocks_per_stage", false);
+        c.put("air_stage", Material.STONE_BUTTON.name());
         c.put("override_protections", true);
         FileConfiguration config = getConfig();
         //Create/actualize config file
@@ -107,6 +108,12 @@ public class MineIt extends JavaPlugin {
         this.rango = config.getInt("mine_creator_range");
         this.limit = config.getBoolean("limit_blocks_per_stage");
         this.overrideProtection = config.getBoolean("override_protections");
+        String airStage = config.getString("air_stage");
+        try {
+            Mine.AIR_STAGE = Material.getMaterial(airStage);
+        } catch (ClassCastException ex) {
+            this.printConsoleErrorMessage("The air stage material '" + airStage + "' does not exist!");
+        }
 
         // Protections
         if (this.overrideProtection) {
@@ -166,7 +173,7 @@ public class MineIt extends JavaPlugin {
 
         // undo selected blocks
         for(ArrayList<Location> locations : selectedBlocks.values()) {
-            for(Location l: locations) l.getBlock().setType(Material.STONE);
+            for(Location l: locations) l.getBlock().setType(Mine.SELECT_BLOCK);
         }
 
         // save mines
