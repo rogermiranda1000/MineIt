@@ -131,19 +131,23 @@ public class MineIt extends JavaPlugin {
             this.protectionOverrider.add(new ResidenceProtectionOverrider());
             this.getLogger().info("Residence plugin detected.");
 
-            // BlockBreakEvent from Residence needs to be LOW priority
+            // BlockBreakEvent from Residence needs to be HIGH priority
             try {
-                Field f2=Field.class.getDeclaredField("modifiers");
+                Field f2 = Field.class.getDeclaredField("modifiers");
                 f2.setAccessible(true);
 
                 for (RegisteredListener lis : HandlerList.getRegisteredListeners(residence)) {
                     if (!(lis.getListener() instanceof ResidenceBlockListener)) continue;
                     if (!lis.getPriority().equals(EventPriority.LOWEST)) continue;
 
-                    Field f = lis.getClass().getField("priority");
+                    Field f = RegisteredListener.class.getDeclaredField("priority");
                     f.setAccessible(true);
                     f2.setInt(f, f.getModifiers() & ~Modifier.FINAL); // remove final
-                    f.set(lis, EventPriority.LOW);
+                    f.set(lis, EventPriority.HIGH); // change priority
+                }
+                for (RegisteredListener lis : HandlerList.getRegisteredListeners(residence)) {
+                    if (!(lis.getListener() instanceof ResidenceBlockListener)) continue;
+                    System.out.println(lis.getPriority());
                 }
             } catch (NoSuchFieldException | IllegalAccessException ex) {
                 this.printConsoleErrorMessage("Unable to override Residence event priority!");
