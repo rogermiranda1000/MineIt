@@ -32,10 +32,8 @@ public class WorldGuardProtectionOverrider implements ProtectionOverrider {
             manager.getApplicableRegions(BukkitAdapter.asBlockVector(tmp)).forEach((region)->{
                 // TODO region.getParent() == null
                 DefaultDomain members = region.getMembers();
-                System.out.println(members.toString());
                 if (!members.contains(localPlayer)) {
                     members.addPlayer(localPlayer);
-                    System.out.println(region.getMembers().toString());
                     Bukkit.getScheduler().runTaskLater(MineIt.instance,()->region.getMembers().removePlayer(localPlayer),1);
                 }
             });

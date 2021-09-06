@@ -12,11 +12,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class BreakEvent implements Listener {
-    @EventHandler(priority = EventPriority.MONITOR/*, ignoreCancelled = true*/)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
-        System.out.println(e.isCancelled());
         if(!MineIt.instance.overrideProtection) return;
 
         Mine m = Mine.getMine(e.getBlock().getLocation());
@@ -44,7 +44,7 @@ public class BreakEvent implements Listener {
         BreakEvent.changeBlock(e.getBlock(), prev.getStageMaterial());
     }
 
-    private static void changeBlock(Block b, Object type){
+    private static void changeBlock(@NotNull Block b, Object type) {
         Bukkit.getScheduler().runTaskLater(MineIt.instance,()->VersionController.get().setType(b, type),1);
     }
 }
