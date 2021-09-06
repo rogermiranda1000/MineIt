@@ -23,16 +23,16 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.HandlerList;
+import org.bukkit.event.*;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.fusesource.jansi.Ansi;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -125,39 +125,23 @@ public class MineIt extends JavaPlugin {
             this.printConsoleErrorMessage("The air stage material '" + airStage + "' does not exist!");
         }
 
+
         // Protections
-        Plugin residence = getServer().getPluginManager().getPlugin("Residence");
+        PluginManager pm = getServer().getPluginManager();
+        Plugin residence = pm.getPlugin("Residence");
         if (residence != null) {
             this.protectionOverrider.add(new ResidenceProtectionOverrider());
             this.getLogger().info("Residence plugin detected.");
 
             // BlockBreakEvent from Residence needs to be HIGH priority
-            try {
-                Field f2 = Field.class.getDeclaredField("modifiers");
-                f2.setAccessible(true);
-
-                for (RegisteredListener lis : HandlerList.getRegisteredListeners(residence)) {
-                    if (!(lis.getListener() instanceof ResidenceBlockListener)) continue;
-                    if (!lis.getPriority().equals(EventPriority.LOWEST)) continue;
-
-                    Field f = RegisteredListener.class.getDeclaredField("priority");
-                    f.setAccessible(true);
-                    f2.setInt(f, f.getModifiers() & ~Modifier.FINAL); // remove final
-                    f.set(lis, EventPriority.HIGH); // change priority
-                }
-                for (RegisteredListener lis : HandlerList.getRegisteredListeners(residence)) {
-                    if (!(lis.getListener() instanceof ResidenceBlockListener)) continue;
-                    System.out.println(lis.getPriority());
-                }
-            } catch (NoSuchFieldException | IllegalAccessException ex) {
-                this.printConsoleErrorMessage("Unable to override Residence event priority!");
-                ex.printStackTrace();
-            }
+            MineIt.overridePriority(residence, ResidenceBlockListener.class, EventPriority.LOWEST, EventPriority.HIGH);
         }
-        if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
+
+        if (pm.getPlugin("WorldGuard") != null) {
             this.protectionOverrider.add(new WorldGuardProtectionOverrider());
             this.getLogger().info("WorldGuard plugin detected.");
         }
+
 
         // Create tool
         // @pre before inventory creation
@@ -215,6 +199,31 @@ public class MineIt extends JavaPlugin {
                 FileManager.saveMine(file, mina);
             } catch(IOException e){
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private static void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
+        ArrayList<RegisteredListener> reload = new ArrayList<>();
+        for (RegisteredListener lis : HandlerList.getRegisteredListeners(plugin)) {
+            if (lis.getListener().getClass().equals(match)) reload.add(lis);
+        }
+
+        if (!reload.isEmpty()) {
+            HandlerList.unregisterAll(reload.get(0).getListener()); // all the RegisteredListener on reload are the same Listener
+
+            for (RegisteredListener lis : reload) {
+                for (Method m : match.getDeclaredMethods()) {
+                    if (m.getParameterCount() != 1) continue;
+                    if (!m.getParameterTypes()[0].isAssignableFrom(Event.class)) continue;
+                    Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis.getListener(), lis.getPriority().equals(find) ? replace : lis.getPriority(), (l2, e) -> {
+                        try {
+                            m.invoke(l2, e);
+                        } catch (Throwable t) {
+                            t.printStackTrace();
+                        }
+                    }, plugin, lis.isIgnoringCancelled());
+                }
             }
         }
     }

@@ -15,7 +15,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class BreakEvent implements Listener {
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW/*, ignoreCancelled = true*/)
     public void onBlockBreak(BlockBreakEvent e) {
         Mine m = Mine.getMine(e.getBlock().getLocation());
         if (m == null) return;
