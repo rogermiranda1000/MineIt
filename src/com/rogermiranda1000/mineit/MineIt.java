@@ -24,6 +24,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.fusesource.jansi.Ansi;
 
@@ -116,9 +117,12 @@ public class MineIt extends JavaPlugin {
         }
 
         // Protections
-        if (getServer().getPluginManager().getPlugin("Residence") != null) {
+        Plugin residence = getServer().getPluginManager().getPlugin("Residence");
+        if (residence != null) {
             this.protectionOverrider.add(new ResidenceProtectionOverrider());
             this.getLogger().info("Residence plugin detected.");
+
+            // BlockBreakEvent from Residence needs to be HIGH priority
         }
         if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
             this.protectionOverrider.add(new WorldGuardProtectionOverrider());
