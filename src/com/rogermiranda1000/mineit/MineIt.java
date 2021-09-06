@@ -1,5 +1,6 @@
 package com.rogermiranda1000.mineit;
 
+import com.bekvon.bukkit.residence.listeners.ResidenceBlockListener;
 import com.google.gson.JsonSyntaxException;
 import com.rogermiranda1000.mineit.events.BreakEvent;
 import com.rogermiranda1000.mineit.events.CommandEvent;
@@ -22,13 +23,21 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.fusesource.jansi.Ansi;
 
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
@@ -122,7 +131,24 @@ public class MineIt extends JavaPlugin {
             this.protectionOverrider.add(new ResidenceProtectionOverrider());
             this.getLogger().info("Residence plugin detected.");
 
-            // BlockBreakEvent from Residence needs to be HIGH priority
+            // BlockBreakEvent from Residence needs to be LOW priority
+            try {
+                Field f2=Field.class.getDeclaredField("modifiers");
+                f2.setAccessible(true);
+
+                for (RegisteredListener lis : HandlerList.getRegisteredListeners(residence)) {
+                    if (!(lis.getListener() instanceof ResidenceBlockListener)) continue;
+                    if (!lis.getPriority().equals(EventPriority.LOWEST)) continue;
+
+                    Field f = lis.getClass().getField("priority");
+                    f.setAccessible(true);
+                    f2.setInt(f, f.getModifiers() & ~Modifier.FINAL); // remove final
+                    f.set(lis, EventPriority.LOW);
+                }
+            } catch (NoSuchFieldException | IllegalAccessException ex) {
+                this.printConsoleErrorMessage("Unable to override Residence event priority!");
+                ex.printStackTrace();
+            }
         }
         if (getServer().getPluginManager().getPlugin("WorldGuard") != null) {
             this.protectionOverrider.add(new WorldGuardProtectionOverrider());
