@@ -17,7 +17,7 @@ public class ResidenceProtectionOverrider implements ProtectionOverrider {
         ClaimedResidence res = ResidenceApi.getResidenceManager().getByLoc(event.getBlock().getLocation());
         if (res == null) return null;
 
-        System.out.println(res.getPermissions().playerHas(event.getPlayer(), Flags.destroy, FlagPermissions.FlagCombo.OnlyTrue));
+        // TODO canBreakBlock(Player var0, Block var1, boolean var2)
         if (res.getPermissions().playerHas(event.getPlayer(), Flags.destroy, FlagPermissions.FlagCombo.OnlyTrue)) return null;
 
         // the block breaked is a residence, and the player don't have the permissions

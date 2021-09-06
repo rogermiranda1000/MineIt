@@ -27,6 +27,7 @@ import org.bukkit.event.*;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredListener;
@@ -134,7 +135,7 @@ public class MineIt extends JavaPlugin {
             this.getLogger().info("Residence plugin detected.");
 
             // BlockBreakEvent from Residence needs to be HIGH priority
-            MineIt.overridePriority(residence, ResidenceBlockListener.class, EventPriority.LOWEST, EventPriority.HIGH);
+            this.overridePriority(residence, ResidenceBlockListener.class, EventPriority.LOWEST, EventPriority.LOWEST);
         }
 
         if (pm.getPlugin("WorldGuard") != null) {
@@ -203,28 +204,29 @@ public class MineIt extends JavaPlugin {
         }
     }
 
-    private static void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
+    private void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
         ArrayList<RegisteredListener> reload = new ArrayList<>();
+        Set<Listener> listeners = new HashSet<>();
         for (RegisteredListener lis : HandlerList.getRegisteredListeners(plugin)) {
-            if (lis.getListener().getClass().equals(match)) reload.add(lis);
+            listeners.add(lis.getListener());
+            reload.add(lis);
         }
 
-        if (!reload.isEmpty()) {
-            HandlerList.unregisterAll(reload.get(0).getListener()); // all the RegisteredListener on reload are the same Listener
+        for (Listener lis : listeners) HandlerList.unregisterAll(lis);
 
+        try {
             for (RegisteredListener lis : reload) {
-                for (Method m : match.getDeclaredMethods()) {
-                    if (m.getParameterCount() != 1) continue;
-                    if (!m.getParameterTypes()[0].isAssignableFrom(Event.class)) continue;
-                    Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis.getListener(), lis.getPriority().equals(find) ? replace : lis.getPriority(), (l2, e) -> {
-                        try {
-                            m.invoke(l2, e);
-                        } catch (Throwable t) {
-                            t.printStackTrace();
-                        }
-                    }, plugin, lis.isIgnoringCancelled());
-                }
+                Field executorField = RegisteredListener.class.getDeclaredField("executor");
+                executorField.setAccessible(true);
+                EventExecutor executor = (EventExecutor)executorField.get(lis);
+
+                Class<? extends Event> event = executor.getClass().getMethod("execute", Listener.class, Event.class).getParameterTypes()[1].asSubclass(Event.class);
+
+                Bukkit.getPluginManager().registerEvent(event, lis.getListener(), lis.getPriority().equals(find) ? replace : lis.getPriority(), executor, plugin, lis.isIgnoringCancelled());
             }
+        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException ex) {
+            this.printConsoleErrorMessage("Unable to override " + plugin.getName() + " event priority");
+            ex.printStackTrace();
         }
     }
 }
