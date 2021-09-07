@@ -213,35 +213,24 @@ public class MineIt extends JavaPlugin {
         }
 
         if (!reload.isEmpty()) {
-            HandlerList.unregisterAll(reload.get(0).getListener()); // all the RegisteredListener on reload are the same Listener
+            Listener lis = reload.get(0).getListener();
+            HandlerList.unregisterAll(lis); // all the RegisteredListener on reload are the same Listener
 
-            try {
-                for (RegisteredListener lis : reload) {
-                    Field executorField = RegisteredListener.class.getDeclaredField("executor");
-                    executorField.setAccessible(true);
-                    EventExecutor executor = (EventExecutor) executorField.get(lis);
-                    Class<?> searchType = EventExecutor.class.getMethod("execute", Listener.class, Event.class).getParameterTypes()[1];
+            for (Method m: match.getDeclaredMethods()) {
+                // is it an event?
+                if (m.getParameterCount() != 1) continue;
+                Class<?> type = m.getParameterTypes()[0];
+                if (!Event.class.isAssignableFrom(type)) continue;
+                EventHandler eventHandler = m.getAnnotation(EventHandler.class);
+                if (eventHandler == null) continue;
 
-                    Method method = null;
-                    for (Method m: match.getDeclaredMethods()) {
-                        if (m.getParameterCount() != 1) continue;
-                        Class<?> type = m.getParameterTypes()[0];
-                        if (!Event.class.isAssignableFrom(type)) continue;
-                        System.out.println(m.getName() + ": " + type.getName());
-                        System.out.println(searchType);
-                        System.out.println("---");
-                        //if (!(type instanceof searchType)) continue;
-
-                        method = m;
-                        break;
+                Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis, eventHandler.priority().equals(find) ? replace : eventHandler.priority(), (l,e) -> {
+                    try{
+                        m.invoke(l, e);
+                    }catch (Throwable t){
+                        t.printStackTrace();
                     }
-                    if (method == null) throw new InvalidParameterException("Method definition not found");
-
-                    Bukkit.getPluginManager().registerEvent(method.getParameterTypes()[0].asSubclass(Event.class), lis.getListener(), lis.getPriority().equals(find) ? replace : lis.getPriority(), executor, plugin, lis.isIgnoringCancelled());
-                }
-            } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvalidParameterException ex) {
-                this.printConsoleErrorMessage("Unable to override " + plugin.getName() + " event priority");
-                ex.printStackTrace();
+                }, plugin, eventHandler.ignoreCancelled());
             }
         }
     }
