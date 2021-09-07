@@ -18,17 +18,14 @@ import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
-import net.royawesome.jlibnoise.module.combiner.Min;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.*;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredListener;
@@ -37,10 +34,7 @@ import org.fusesource.jansi.Ansi;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.security.InvalidParameterException;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
@@ -137,7 +131,7 @@ public class MineIt extends JavaPlugin {
             this.getLogger().info("Residence plugin detected.");
 
             // BlockBreakEvent from Residence needs to be HIGH priority
-            this.overridePriority(residence, ResidenceBlockListener.class, EventPriority.LOWEST, EventPriority.LOWEST);
+            this.overridePriority(residence, ResidenceBlockListener.class, EventPriority.LOWEST, EventPriority.HIGH);
         }
 
         if (pm.getPlugin("WorldGuard") != null) {
@@ -207,31 +201,36 @@ public class MineIt extends JavaPlugin {
     }
 
     private void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
-        ArrayList<RegisteredListener> reload = new ArrayList<>();
-        for (RegisteredListener lis : HandlerList.getRegisteredListeners(plugin)) {
-            if (lis.getListener().getClass().equals(match)) reload.add(lis);
+        Listener lis = null;
+        for (RegisteredListener l : HandlerList.getRegisteredListeners(plugin)) {
+            if (l.getListener().getClass().equals(match)) {
+                lis = l.getListener();
+                break;
+            }
         }
 
-        if (!reload.isEmpty()) {
-            Listener lis = reload.get(0).getListener();
-            HandlerList.unregisterAll(lis); // all the RegisteredListener on reload are the same Listener
+        if (lis == null) {
+            this.printConsoleErrorMessage("Unable to override " + plugin.getName() + " event priority: Listener not found");
+            return;
+        }
 
-            for (Method m: match.getDeclaredMethods()) {
-                // is it an event?
-                if (m.getParameterCount() != 1) continue;
-                Class<?> type = m.getParameterTypes()[0];
-                if (!Event.class.isAssignableFrom(type)) continue;
-                EventHandler eventHandler = m.getAnnotation(EventHandler.class);
-                if (eventHandler == null) continue;
+        HandlerList.unregisterAll(lis); // all the RegisteredListener on reload are the same Listener
 
-                Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis, eventHandler.priority().equals(find) ? replace : eventHandler.priority(), (l,e) -> {
-                    try{
-                        m.invoke(l, e);
-                    }catch (Throwable t){
-                        t.printStackTrace();
-                    }
-                }, plugin, eventHandler.ignoreCancelled());
-            }
+        for (Method m: match.getDeclaredMethods()) {
+            // is it an event?
+            if (m.getParameterCount() != 1) continue;
+            if (!Event.class.isAssignableFrom(m.getParameterTypes()[0])) continue;
+            EventHandler eventHandler = m.getAnnotation(EventHandler.class);
+            if (eventHandler == null) continue;
+
+            // register again the event, but with the desired priority
+            Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis, eventHandler.priority().equals(find) ? replace : eventHandler.priority(), (l,e) -> {
+                try{
+                    m.invoke(l, e);
+                }catch (Throwable t){
+                    t.printStackTrace();
+                }
+            }, plugin, eventHandler.ignoreCancelled());
         }
     }
 }
