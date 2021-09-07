@@ -1,5 +1,6 @@
 package com.rogermiranda1000.mineit.events;
 
+import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Location;
@@ -16,15 +17,14 @@ import java.util.ArrayList;
 public class InteractEvent implements Listener {
     private static final Material SELECTED_BLOCK = Material.EMERALD_BLOCK;
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent e) {
         Player ply = e.getPlayer();
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if(e.isCancelled()) return;
         if (!VersionController.get().hasItemInHand(ply, MineIt.item, true)) return;
 
         e.setCancelled(true);
-        if(e.getClickedBlock().getType()!=Material.STONE) {
+        if(e.getClickedBlock().getType() != Mine.SELECT_BLOCK) {
             ply.sendMessage(MineIt.errorPrefix+"You can only hit stone with the Mine Creator!");
             return;
         }
@@ -60,7 +60,7 @@ public class InteractEvent implements Listener {
 
     private static ArrayList<Location> getSurroundingBlocks(Location loc, Location origin) {
         ArrayList<Location> b = new ArrayList<>();
-        if(loc.getBlock().getType() != Material.STONE) return b;
+        if(loc.getBlock().getType() != Mine.SELECT_BLOCK) return b;
         if(InteractEvent.isDistanceGreater(origin, loc, MineIt.instance.rango)) return b;
 
         if (!InteractEvent.airNear(loc)) return b;

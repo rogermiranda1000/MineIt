@@ -15,8 +15,12 @@ import java.util.Scanner;
 public class FileManager {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static Mine loadMines(File f) throws IOException, InvalidLocationException, JsonSyntaxException {
-        return FileManager.gson.fromJson(FileManager.getFileContents(f), BasicMine.class).getMine();
+    public static Mine loadMines(File f) throws IOException, InvalidLocationException {
+        try {
+            return FileManager.gson.fromJson(FileManager.getFileContents(f), BasicMine.class).getMine();
+        } catch (JsonSyntaxException ex) {
+            throw new IOException(ex.getMessage());
+        }
     }
 
     public static void saveMine(File f, Mine mine) throws IOException {

@@ -99,7 +99,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.mineName +"'...");
             mine.setStart(!mine.getStart());
             //inventory.setItem(16, MineIt.instance.watch(mine));
-            this.inv.setItem(((((mine.getStages().size()/9) + 1)*2 + 1)*9)-2, this.status());
+            this.inv.setItem(((((mine.getStageCount()/9) + 1)*2 + 1)*9)-2, this.status());
         }
         else if (clicked.equals(this.time)) {
             // TODO
@@ -123,7 +123,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     case 0:
                         // primera fila (la de stages)
                         if (item.getType().equals(Material.AIR)) {
-                            if (stageNum >= mine.getStages().size()) return; // not enough stages
+                            if (stageNum >= mine.getStageCount()) return; // not enough stages
 
                             // remove stage
                             if (mine.getStageCount() == 1) {
@@ -138,7 +138,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                             mine.removeStage(stageNum);
                         }
                         else {
-                            Object stageMaterial = VersionController.get().getObject(item);
+                            Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item);
                             ItemMeta m = item.getItemMeta();
                             // already exists?
                             String name = VersionController.get().getName(stageMaterial);
@@ -174,13 +174,13 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         // segunda fila (la de on break go to X stage)
                         if (stageNum <= 1) return; // you can't edit the 1st nor 2nd stage
 
-                        Stage match = mine.getStage(item.getType().name());
+                        Stage match = mine.getStage(item.getType().equals(Mine.AIR_STAGE) ? Material.AIR.name() : item.getType().name());
                         if(match == null) {
                             player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
                             return;
                         }
 
-                        mine.getStages().get(stageNum).setPreviousStage(match);
+                        mine.getStage(stageNum).setPreviousStage(match);
 
                         // actualizar vista
                         ItemMeta m = item.getItemMeta();
@@ -213,24 +213,24 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
 
     @Override
     public void onMineChanged() {
-        int lin = this.listening.getStages().size()/9 + 1;
+        int lin = this.listening.getStageCount()/9 + 1;
         if(lin>2) {
-            if(this.listening.getStages().size() % 9 > 0) {
+            if(this.listening.getStageCount() % 9 > 0) {
                 MineIt.instance.printConsoleWarningMessage("There's too many stages, the plugin can't show them all!");
                 return; // TODO fill more stages/show only the fist ones
             }
-            lin = this.listening.getStages().size()/9;
+            lin = this.listening.getStageCount()/9;
         }
         Inventory newInventory = Bukkit.createInventory(null, (lin*2 + 1)*9, "§cEdit mine §d" + this.listening.mineName);
 
         for(int x = 0; x<lin*9; x++) {
             int actualLine = (x/9)*18 + (x%9);
 
-            if(this.listening.getStages().size()>x) {
-                Stage current = this.listening.getStages().get(x);
+            if(this.listening.getStageCount()>x) {
+                Stage current = this.listening.getStage(x);
                 ItemStack block = current.getStageItemStack();
                 ItemMeta meta = block.getItemMeta();
-                if (meta == null) {
+                if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {
                     // AIR
                     block = new ItemStack(Mine.AIR_STAGE);
                     meta = block.getItemMeta();
@@ -246,7 +246,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 if(current.getPreviousStage() != null) {
                     block = current.getPreviousStage().getStageItemStack();
                     meta = block.getItemMeta();
-                    if (meta == null) {
+                    if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {
                         // AIR
                         block = new ItemStack(Mine.AIR_STAGE);
                         meta = block.getItemMeta();
