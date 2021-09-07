@@ -18,6 +18,7 @@ import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
+import net.royawesome.jlibnoise.module.combiner.Min;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -39,6 +40,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.security.InvalidParameterException;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
@@ -206,27 +208,41 @@ public class MineIt extends JavaPlugin {
 
     private void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
         ArrayList<RegisteredListener> reload = new ArrayList<>();
-        Set<Listener> listeners = new HashSet<>();
         for (RegisteredListener lis : HandlerList.getRegisteredListeners(plugin)) {
-            listeners.add(lis.getListener());
-            reload.add(lis);
+            if (lis.getListener().getClass().equals(match)) reload.add(lis);
         }
 
-        for (Listener lis : listeners) HandlerList.unregisterAll(lis);
+        if (!reload.isEmpty()) {
+            HandlerList.unregisterAll(reload.get(0).getListener()); // all the RegisteredListener on reload are the same Listener
 
-        try {
-            for (RegisteredListener lis : reload) {
-                Field executorField = RegisteredListener.class.getDeclaredField("executor");
-                executorField.setAccessible(true);
-                EventExecutor executor = (EventExecutor)executorField.get(lis);
+            try {
+                for (RegisteredListener lis : reload) {
+                    Field executorField = RegisteredListener.class.getDeclaredField("executor");
+                    executorField.setAccessible(true);
+                    EventExecutor executor = (EventExecutor) executorField.get(lis);
+                    Class<?> searchType = EventExecutor.class.getMethod("execute", Listener.class, Event.class).getParameterTypes()[1];
 
-                Class<? extends Event> event = executor.getClass().getMethod("execute", Listener.class, Event.class).getParameterTypes()[1].asSubclass(Event.class);
+                    Method method = null;
+                    for (Method m: match.getDeclaredMethods()) {
+                        if (m.getParameterCount() != 1) continue;
+                        Class<?> type = m.getParameterTypes()[0];
+                        if (!Event.class.isAssignableFrom(type)) continue;
+                        System.out.println(m.getName() + ": " + type.getName());
+                        System.out.println(searchType);
+                        System.out.println("---");
+                        //if (!(type instanceof searchType)) continue;
 
-                Bukkit.getPluginManager().registerEvent(event, lis.getListener(), lis.getPriority().equals(find) ? replace : lis.getPriority(), executor, plugin, lis.isIgnoringCancelled());
+                        method = m;
+                        break;
+                    }
+                    if (method == null) throw new InvalidParameterException("Method definition not found");
+
+                    Bukkit.getPluginManager().registerEvent(method.getParameterTypes()[0].asSubclass(Event.class), lis.getListener(), lis.getPriority().equals(find) ? replace : lis.getPriority(), executor, plugin, lis.isIgnoringCancelled());
+                }
+            } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | InvalidParameterException ex) {
+                this.printConsoleErrorMessage("Unable to override " + plugin.getName() + " event priority");
+                ex.printStackTrace();
             }
-        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException ex) {
-            this.printConsoleErrorMessage("Unable to override " + plugin.getName() + " event priority");
-            ex.printStackTrace();
         }
     }
 }
