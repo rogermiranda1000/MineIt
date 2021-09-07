@@ -1,7 +1,6 @@
 package com.rogermiranda1000.mineit;
 
 import com.bekvon.bukkit.residence.listeners.ResidenceBlockListener;
-import com.google.gson.JsonSyntaxException;
 import com.rogermiranda1000.mineit.events.BreakEvent;
 import com.rogermiranda1000.mineit.events.CommandEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
@@ -153,19 +152,24 @@ public class MineIt extends JavaPlugin {
         this.selectMineInventory = new SelectMineInventory();
 
         //Minas
-        for(File archivo: getDataFolder().listFiles()) {
-            if(archivo.getName().equalsIgnoreCase("config.yml")) continue;
+        try {
+            Class.forName("com.google.gson.JsonSyntaxException");
+            for (File archivo : getDataFolder().listFiles()) {
+                if (archivo.getName().equalsIgnoreCase("config.yml")) continue;
 
-            String mineName = archivo.getName().replaceAll("\\.yml$", "");
-            try {
-                getLogger().info("Loading mine " + mineName + "..."); // TODO .json
-                Mine mine = FileManager.loadMines(archivo);
-                Mine.addMine(mine);
-            } catch (IOException | JsonSyntaxException ex) {
-                this.printConsoleErrorMessage( "Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
-            } catch (InvalidLocationException ex) {
-                this.printConsoleErrorMessage( "Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
+                String mineName = archivo.getName().replaceAll("\\.yml$", "");
+                try {
+                    getLogger().info("Loading mine " + mineName + "..."); // TODO .json
+                    Mine mine = FileManager.loadMines(archivo);
+                    Mine.addMine(mine);
+                } catch (IOException ex) {
+                    this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
+                } catch (InvalidLocationException ex) {
+                    this.printConsoleErrorMessage("Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
+                }
             }
+        } catch (ClassNotFoundException ex) {
+            this.printConsoleErrorMessage( "MineIt needs Gson in order to work.");
         }
 
         getServer().getPluginManager().registerEvents(new BreakEvent(), this);
