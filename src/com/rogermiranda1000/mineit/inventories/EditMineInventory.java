@@ -99,7 +99,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.mineName +"'...");
             mine.setStart(!mine.getStart());
             //inventory.setItem(16, MineIt.instance.watch(mine));
-            this.inv.setItem(((((mine.getStages().size()/9) + 1)*2 + 1)*9)-2, this.status());
+            this.inv.setItem(((((mine.getStageCount()/9) + 1)*2 + 1)*9)-2, this.status());
         }
         else if (clicked.equals(this.time)) {
             // TODO
@@ -123,7 +123,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     case 0:
                         // primera fila (la de stages)
                         if (item.getType().equals(Material.AIR)) {
-                            if (stageNum >= mine.getStages().size()) return; // not enough stages
+                            if (stageNum >= mine.getStageCount()) return; // not enough stages
 
                             // remove stage
                             if (mine.getStageCount() == 1) {
@@ -180,7 +180,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                             return;
                         }
 
-                        mine.getStages().get(stageNum).setPreviousStage(match);
+                        mine.getStage(stageNum).setPreviousStage(match);
 
                         // actualizar vista
                         ItemMeta m = item.getItemMeta();
@@ -213,21 +213,21 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
 
     @Override
     public void onMineChanged() {
-        int lin = this.listening.getStages().size()/9 + 1;
+        int lin = this.listening.getStageCount()/9 + 1;
         if(lin>2) {
-            if(this.listening.getStages().size() % 9 > 0) {
+            if(this.listening.getStageCount() % 9 > 0) {
                 MineIt.instance.printConsoleWarningMessage("There's too many stages, the plugin can't show them all!");
                 return; // TODO fill more stages/show only the fist ones
             }
-            lin = this.listening.getStages().size()/9;
+            lin = this.listening.getStageCount()/9;
         }
         Inventory newInventory = Bukkit.createInventory(null, (lin*2 + 1)*9, "§cEdit mine §d" + this.listening.mineName);
 
         for(int x = 0; x<lin*9; x++) {
             int actualLine = (x/9)*18 + (x%9);
 
-            if(this.listening.getStages().size()>x) {
-                Stage current = this.listening.getStages().get(x);
+            if(this.listening.getStageCount()>x) {
+                Stage current = this.listening.getStage(x);
                 ItemStack block = current.getStageItemStack();
                 ItemMeta meta = block.getItemMeta();
                 if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {

@@ -1,7 +1,8 @@
 package com.rogermiranda1000.mineit;
 
+import com.bekvon.bukkit.residence.listeners.ResidenceBlockListener;
 import com.google.gson.JsonSyntaxException;
-import com.rogermiranda1000.mineit.events.BlockBreakEvent;
+import com.rogermiranda1000.mineit.events.BreakEvent;
 import com.rogermiranda1000.mineit.events.CommandEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.events.HintEvent;
@@ -10,6 +11,9 @@ import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
+import com.rogermiranda1000.mineit.protections.ProtectionOverrider;
+import com.rogermiranda1000.mineit.protections.ResidenceProtectionOverrider;
+import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverrider;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
@@ -19,12 +23,18 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.event.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.fusesource.jansi.Ansi;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class MineIt extends JavaPlugin {
@@ -36,16 +46,18 @@ public class MineIt extends JavaPlugin {
             errorPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.RED;
     public static ItemStack item;
     public static MineIt instance;
-    public static FileConfiguration config;
 
     //Inv
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
 
+    public ArrayList<ProtectionOverrider> protectionOverrider = new ArrayList<>();
+
     public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
 
     public int rango;
     public boolean limit;
+    public boolean overrideProtection;
 
     public void printConsoleErrorMessage(String msg) {
         this.getLogger().warning(MineIt.ERROR_COLOR + msg + MineIt.NO_COLOR);
@@ -74,7 +86,8 @@ public class MineIt extends JavaPlugin {
         c.put("mine_creator_range", 5);
         c.put("limit_blocks_per_stage", false);
         c.put("air_stage", Material.STONE_BUTTON.name());
-        config = getConfig();
+        c.put("override_protections", true);
+        FileConfiguration config = getConfig();
         //Create/actualize config file
         try {
             if (!getDataFolder().exists()) getDataFolder().mkdirs();
@@ -99,8 +112,9 @@ public class MineIt extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        rango = config.getInt("mine_creator_range");
-        limit = config.getBoolean("limit_blocks_per_stage");
+        this.rango = config.getInt("mine_creator_range");
+        this.limit = config.getBoolean("limit_blocks_per_stage");
+        this.overrideProtection = config.getBoolean("override_protections");
         String airStage = config.getString("air_stage");
         try {
             Mine.AIR_STAGE = Material.getMaterial(airStage);
@@ -108,11 +122,29 @@ public class MineIt extends JavaPlugin {
             this.printConsoleErrorMessage("The air stage material '" + airStage + "' does not exist!");
         }
 
+
+        // Protections
+        PluginManager pm = getServer().getPluginManager();
+        Plugin residence = pm.getPlugin("Residence");
+        if (residence != null) {
+            this.protectionOverrider.add(new ResidenceProtectionOverrider());
+            this.getLogger().info("Residence plugin detected.");
+
+            // BlockBreakEvent from Residence needs to be HIGH priority
+            this.overridePriority(residence, ResidenceBlockListener.class, EventPriority.LOWEST, EventPriority.HIGH);
+        }
+
+        if (pm.getPlugin("WorldGuard") != null) {
+            this.protectionOverrider.add(new WorldGuardProtectionOverrider());
+            this.getLogger().info("WorldGuard plugin detected.");
+        }
+
+
         // Create tool
         // @pre before inventory creation
         item = new ItemStack(Material.STICK);
         ItemMeta m = item.getItemMeta();
-        m.setDisplayName(ChatColor.GOLD+""+ChatColor.BOLD+"Mine creator");
+        m.setDisplayName(ChatColor.GOLD.toString()+ChatColor.BOLD+"Mine creator");
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
@@ -136,7 +168,7 @@ public class MineIt extends JavaPlugin {
             }
         }
 
-        getServer().getPluginManager().registerEvents(new BlockBreakEvent(), this);
+        getServer().getPluginManager().registerEvents(new BreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InteractEvent(), this);
         this.mainInventory.registerEvent(this);
         this.selectMineInventory.registerEvent(this);
@@ -165,6 +197,40 @@ public class MineIt extends JavaPlugin {
             } catch(IOException e){
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
+        Listener lis = null;
+        for (RegisteredListener l : HandlerList.getRegisteredListeners(plugin)) {
+            if (l.getListener().getClass().equals(match)) {
+                lis = l.getListener();
+                break;
+            }
+        }
+
+        if (lis == null) {
+            this.printConsoleErrorMessage("Unable to override " + plugin.getName() + " event priority: Listener not found");
+            return;
+        }
+
+        HandlerList.unregisterAll(lis); // all the RegisteredListener on reload are the same Listener
+
+        for (Method m: match.getDeclaredMethods()) {
+            // is it an event?
+            if (m.getParameterCount() != 1) continue;
+            if (!Event.class.isAssignableFrom(m.getParameterTypes()[0])) continue;
+            EventHandler eventHandler = m.getAnnotation(EventHandler.class);
+            if (eventHandler == null) continue;
+
+            // register again the event, but with the desired priority
+            Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis, eventHandler.priority().equals(find) ? replace : eventHandler.priority(), (l,e) -> {
+                try{
+                    m.invoke(l, e);
+                }catch (Throwable t){
+                    t.printStackTrace();
+                }
+            }, plugin, eventHandler.ignoreCancelled());
         }
     }
 }
