@@ -55,10 +55,6 @@ public class CommandEvent implements CommandExecutor {
         new CustomCommand("mineit create \\S+", "mineit.create", false, "mineit create [name]", null, (sender, args) -> {
             Player player = (Player) sender; // not for console usage
 
-            if(!MineIt.instance.selectedBlocks.containsKey(player.getName()) || MineIt.instance.selectedBlocks.get(player.getName()).size()==0) {
-                player.sendMessage(MineIt.errorPrefix +"Please, select the mine's blocks first.");
-                return;
-            }
             if(Mine.getMinesLength()>=45) {
                 player.sendMessage(MineIt.errorPrefix +"You've reached the current mines limit!");
                 return;
@@ -72,14 +68,16 @@ public class CommandEvent implements CommandExecutor {
                 return;
             }
 
-            ArrayList<Location> locations = new ArrayList<>();
-            for(Location loc : MineIt.instance.selectedBlocks.get(player.getName())) {
-                locations.add(loc);
-                loc.getBlock().setType(Mine.STATE_ZERO);
+            ArrayList<Location> locations = MineIt.instance.getSelectedBlocks(player.getName());
+            if (locations == null || locations.size() == 0) {
+                player.sendMessage(MineIt.errorPrefix +"Please, select the mine's blocks first.");
+                return;
             }
+
             Mine m = new Mine(args[1], locations);
             Mine.addMine(m);
-            MineIt.instance.selectedBlocks.remove(player.getName());
+            MineIt.instance.removeSelectionBlocks(player.getName());
+            locations.forEach(l -> l.getBlock().setType(Mine.STATE_ZERO));
 
             player.sendMessage(MineIt.clearPrefix+ChatColor.GREEN+"Mine created successfully.");
 
@@ -218,7 +216,7 @@ public class CommandEvent implements CommandExecutor {
             sender.sendMessage(MineIt.clearPrefix + "Selected blocks restarted.");
         }),
         new CustomCommand("mineit select back", "mineit.select", false, "mineit select back", "unselects the previous selected blocks by the user", (sender, cmd) -> {
-            ArrayList<Location> r = MineIt.instance.getLastSelectedBlocks(((Player)sender).getName());
+            ArrayList<Location> r = MineIt.instance.getLastSelectedBlocksAndRemove(((Player)sender).getName());
             if (r == null) {
                 sender.sendMessage(MineIt.errorPrefix + "First you need to have some blocks selected!");
                 return;
