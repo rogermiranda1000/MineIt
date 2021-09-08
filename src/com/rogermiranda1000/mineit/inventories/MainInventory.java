@@ -82,7 +82,6 @@ public class MainInventory extends BasicInventory {
         // interaction
         if(clicked.equals(this.mineCreatorTool)) {
             player.closeInventory();
-            MineIt.instance.getLogger().info("Giving Mine creator to "+player.getName()+"...");
             player.getInventory().addItem(MineIt.item);
         }
         else if(clicked.equals(this.createMine)) {

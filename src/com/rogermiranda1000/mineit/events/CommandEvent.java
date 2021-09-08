@@ -18,7 +18,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class CommandEvent implements CommandExecutor {
@@ -39,6 +38,9 @@ public class CommandEvent implements CommandExecutor {
         }),
         new CustomCommand("mineit", "mineit.open", false, "mineit", null, (sender, cmd) -> {
             MineIt.instance.mainInventory.openInventory((Player)sender);
+        }),
+        new CustomCommand("mineit tool", "mineit.create", false, "mineit tool", "get the selection tool", (sender, cmd) -> {
+            ((Player)sender).getInventory().addItem(MineIt.item);
         }),
         new CustomCommand("mineit create \\S+", "mineit.create", false, "mineit create [name]", null, (sender, args) -> {
             Player player = (Player) sender; // not for console usage
@@ -210,7 +212,6 @@ public class CommandEvent implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
         // TODO back
-        // TODO tool
         // TODO unselect on leave
         // TODO select a single block
         // TODO append to existing mine
