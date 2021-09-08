@@ -111,8 +111,9 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             ItemStack item = new ItemStack(player.getItemOnCursor().getType());
             if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
 
-            int stageNum = x%9; // we're editing the stage nºstageNum
-            switch (x/9) {
+            int line = x/18,
+                stageNum = line*9 + x%9; // we're editing the stage nºstageNum
+            switch ((x - line*18)/9) {
                 case 0:
                     // primera fila (la de stages)
                     if (item.getType().equals(Material.AIR)) {
