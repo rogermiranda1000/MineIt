@@ -243,10 +243,7 @@ public class MineIt extends JavaPlugin {
     }
 
     public boolean isSelected(Location loc) {
-        for (ArrayList<Location> locations : this.selectedBlocks.values()) {
-            if (locations.contains(loc)) return true;
-        }
-        return false;
+        return this.getAllSelectedBlocks().contains(loc);
     }
 
     private void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
