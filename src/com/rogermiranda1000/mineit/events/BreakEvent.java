@@ -19,7 +19,10 @@ public class BreakEvent implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
         Mine m = Mine.getMine(e.getBlock().getLocation());
-        if (m == null) return;
+        if (m == null) {
+            if (MineIt.instance.isSelected(e.getBlock().getLocation())) e.setCancelled(true); // trying to break a selected block
+            return;
+        }
 
         Player ply = e.getPlayer();
         if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.getName())) {
