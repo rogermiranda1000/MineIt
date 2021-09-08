@@ -66,9 +66,7 @@ public class BlockPre13 implements BlockManager {
     public void setType(@NotNull Block block, Object type) {
         try {
             BlockPre13.setTypeMethod.invoke(block, ((ItemStack)type).getType().getId(), ((ItemStack)type).getData().getData(), true); // TODO gravity
-        } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
-            ex.printStackTrace();
-        }
+        } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ignored) {}
     }
 
     @Override
