@@ -33,3 +33,6 @@ permissions:
   mineit.reset:
     description: Set all the mine blocks to bedrock
     default: op
+  mineit.select:
+    description: Select blocks for the mine
+    default: op

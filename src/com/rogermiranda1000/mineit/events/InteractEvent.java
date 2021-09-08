@@ -29,7 +29,7 @@ public class InteractEvent implements Listener {
             return;
         }
 
-        if(!ply.hasPermission("mineit.create")) {
+        if(!ply.hasPermission("mineit.select")) {
             ply.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
             return;
         }
