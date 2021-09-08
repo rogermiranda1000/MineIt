@@ -71,7 +71,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     @Nullable
     public BasicInventory searchMine(String title) {
         for (Map.Entry<Mine,BasicInventory> m : this.editMineInventory.entrySet()) {
-            if (m.getKey().mineName.equalsIgnoreCase(title)) return m.getValue();
+            if (m.getKey().getName().equalsIgnoreCase(title)) return m.getValue();
         }
         return null; // not found
     }
@@ -107,7 +107,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
             for (Mine mine : Mine.getMines()) {
                 ItemStack mina = new ItemStack(Mine.SELECT_BLOCK); // TODO mine block
                 ItemMeta meta = mina.getItemMeta();
-                meta.setDisplayName(mine.mineName);
+                meta.setDisplayName(mine.getName());
                 ArrayList<String> lore = new ArrayList<>();
                 for (Stage s : mine.getStages()) lore.add(s.toString());
                 meta.setLore(lore);

@@ -196,7 +196,7 @@ public class MineIt extends JavaPlugin {
         // save mines
         for (Mine mina : Mine.getMines()) {
             try {
-                File file = new File(getDataFolder(), mina.mineName +".yml");
+                File file = new File(getDataFolder(), mina.getName() +".yml");
                 FileManager.saveMine(file, mina);
             } catch(IOException e){
                 e.printStackTrace();
