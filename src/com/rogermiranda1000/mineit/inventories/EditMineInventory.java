@@ -108,7 +108,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             int x = e.getSlot();
             if (this.inv.getItem(x) == null || x >= this.getLastRowIndex()) return; // en ese slot no hay nada o estan en la última fila (no deberia pasar)
 
-            ItemStack item = new ItemStack(player.getItemOnCursor().getType());
+            ItemStack item = VersionController.get().cloneItemStack(player.getItemOnCursor());
             if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
 
             int line = x/18,
@@ -132,11 +132,10 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         this.listening.removeStage(stageNum);
                     }
                     else {
-                        Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item);
+                        Object stageMaterial = VersionController.get().getObject(player.getItemOnCursor().getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
                         // already exists?
-                        String name = VersionController.get().getName(stageMaterial);
-                        if (this.listening.getStage(name) != null) {
-                            player.sendMessage(MineIt.errorPrefix+"There's already a " + name.toLowerCase() + " stage!");
+                        if (this.listening.getStage(stageMaterial) != null) {
+                            player.sendMessage(MineIt.errorPrefix+"There's already a " + VersionController.get().getName(stageMaterial).toLowerCase() + " stage!");
                             return;
                         }
 
@@ -158,7 +157,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         }
                         else {
                             // nuevo estado
-                            this.listening.addStage(new Stage(name));
+                            this.listening.addStage(new Stage(stageMaterial));
                         }
                     }
                     break;
@@ -167,7 +166,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     // segunda fila (la de on break go to X stage)
                     if (item.getType().equals(Material.AIR) || stageNum >= this.listening.getStageCount()) return; // no previous stage configuration
 
-                    Stage match = this.listening.getStage(item.getType().equals(Mine.AIR_STAGE) ? Material.AIR.name() : item.getType().name());
+                    Stage match = this.listening.getStage(VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item));
                     if(match == null) {
                         player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
                         return;

@@ -50,7 +50,7 @@ public class BreakEvent implements Listener {
     }
 
     private void breakBlock(Mine m, Block block) {
-        Stage s = m.getStage(block.getType().toString());
+        Stage s = m.getStage(VersionController.get().getObject(block));
         Stage prev;
         if (s == null || (prev = s.getPreviousStage()) == null) {
             // unstaged block in mine or first stage mined

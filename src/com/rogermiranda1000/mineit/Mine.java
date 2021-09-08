@@ -188,8 +188,7 @@ public class Mine implements Runnable {
         this.resetStagesCount();
 
         for(Location loc: this.getMineBlocks()) {
-            Object mat = VersionController.get().getObject(loc.getBlock());
-            Stage match = this.getStage(VersionController.get().getName(mat));
+            Stage match = this.getStage(VersionController.get().getObject(loc.getBlock()));
             if (match != null) match.incrementStageBlocks();
         }
     }
@@ -215,8 +214,8 @@ public class Mine implements Runnable {
     }
 
     @Nullable
-    public Stage getStage(String search) {
-        return this.stages.stream().filter( e -> e.getName().equalsIgnoreCase(search) ).findAny().orElse(null);
+    public Stage getStage(Object search) {
+        return this.stages.stream().filter( e -> e.getStageMaterial().equals(search) ).findAny().orElse(null);
     }
 
     @Nullable
@@ -319,8 +318,8 @@ public class Mine implements Runnable {
         // we need to change 'changedBlocks' blocks
         for (int x = 0; x < changedBlocks; x++) {
             Location loc = this.getRandomBlockInMine();
-            Stage current = this.getStage(loc.getBlock().getType().toString());
-            if (current == null) continue; // wtf
+            Stage current = this.getStage(VersionController.get().getObject(loc.getBlock()));
+            if (current == null) continue; // ?
             Stage next = current.getNextStage();
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();
