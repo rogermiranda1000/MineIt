@@ -104,7 +104,7 @@ public class VersionController extends ItemManager implements BlockManager, Part
      * @return ItemStack clone
      */
     public ItemStack cloneItemStack(ItemStack item) {
-        return getItemStack(getObject(item));
+        return this.getItemStack(this.getObject(item));
     }
 
     @Override

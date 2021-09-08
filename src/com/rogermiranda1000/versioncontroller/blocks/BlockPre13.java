@@ -2,7 +2,6 @@ package com.rogermiranda1000.versioncontroller.blocks;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,11 +65,10 @@ public class BlockPre13 implements BlockManager {
     @Override
     public void setType(@NotNull Block block, Object type) {
         try {
-            String[] typeInfo = this.getName(type).split(":");
-            block.setType(Material.valueOf(typeInfo[0]));
-            // TODO sub-id
-            //BlockPre13.setTypeMethod.invoke(block, Integer.parseInt(typeInfo[0]), typeInfo.length == 2 ? Byte.parseByte(typeInfo[1]) : 0, true);
-        } catch (IllegalArgumentException ignored) { }
+            BlockPre13.setTypeMethod.invoke(block, ((ItemStack)type).getType().getId(), ((ItemStack)type).getData().getData(), true); // TODO gravity
+        } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override
