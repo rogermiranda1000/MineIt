@@ -8,6 +8,7 @@ import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -104,94 +105,86 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             // TODO
         }
         else {
-            // changing stages or blocks
-            // TODO Hotfix: bucle for no funciona con elementos repetidos (ej: dos estados que al romperse van a BEDROCK)
-            for(int x = 0; x < this.getLastRowIndex(); x++) {
-                if(this.inv.getItem(x) == null) continue; // en ese slot no hay nada
-                if(!clicked.equals(this.inv.getItem(x))) continue; // no es el elemento que ha pulsado
+            int x = e.getSlot();
+            if (this.inv.getItem(x) == null || x >= this.getLastRowIndex()) return; // en ese slot no hay nada o estan en la última fila (no deberia pasar)
 
-                ItemStack item = new ItemStack(player.getItemOnCursor().getType());
-                if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
+            ItemStack item = new ItemStack(player.getItemOnCursor().getType());
+            if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
 
-                int stageNum = x%9; // we're editing the stage nºstageNum
+            int stageNum = x%9; // we're editing the stage nºstageNum
+            switch (x/9) {
+                case 0:
+                    // primera fila (la de stages)
+                    if (item.getType().equals(Material.AIR)) {
+                        if (stageNum >= this.listening.getStageCount()) return; // not enough stages
 
-                switch (x/9) {
-                    case 0:
-                        // primera fila (la de stages)
-                        if (item.getType().equals(Material.AIR)) {
-                            if (stageNum >= this.listening.getStageCount()) return; // not enough stages
-
-                            // remove stage
-                            if (this.listening.getStageCount() == 1) {
-                                player.sendMessage(MineIt.errorPrefix + "There can't be a mine without stages!");
-                                return;
-                            }
-                            if (stageNum == 0) {
-                                player.sendMessage(MineIt.errorPrefix + "Bedrock can't be deleted.");
-                                return;
-                            }
-
-                            this.listening.removeStage(stageNum);
+                        // remove stage
+                        if (this.listening.getStageCount() == 1) {
+                            player.sendMessage(MineIt.errorPrefix + "There can't be a mine without stages!");
+                            return;
                         }
-                        else {
-                            Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item);
-                            ItemMeta m = item.getItemMeta();
-                            // already exists?
-                            String name = VersionController.get().getName(stageMaterial);
-                            if (this.listening.getStage(name) != null) {
-                                player.sendMessage(MineIt.errorPrefix+"There's already a " + name.toLowerCase() + " stage!");
-                                return;
-                            }
-
-                            if (stageNum < this.listening.getStageCount()) {
-                                // sobreescribir estado
-                                // TODO sobreescribir
-                                /*m.setLore(inventory.getItem(x).getItemMeta().getLore());
-                                item.setItemMeta(m);
-
-                                for (int y = 0; y<mine.getStages().size(); y++) {
-                                    if(mine.getStages().get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
-                                        mine.getStages().set(y, item.getType().name());
-                                        break;
-                                    }
-                                }
-                                mine.stages = mine.getStages().toArray(new String[mine.getStages().size()]);
-                                if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
-                                inventory.setItem(x, item);*/
-                            }
-                            else {
-                                // nuevo estado
-                                this.listening.addStage(new Stage(name));
-                            }
-                        }
-                        break;
-
-                    case 1:
-                        // segunda fila (la de on break go to X stage)
-                        if (stageNum <= 1) return; // you can't edit the 1st nor 2nd stage
-
-                        Stage match = this.listening.getStage(item.getType().equals(Mine.AIR_STAGE) ? Material.AIR.name() : item.getType().name());
-                        if(match == null) {
-                            player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
+                        if (stageNum == 0) {
+                            player.sendMessage(MineIt.errorPrefix + StringUtils.capitalize(Mine.STATE_ZERO.name()) + " stage can't be deleted.");
                             return;
                         }
 
-                        this.listening.getStage(stageNum).setPreviousStage(match);
+                        this.listening.removeStage(stageNum);
+                    }
+                    else {
+                        Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item);
+                        // already exists?
+                        String name = VersionController.get().getName(stageMaterial);
+                        if (this.listening.getStage(name) != null) {
+                            player.sendMessage(MineIt.errorPrefix+"There's already a " + name.toLowerCase() + " stage!");
+                            return;
+                        }
 
-                        // actualizar vista
-                        ItemMeta m = item.getItemMeta();
-                        List<String> str = new ArrayList<>();
-                        str.add("On break, go to stage " + item.getType().name());
-                        m.setLore(str);
-                        item.setItemMeta(m);
-                        this.inv.setItem(x, item);
-                        break;
+                        if (stageNum < this.listening.getStageCount()) {
+                            // sobreescribir estado
+                            // TODO sobreescribir
+                            /*m.setLore(inventory.getItem(x).getItemMeta().getLore());
+                            item.setItemMeta(m);
 
-                    default:
-                        // ?
-                }
+                            for (int y = 0; y<mine.getStages().size(); y++) {
+                                if(mine.getStages().get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
+                                    mine.getStages().set(y, item.getType().name());
+                                    break;
+                                }
+                            }
+                            mine.stages = mine.getStages().toArray(new String[mine.getStages().size()]);
+                            if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
+                            inventory.setItem(x, item);*/
+                        }
+                        else {
+                            // nuevo estado
+                            this.listening.addStage(new Stage(name));
+                        }
+                    }
+                    break;
 
-                return;
+                case 1:
+                    // segunda fila (la de on break go to X stage)
+                    if (item.getType().equals(Material.AIR) || stageNum >= this.listening.getStageCount()) return; // no previous stage configuration
+
+                    Stage match = this.listening.getStage(item.getType().equals(Mine.AIR_STAGE) ? Material.AIR.name() : item.getType().name());
+                    if(match == null) {
+                        player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
+                        return;
+                    }
+
+                    this.listening.getStage(stageNum).setPreviousStage(match);
+
+                    // update view
+                    ItemMeta m = item.getItemMeta();
+                    List<String> str = new ArrayList<>();
+                    str.add("On break, go to stage " + item.getType().name());
+                    m.setLore(str);
+                    item.setItemMeta(m);
+                    this.inv.setItem(x, item);
+                    break;
+
+                default:
+                    // ?
             }
         }
     }

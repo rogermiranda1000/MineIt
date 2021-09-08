@@ -1,6 +1,6 @@
 name: MineIt
 main: com.rogermiranda1000.mineit.MineIt
-version: 1.2
+version: 1.2.1
 author: rogermiranda1000
 api-version: 1.13
 softdepend: [Multiverse-Core,Residence,WorldGuard]
