@@ -230,20 +230,20 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             newInventory.setItem(actualLine, block);
 
             if(current.getPreviousStage() != null && !block.getType().equals(Mine.AIR_STAGE)) {
-                block = current.getPreviousStage().getStageItemStack();
-                meta = block.getItemMeta();
-                if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {
+                ItemStack bottomBlock = current.getPreviousStage().getStageItemStack();
+                meta = bottomBlock.getItemMeta();
+                if (Mine.AIR_STAGE != null && (bottomBlock.getType().equals(Material.AIR) || meta == null)) {
                     // AIR
-                    block = new ItemStack(Mine.AIR_STAGE);
-                    meta = block.getItemMeta();
+                    bottomBlock = new ItemStack(Mine.AIR_STAGE);
+                    meta = bottomBlock.getItemMeta();
                     meta.setDisplayName("Air");
                 }
                 l = new ArrayList<>();
                 l.add("On break, go to stage " + current.getPreviousStage().getName());
                 meta.setLore(l);
-                block.setItemMeta(meta);
+                bottomBlock.setItemMeta(meta);
 
-                newInventory.setItem(actualLine+9, block);
+                newInventory.setItem(actualLine+9, bottomBlock);
             }
         }
 
