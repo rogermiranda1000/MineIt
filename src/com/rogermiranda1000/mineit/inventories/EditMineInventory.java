@@ -197,19 +197,17 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
          * 'lines' indicates the number of pairs that must be shown
          */
         int lines = this.listening.getStageCount()/9 + 1;
-        if(lines>2) {
-            if(this.listening.getStageCount() % 9 > 0) {
-                MineIt.instance.printConsoleWarningMessage("There's too many stages, the plugin can't show them all!");
-                return; // TODO fill more stages/show only the fist ones
-            }
-            lines = this.listening.getStageCount()/9;
+        if (this.listening.getStageCount() == 18) lines = 2; // the '+1' caused the overflow
+        else if (lines > 2) {
+            MineIt.instance.printConsoleWarningMessage("There's too many stages, the plugin can't show them all!");
+            return; // TODO fill more stages/show only the fist ones
         }
         Inventory newInventory = Bukkit.createInventory(null, (lines*2 + 1)*9, ChatColor.RED + "Edit mine " + ChatColor.LIGHT_PURPLE + this.listening.getName());
 
         for(int x = 0; x<lines*9; x++) {
             int actualLine = (x/9)*18 + (x%9);
 
-            if(this.listening.getStageCount()<=x) {
+            if(this.listening.getStageCount() <= x) {
                 newInventory.setItem(actualLine, EditMineInventory.glass);
                 newInventory.setItem(actualLine+9, EditMineInventory.glass);
                 continue;
@@ -268,6 +266,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
      * @return First index of the last inventory row
      */
     private int getLastRowIndex() {
+        if (this.listening.getStageCount() == 18) return 2*2*9;
         return ((this.listening.getStageCount()/9) + 1)*2*9;
     }
 
