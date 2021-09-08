@@ -42,6 +42,16 @@ public class CommandEvent implements CommandExecutor {
         new CustomCommand("mineit tool", "mineit.create", false, "mineit tool", "get the selection tool", (sender, cmd) -> {
             ((Player)sender).getInventory().addItem(MineIt.item);
         }),
+        new CustomCommand("mineit list", null, true, "mineit list", "see all the created mines", (sender, cmd) -> {
+            StringBuilder sb = new StringBuilder();
+            for (Mine m : Mine.getMines()) {
+                sb.append(m.getName());
+                sb.append(", ");
+            }
+            if (sb.length() > 0) sb.setLength(sb.length() - 2); // remove last ", " (if any)
+
+            sender.sendMessage(MineIt.clearPrefix + "Mine list: " + sb.toString());
+        }),
         new CustomCommand("mineit create \\S+", "mineit.create", false, "mineit create [name]", null, (sender, args) -> {
             Player player = (Player) sender; // not for console usage
 
@@ -215,7 +225,6 @@ public class CommandEvent implements CommandExecutor {
         // TODO unselect on leave
         // TODO select a single block
         // TODO append to existing mine
-        // TODO mine list
 
         for (CustomCommand command : CommandEvent.commands) {
             switch (command.search((sender instanceof Player) ? (Player) sender : null, cmd.getName(), args)) {
