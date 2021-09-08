@@ -17,33 +17,34 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EditMineInventory extends BasicInventory implements MineChangedEvent {
-    public static final ItemStack anvil = new ItemStack(Material.ANVIL);
-    public static final ItemStack redstone = new ItemStack(Material.REDSTONE_BLOCK);
+    public static final ItemStack BACK_ITEM = new ItemStack(Material.ANVIL);
+    public static final ItemStack REMOVE_ITEM = new ItemStack(Material.REDSTONE_BLOCK);
     public static final ItemStack glass = new ItemStack(Material.GLASS);
     public final ItemStack time;
 
-    private Mine listening;
+    private final Mine listening;
 
     static {
-        ItemMeta m = EditMineInventory.anvil.getItemMeta();
+        ItemMeta m = EditMineInventory.BACK_ITEM.getItemMeta();
         m.setDisplayName(ChatColor.GREEN + "Go back");
-        EditMineInventory.anvil.setItemMeta(m);
+        EditMineInventory.BACK_ITEM.setItemMeta(m);
 
-        m = EditMineInventory.redstone.getItemMeta();
+        m = EditMineInventory.REMOVE_ITEM.getItemMeta();
         m.setDisplayName(ChatColor.RED + "Remove mine");
-        EditMineInventory.redstone.setItemMeta(m);
+        EditMineInventory.REMOVE_ITEM.setItemMeta(m);
 
         m = EditMineInventory.glass.getItemMeta();
         m.setDisplayName("-");
         EditMineInventory.glass.setItemMeta(m);
     }
 
-    public EditMineInventory(Mine m) {
+    public EditMineInventory(@NotNull Mine m) {
         super();
 
         this.registerEvent(MineIt.instance); // listener
@@ -74,32 +75,30 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         ItemStack clicked = e.getCurrentItem();
         if(clicked==null) return;
 
-        if(clicked.equals(EditMineInventory.anvil)) MineIt.instance.selectMineInventory.openInventory(player);
-        else if(clicked.equals(EditMineInventory.redstone)) {
+        if(clicked.equals(EditMineInventory.BACK_ITEM)) MineIt.instance.selectMineInventory.openInventory(player);
+        else if(clicked.equals(EditMineInventory.REMOVE_ITEM)) {
             if(!player.hasPermission("mineit.remove")) {
                 player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
                 return;
             }
 
-            Mine mine = Mine.getMine(e.getView().getTitle().substring(14));
-            if(mine==null) return;
-
-            Mine.removeMine(mine);
+            Mine.removeMine(this.listening);
             try {
-                FileManager.removeMine(mine);
+                FileManager.removeMine(this.listening);
             } catch (Exception ignored) {}
-            player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' removed.");
+            player.sendMessage(MineIt.clearPrefix+"Mine '" + this.listening.getName() + "' removed.");
             // onMineRemoved event closes the inventories
         }
         else if(clicked.getType()==Material.FURNACE) {
-            Mine mine = Mine.getMine(e.getView().getTitle().substring(14));
-            if(mine==null) return;
-
-            if(mine.getStart()) player.sendMessage(MineIt.clearPrefix+"Mine '"+mine.mineName +"' stopped.");
-            else player.sendMessage(MineIt.clearPrefix+"Starting mine '"+mine.mineName +"'...");
-            mine.setStart(!mine.getStart());
-            //inventory.setItem(16, MineIt.instance.watch(mine));
-            this.inv.setItem(((((mine.getStageCount()/9) + 1)*2 + 1)*9)-2, this.status());
+            if(this.listening.getStart()) {
+                player.sendMessage(MineIt.clearPrefix+"Mine '" + this.listening.getName() + "' stopped.");
+                this.listening.setStart(false);
+            }
+            else {
+                player.sendMessage(MineIt.clearPrefix+"Starting mine '" + this.listening.getName() + "'...");
+                this.listening.setStart(true);
+            }
+            this.inv.setItem(this.getFurnaceIndex(), this.status());
         }
         else if (clicked.equals(this.time)) {
             // TODO
@@ -107,15 +106,12 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         else {
             // changing stages or blocks
             // TODO Hotfix: bucle for no funciona con elementos repetidos (ej: dos estados que al romperse van a BEDROCK)
-            for(int x = 0; x<this.inv.getSize()-9; x++) {
+            for(int x = 0; x < this.getLastRowIndex(); x++) {
                 if(this.inv.getItem(x) == null) continue; // en ese slot no hay nada
                 if(!clicked.equals(this.inv.getItem(x))) continue; // no es el elemento que ha pulsado
 
                 ItemStack item = new ItemStack(player.getItemOnCursor().getType());
                 if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
-
-                Mine mine = Mine.getMine(e.getView().getTitle().substring(14));
-                if(mine==null) return;
 
                 int stageNum = x%9; // we're editing the stage nºstageNum
 
@@ -123,10 +119,10 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     case 0:
                         // primera fila (la de stages)
                         if (item.getType().equals(Material.AIR)) {
-                            if (stageNum >= mine.getStageCount()) return; // not enough stages
+                            if (stageNum >= this.listening.getStageCount()) return; // not enough stages
 
                             // remove stage
-                            if (mine.getStageCount() == 1) {
+                            if (this.listening.getStageCount() == 1) {
                                 player.sendMessage(MineIt.errorPrefix + "There can't be a mine without stages!");
                                 return;
                             }
@@ -135,19 +131,19 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                                 return;
                             }
 
-                            mine.removeStage(stageNum);
+                            this.listening.removeStage(stageNum);
                         }
                         else {
                             Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item);
                             ItemMeta m = item.getItemMeta();
                             // already exists?
                             String name = VersionController.get().getName(stageMaterial);
-                            if (mine.getStage(name) != null) {
+                            if (this.listening.getStage(name) != null) {
                                 player.sendMessage(MineIt.errorPrefix+"There's already a " + name.toLowerCase() + " stage!");
                                 return;
                             }
 
-                            if (stageNum < mine.getStageCount()) {
+                            if (stageNum < this.listening.getStageCount()) {
                                 // sobreescribir estado
                                 // TODO sobreescribir
                                 /*m.setLore(inventory.getItem(x).getItemMeta().getLore());
@@ -165,7 +161,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                             }
                             else {
                                 // nuevo estado
-                                mine.addStage(new Stage(name));
+                                this.listening.addStage(new Stage(name));
                             }
                         }
                         break;
@@ -174,13 +170,13 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         // segunda fila (la de on break go to X stage)
                         if (stageNum <= 1) return; // you can't edit the 1st nor 2nd stage
 
-                        Stage match = mine.getStage(item.getType().equals(Mine.AIR_STAGE) ? Material.AIR.name() : item.getType().name());
+                        Stage match = this.listening.getStage(item.getType().equals(Mine.AIR_STAGE) ? Material.AIR.name() : item.getType().name());
                         if(match == null) {
                             player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
                             return;
                         }
 
-                        mine.getStage(stageNum).setPreviousStage(match);
+                        this.listening.getStage(stageNum).setPreviousStage(match);
 
                         // actualizar vista
                         ItemMeta m = item.getItemMeta();
@@ -200,75 +196,69 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         }
     }
 
-    private ItemStack status() {
-        ItemStack item = new ItemStack(Material.FURNACE);
-        ItemMeta m = item.getItemMeta();
-        String s = ChatColor.GREEN + "Start";
-        if(this.listening.getStart()) s = ChatColor.RED + "Stop";
-        m.setDisplayName(s+" mine");
-        item.setItemMeta(m);
-
-        return item;
-    }
-
     @Override
     public void onMineChanged() {
-        int lin = this.listening.getStageCount()/9 + 1;
-        if(lin>2) {
+        /**
+         * The menu shows the stages in gropus of two (current stage - stage on block break)
+         * 'lines' indicates the number of pairs that must be shown
+         */
+        int lines = this.listening.getStageCount()/9 + 1;
+        if(lines>2) {
             if(this.listening.getStageCount() % 9 > 0) {
                 MineIt.instance.printConsoleWarningMessage("There's too many stages, the plugin can't show them all!");
                 return; // TODO fill more stages/show only the fist ones
             }
-            lin = this.listening.getStageCount()/9;
+            lines = this.listening.getStageCount()/9;
         }
-        Inventory newInventory = Bukkit.createInventory(null, (lin*2 + 1)*9, "§cEdit mine §d" + this.listening.mineName);
+        Inventory newInventory = Bukkit.createInventory(null, (lines*2 + 1)*9, ChatColor.RED + "Edit mine " + ChatColor.LIGHT_PURPLE + this.listening.getName());
 
-        for(int x = 0; x<lin*9; x++) {
+        for(int x = 0; x<lines*9; x++) {
             int actualLine = (x/9)*18 + (x%9);
 
-            if(this.listening.getStageCount()>x) {
-                Stage current = this.listening.getStage(x);
-                ItemStack block = current.getStageItemStack();
-                ItemMeta meta = block.getItemMeta();
+            if(this.listening.getStageCount()<=x) {
+                newInventory.setItem(actualLine, EditMineInventory.glass);
+                newInventory.setItem(actualLine+9, EditMineInventory.glass);
+                continue;
+            }
+
+            Stage current = this.listening.getStage(x);
+            ItemStack block = current.getStageItemStack();
+            ItemMeta meta = block.getItemMeta();
+            if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {
+                // AIR
+                block = new ItemStack(Mine.AIR_STAGE);
+                meta = block.getItemMeta();
+                meta.setDisplayName("Air");
+            }
+            List<String> l = new ArrayList<>();
+            l.add("Stage " + (x + 1));
+            if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
+            meta.setLore(l);
+            block.setItemMeta(meta);
+            newInventory.setItem(actualLine, block);
+
+            if(current.getPreviousStage() != null && !block.getType().equals(Mine.AIR_STAGE)) {
+                block = current.getPreviousStage().getStageItemStack();
+                meta = block.getItemMeta();
                 if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {
                     // AIR
                     block = new ItemStack(Mine.AIR_STAGE);
                     meta = block.getItemMeta();
                     meta.setDisplayName("Air");
                 }
-                List<String> l = new ArrayList<>();
-                l.add("Stage " + (x + 1));
-                if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
+                l = new ArrayList<>();
+                l.add("On break, go to stage " + current.getPreviousStage().getName());
                 meta.setLore(l);
                 block.setItemMeta(meta);
-                newInventory.setItem(actualLine, block);
 
-                if(current.getPreviousStage() != null) {
-                    block = current.getPreviousStage().getStageItemStack();
-                    meta = block.getItemMeta();
-                    if (Mine.AIR_STAGE != null && (block.getType().equals(Material.AIR) || meta == null)) {
-                        // AIR
-                        block = new ItemStack(Mine.AIR_STAGE);
-                        meta = block.getItemMeta();
-                        meta.setDisplayName("Air");
-                    }
-                    l = new ArrayList<>();
-                    l.add("On break, go to stage " + current.getPreviousStage().getName());
-                    meta.setLore(l);
-                    block.setItemMeta(meta);
-
-                    newInventory.setItem(actualLine+9, block);
-                }
-            }
-            else {
-                newInventory.setItem(actualLine, EditMineInventory.glass);
-                newInventory.setItem(actualLine+9, EditMineInventory.glass);
+                newInventory.setItem(actualLine+9, block);
             }
         }
-        newInventory.setItem(lin*18, EditMineInventory.anvil);
-        newInventory.setItem(((lin*2 + 1)*9)-3, this.time);
-        newInventory.setItem(((lin*2 + 1)*9)-2, this.status());
-        newInventory.setItem(((lin*2 + 1)*9)-1, EditMineInventory.redstone);
+
+        newInventory.setItem(this.getBackIndex(), EditMineInventory.BACK_ITEM);
+        newInventory.setItem(this.getTimeIndex(), this.time);
+        newInventory.setItem(this.getFurnaceIndex(), this.status());
+        newInventory.setItem(this.getRemoveIndex(), EditMineInventory.REMOVE_ITEM);
 
         if (this.inv != null) this.newInventory(newInventory); // only if it's not the first time
         this.inv = newInventory;
@@ -279,6 +269,49 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         this.closeInventories();
     }
 
+    /**
+     * This function returns the first index of the last inventory row
+     * @return First index of the last inventory row
+     */
+    private int getLastRowIndex() {
+        return ((this.listening.getStageCount()/9) + 1)*2*9;
+    }
+
+    private int getFurnaceIndex() {
+        return this.getLastRowIndex()+7;
+    }
+
+    private int getTimeIndex() {
+        return this.getLastRowIndex()+6;
+    }
+
+    private int getBackIndex() {
+        return this.getLastRowIndex();
+    }
+
+    private int getRemoveIndex() {
+        return this.getLastRowIndex()+8;
+    }
+
+    /**
+     * It generates the furnace to start and stop the mine
+     * @return FURNACE item with name that depends
+     */
+    @SuppressWarnings("ConstantConditions")
+    private ItemStack status() {
+        ItemStack item = new ItemStack(Material.FURNACE);
+        ItemMeta m = item.getItemMeta();
+        if(this.listening.getStart()) m.setDisplayName(ChatColor.RED + "Stop mine");
+        else m.setDisplayName(ChatColor.GREEN + "Start mine");
+        item.setItemMeta(m);
+
+        return item;
+    }
+
+    /**
+     * It generates the clock to see how many delay per stage
+     * @return CLOCK/WATCH item with the delay as name
+     */
     @SuppressWarnings("ConstantConditions")
     private ItemStack time() {
         Material mat;

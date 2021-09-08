@@ -21,7 +21,7 @@ public class BreakEvent implements Listener {
         if (m == null) return;
 
         Player ply = e.getPlayer();
-        if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.mineName)) {
+        if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.getName())) {
             ply.sendMessage(MineIt.errorPrefix + "You can't mine here!");
             e.setCancelled(true);
             return;

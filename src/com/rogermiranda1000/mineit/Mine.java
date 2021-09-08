@@ -41,9 +41,9 @@ public class Mine implements Runnable {
     private final ArrayList<MineChangedEvent> events;
 
     private final ArrayList<Location> blocks;
-    public int currentTime;
+    private int currentTime;
     private final ArrayList<Stage> stages;
-    public final String mineName;
+    private final String mineName;
     private boolean started;
     private int scheduleID;
 
