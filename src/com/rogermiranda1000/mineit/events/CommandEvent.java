@@ -208,7 +208,7 @@ public class CommandEvent implements CommandExecutor {
             sender.sendMessage(MineIt.clearPrefix + "Mine '" + cmd[1] + "' restarted.");
         }),
         new CustomCommand("mineit select unselect", "mineit.select", false, "mineit select unselect", "unselects all the selected blocks by the user", (sender, cmd) -> {
-            ArrayList<Location> r = MineIt.instance.selectedBlocks.remove(((Player)sender).getName());
+            ArrayList<Location> r = MineIt.instance.removeSelectionBlocks(((Player)sender).getName());
             if (r == null) {
                 sender.sendMessage(MineIt.errorPrefix + "First you need to have some blocks selected!");
                 return;
@@ -216,12 +216,21 @@ public class CommandEvent implements CommandExecutor {
 
             for (Location loc : r) loc.getBlock().setType(Mine.SELECT_BLOCK); // unselect
             sender.sendMessage(MineIt.clearPrefix + "Selected blocks restarted.");
+        }),
+        new CustomCommand("mineit select back", "mineit.select", false, "mineit select back", "unselects the previous selected blocks by the user", (sender, cmd) -> {
+            ArrayList<Location> r = MineIt.instance.getLastSelectedBlocks(((Player)sender).getName());
+            if (r == null) {
+                sender.sendMessage(MineIt.errorPrefix + "First you need to have some blocks selected!");
+                return;
+            }
+
+            for (Location loc : r) loc.getBlock().setType(Mine.SELECT_BLOCK); // unselect
+            sender.sendMessage(MineIt.clearPrefix + "Last selected blocks restarted.");
         })
     };
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
-        // TODO back
         // TODO unselect on leave
         // TODO select a single block
         // TODO append to existing mine

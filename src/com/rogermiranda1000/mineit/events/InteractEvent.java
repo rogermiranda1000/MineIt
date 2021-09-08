@@ -34,12 +34,7 @@ public class InteractEvent implements Listener {
             return;
         }
 
-        ArrayList<Location> b = MineIt.instance.selectedBlocks.get(ply.getName());
-        if (b == null) {
-            b = new ArrayList<>();
-            MineIt.instance.selectedBlocks.put(ply.getName(), b);
-        }
-        b.addAll(InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation()));
+        MineIt.instance.addSelectionBlocks(ply.getName(), InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation()));
     }
 
 

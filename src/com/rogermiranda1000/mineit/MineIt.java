@@ -21,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.*;
 import org.bukkit.inventory.ItemStack;
@@ -53,6 +54,7 @@ public class MineIt extends JavaPlugin {
     public ArrayList<ProtectionOverrider> protectionOverrider = new ArrayList<>();
 
     public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
+    private HashMap<String, ArrayList<Location>> lastSelectedBlocks = new HashMap<>();
 
     public int rango;
     public boolean limit;
@@ -202,6 +204,29 @@ public class MineIt extends JavaPlugin {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void addSelectionBlocks(String name, ArrayList<Location> locations) {
+        ArrayList<Location> b = MineIt.instance.selectedBlocks.get(name);
+        if (b == null) {
+            b = new ArrayList<>();
+            this.selectedBlocks.put(name, b);
+        }
+        b.addAll(locations);
+
+        this.lastSelectedBlocks.remove(name);
+        this.lastSelectedBlocks.put(name, locations);
+    }
+
+    @Nullable
+    public ArrayList<Location> getLastSelectedBlocks(String name) {
+        return this.lastSelectedBlocks.get(name);
+    }
+
+    @Nullable
+    public ArrayList<Location> removeSelectionBlocks(String name) {
+        this.lastSelectedBlocks.remove(name);
+        return this.selectedBlocks.remove(name);
     }
 
     private void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
