@@ -3,6 +3,7 @@ package com.rogermiranda1000.mineit.events;
 import com.rogermiranda1000.mineit.CustomCommand;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
+import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import net.md_5.bungee.api.ChatColor;
@@ -90,10 +91,8 @@ public class CommandEvent implements CommandExecutor {
 
             Mine.removeMine(m);
             try {
-                File f = new File(MineIt.instance.getDataFolder(), cmd[1] + ".yml");
-                if (f.exists()) f.delete();
-            }
-            catch (Exception e) { e.printStackTrace(); }
+                FileManager.removeMine(m);
+            } catch (Exception ignored) {}
             sender.sendMessage(MineIt.clearPrefix+"Mine '"+cmd[1]+"' removed.");
         }),
         new CustomCommand("mineit start \\S+", "mineit.state", true, "mineit start [mine]", null, (sender, cmd) -> {
