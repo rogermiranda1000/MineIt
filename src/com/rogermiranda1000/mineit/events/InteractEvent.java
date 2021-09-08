@@ -29,17 +29,12 @@ public class InteractEvent implements Listener {
             return;
         }
 
-        if(!ply.hasPermission("mineit.create")) {
+        if(!ply.hasPermission("mineit.select")) {
             ply.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
             return;
         }
 
-        ArrayList<Location> b = MineIt.instance.selectedBlocks.get(ply.getName());
-        if (b == null) {
-            b = new ArrayList<>();
-            MineIt.instance.selectedBlocks.put(ply.getName(), b);
-        }
-        b.addAll(InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation()));
+        MineIt.instance.addSelectionBlocks(ply.getName(), InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation()));
     }
 
 
