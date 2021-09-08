@@ -51,9 +51,9 @@ public class MineIt extends JavaPlugin {
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
 
-    public ArrayList<ProtectionOverrider> protectionOverrider = new ArrayList<>();
+    public ArrayList<ProtectionOverrider> protectionOverrider;
 
-    private HashMap<String, ArrayList<ArrayList<Location>>> selectedBlocksHistory = new HashMap<>();
+    private final HashMap<String, Stack<ArrayList<Location>>> selectedBlocksHistory = new HashMap<>();
 
     public int rango;
     public boolean limit;
@@ -125,6 +125,7 @@ public class MineIt extends JavaPlugin {
 
         // Protections
         PluginManager pm = getServer().getPluginManager();
+        this.protectionOverrider = new ArrayList<>();
         Plugin residence = pm.getPlugin("Residence");
         if (residence != null) {
             this.protectionOverrider.add(new ResidenceProtectionOverrider());
@@ -204,8 +205,8 @@ public class MineIt extends JavaPlugin {
     }
 
     public void addSelectionBlocks(String name, ArrayList<Location> locations) {
-        ArrayList<ArrayList<Location>> b = this.selectedBlocksHistory.computeIfAbsent(name, k -> new ArrayList<>());
-        b.add(locations);
+        this.selectedBlocksHistory.computeIfAbsent(name, k -> new Stack<>())
+                .add(locations);
     }
 
     @Nullable
@@ -215,15 +216,15 @@ public class MineIt extends JavaPlugin {
 
     public ArrayList<Location> getAllSelectedBlocks() {
         ArrayList<Location> r = new ArrayList<>();
-        for (ArrayList<ArrayList<Location>> e : this.selectedBlocksHistory.values()) r.addAll(MineIt.merge(e));
+        for (Stack<ArrayList<Location>> e : this.selectedBlocksHistory.values()) r.addAll(MineIt.merge(e));
         return r;
     }
 
     @Nullable
     public ArrayList<Location> getLastSelectedBlocksAndRemove(String name) {
-        ArrayList<ArrayList<Location>> b = this.selectedBlocksHistory.get(name);
-        if (b == null || b.size() == 0) return null;
-        return b.remove(b.size()-1);
+        Stack<ArrayList<Location>> b = this.selectedBlocksHistory.get(name);
+        if (b == null || b.empty()) return null;
+        return b.pop();
     }
 
     @Nullable
@@ -232,11 +233,11 @@ public class MineIt extends JavaPlugin {
     }
 
     @Nullable
-    private static <T> ArrayList<T> merge(@Nullable ArrayList<ArrayList<T>> list) {
+    private static <T> ArrayList<T> merge(@Nullable Stack<ArrayList<T>> list) {
         if (list == null) return null;
 
         ArrayList<T> r = new ArrayList<>();
-        for (ArrayList<T> loc : list) {
+        for (List<T> loc : list) {
             r.addAll(loc);
         }
         return r;
