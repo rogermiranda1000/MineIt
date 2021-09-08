@@ -21,12 +21,24 @@ public class Stage {
      */
     private int stageBlocks;
 
-    public Stage(String block, int stageLimit, Stage previousStage) {
-        this.block = VersionController.get().getMaterial(block);
+    public Stage(Object block, int stageLimit, Stage previousStage) {
+        this.block = block;
         this.stageLimit = stageLimit;
         this.previousStage = previousStage;
         this.stageBlocks = 0;
         this.nextStage = null;
+    }
+
+    public Stage(Object block, int stageLimit) {
+        this(block, stageLimit, null);
+    }
+
+    public Stage(Object block) {
+        this(block, Integer.MAX_VALUE, null);
+    }
+
+    public Stage(String name, int stageLimit, Stage previousStage) {
+        this(VersionController.get().getMaterial(name), stageLimit, previousStage);
     }
 
     public Stage(String name, int stageLimit) {

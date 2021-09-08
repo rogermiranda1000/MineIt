@@ -108,7 +108,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             int x = e.getSlot();
             if (this.inv.getItem(x) == null || x >= this.getLastRowIndex()) return; // en ese slot no hay nada o estan en la última fila (no deberia pasar)
 
-            ItemStack item = new ItemStack(player.getItemOnCursor().getType());
+            ItemStack item = VersionController.get().cloneItemStack(e.getCurrentItem());
             if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
 
             int line = x/18,
@@ -132,7 +132,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         this.listening.removeStage(stageNum);
                     }
                     else {
-                        Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item);
+                        Object stageMaterial = VersionController.get().getObject(player.getItemOnCursor().getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
                         // already exists?
                         String name = VersionController.get().getName(stageMaterial);
                         if (this.listening.getStage(name) != null) {
@@ -158,7 +158,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         }
                         else {
                             // nuevo estado
-                            this.listening.addStage(new Stage(name));
+                            this.listening.addStage(new Stage(stageMaterial));
                         }
                     }
                     break;

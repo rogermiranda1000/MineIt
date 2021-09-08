@@ -46,7 +46,7 @@ public class BlockPre13 implements BlockManager {
 
     @Override
     public Object getObject(@NotNull ItemStack item) {
-        return new ItemStack(item);
+        return new ItemStack(item.getType(), 1, item.getData().getData());
     }
 
     @Override

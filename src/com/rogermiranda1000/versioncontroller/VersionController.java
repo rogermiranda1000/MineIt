@@ -98,6 +98,15 @@ public class VersionController extends ItemManager implements BlockManager, Part
         return VersionController.blockManager.getItemStack(type);
     }
 
+    /**
+     * It generates a copy of an ItemStack as default (only the type)
+     * @param item ItemStack to copy
+     * @return ItemStack clone
+     */
+    public ItemStack cloneItemStack(ItemStack item) {
+        return getItemStack(getObject(item));
+    }
+
     @Override
     public ItemStack[] getItemInHand(PlayerInventory playerInventory) {
         return VersionController.itemManager.getItemInHand(playerInventory);
