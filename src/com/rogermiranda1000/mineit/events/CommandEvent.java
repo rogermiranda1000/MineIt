@@ -3,6 +3,7 @@ package com.rogermiranda1000.mineit.events;
 import com.rogermiranda1000.mineit.CustomCommand;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
+import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import net.md_5.bungee.api.ChatColor;
@@ -17,7 +18,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class CommandEvent implements CommandExecutor {
@@ -39,13 +39,22 @@ public class CommandEvent implements CommandExecutor {
         new CustomCommand("mineit", "mineit.open", false, "mineit", null, (sender, cmd) -> {
             MineIt.instance.mainInventory.openInventory((Player)sender);
         }),
+        new CustomCommand("mineit tool", "mineit.create", false, "mineit tool", "get the selection tool", (sender, cmd) -> {
+            ((Player)sender).getInventory().addItem(MineIt.item);
+        }),
+        new CustomCommand("mineit list", null, true, "mineit list", "see all the created mines", (sender, cmd) -> {
+            StringBuilder sb = new StringBuilder();
+            for (Mine m : Mine.getMines()) {
+                sb.append(m.getName());
+                sb.append(", ");
+            }
+            if (sb.length() > 0) sb.setLength(sb.length() - 2); // remove last ", " (if any)
+
+            sender.sendMessage(MineIt.clearPrefix + "Mine list: " + sb.toString());
+        }),
         new CustomCommand("mineit create \\S+", "mineit.create", false, "mineit create [name]", null, (sender, args) -> {
             Player player = (Player) sender; // not for console usage
 
-            if(!MineIt.instance.selectedBlocks.containsKey(player.getName()) || MineIt.instance.selectedBlocks.get(player.getName()).size()==0) {
-                player.sendMessage(MineIt.errorPrefix +"Please, select the mine's blocks first.");
-                return;
-            }
             if(Mine.getMinesLength()>=45) {
                 player.sendMessage(MineIt.errorPrefix +"You've reached the current mines limit!");
                 return;
@@ -59,14 +68,16 @@ public class CommandEvent implements CommandExecutor {
                 return;
             }
 
-            ArrayList<Location> locations = new ArrayList<>();
-            for(Location loc : MineIt.instance.selectedBlocks.get(player.getName())) {
-                locations.add(loc);
-                loc.getBlock().setType(Mine.STATE_ZERO);
+            ArrayList<Location> locations = MineIt.instance.getSelectedBlocks(player.getName());
+            if (locations == null || locations.size() == 0) {
+                player.sendMessage(MineIt.errorPrefix +"Please, select the mine's blocks first.");
+                return;
             }
+
             Mine m = new Mine(args[1], locations);
             Mine.addMine(m);
-            MineIt.instance.selectedBlocks.remove(player.getName());
+            MineIt.instance.removeSelectionBlocks(player.getName());
+            locations.forEach(l -> l.getBlock().setType(Mine.STATE_ZERO));
 
             player.sendMessage(MineIt.clearPrefix+ChatColor.GREEN+"Mine created successfully.");
 
@@ -90,10 +101,8 @@ public class CommandEvent implements CommandExecutor {
 
             Mine.removeMine(m);
             try {
-                File f = new File(MineIt.instance.getDataFolder(), cmd[1] + ".yml");
-                if (f.exists()) f.delete();
-            }
-            catch (Exception e) { e.printStackTrace(); }
+                FileManager.removeMine(m);
+            } catch (Exception ignored) {}
             sender.sendMessage(MineIt.clearPrefix+"Mine '"+cmd[1]+"' removed.");
         }),
         new CustomCommand("mineit start \\S+", "mineit.state", true, "mineit start [mine]", null, (sender, cmd) -> {
@@ -195,14 +204,34 @@ public class CommandEvent implements CommandExecutor {
 
             m.resetBlocksMine();
             sender.sendMessage(MineIt.clearPrefix + "Mine '" + cmd[1] + "' restarted.");
+        }),
+        new CustomCommand("mineit select unselect", "mineit.select", false, "mineit select unselect", "unselects all the selected blocks by the user", (sender, cmd) -> {
+            ArrayList<Location> r = MineIt.instance.removeSelectionBlocks(((Player)sender).getName());
+            if (r == null) {
+                sender.sendMessage(MineIt.errorPrefix + "First you need to have some blocks selected!");
+                return;
+            }
+
+            for (Location loc : r) loc.getBlock().setType(Mine.SELECT_BLOCK); // unselect
+            sender.sendMessage(MineIt.clearPrefix + "Selected blocks restarted.");
+        }),
+        new CustomCommand("mineit select back", "mineit.select", false, "mineit select back", "unselects the previous selected blocks by the user", (sender, cmd) -> {
+            ArrayList<Location> r = MineIt.instance.getLastSelectedBlocksAndRemove(((Player)sender).getName());
+            if (r == null) {
+                sender.sendMessage(MineIt.errorPrefix + "First you need to have some blocks selected!");
+                return;
+            }
+
+            for (Location loc : r) loc.getBlock().setType(Mine.SELECT_BLOCK); // unselect
+            sender.sendMessage(MineIt.clearPrefix + "Last selected blocks restarted.");
         })
     };
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command cmd, @NotNull String label, @NotNull String[] args) {
-        // TODO unselect
+        // TODO unselect on leave
+        // TODO select a single block
         // TODO append to existing mine
-        // TODO mine list
 
         for (CustomCommand command : CommandEvent.commands) {
             switch (command.search((sender instanceof Player) ? (Player) sender : null, cmd.getName(), args)) {

@@ -12,16 +12,20 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class BreakEvent implements Listener {
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
         Mine m = Mine.getMine(e.getBlock().getLocation());
-        if (m == null) return;
+        if (m == null) {
+            if (MineIt.instance.isSelected(e.getBlock().getLocation())) e.setCancelled(true); // trying to break a selected block
+            return;
+        }
 
         Player ply = e.getPlayer();
-        if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.mineName)) {
+        if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.getName())) {
             ply.sendMessage(MineIt.errorPrefix + "You can't mine here!");
             e.setCancelled(true);
             return;
@@ -35,17 +39,31 @@ public class BreakEvent implements Listener {
             prot.overrideProtection(region, ply);
         }
 
-        Stage s = m.getStage(e.getBlock().getType().toString());
+        this.breakBlock(m, e.getBlock());
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onEntityExplode(EntityExplodeEvent e) {
+        for (Block b : e.blockList()) {
+            Mine m = Mine.getMine(b.getLocation());
+            if (m == null) continue;
+
+            this.breakBlock(m, b);
+        }
+    }
+
+    private void breakBlock(Mine m, Block block) {
+        Stage s = m.getStage(VersionController.get().getObject(block));
         Stage prev;
         if (s == null || (prev = s.getPreviousStage()) == null) {
             // unstaged block in mine or first stage mined
-            BreakEvent.changeBlock(e.getBlock(), m.getStage(0).getStageMaterial());
+            BreakEvent.changeBlock(block, m.getStage(0).getStageMaterial());
             return;
         }
 
         s.decrementStageBlocks();
         prev.incrementStageBlocks();
-        BreakEvent.changeBlock(e.getBlock(), prev.getStageMaterial());
+        BreakEvent.changeBlock(block, prev.getStageMaterial());
     }
 
     private static void changeBlock(@NotNull Block b, Object type) {

@@ -41,9 +41,9 @@ public class Mine implements Runnable {
     private final ArrayList<MineChangedEvent> events;
 
     private final ArrayList<Location> blocks;
-    public int currentTime;
+    private int currentTime;
     private final ArrayList<Stage> stages;
-    public final String mineName;
+    private final String mineName;
     private boolean started;
     private int scheduleID;
 
@@ -188,8 +188,7 @@ public class Mine implements Runnable {
         this.resetStagesCount();
 
         for(Location loc: this.getMineBlocks()) {
-            Object mat = VersionController.get().getObject(loc.getBlock());
-            Stage match = this.getStage(VersionController.get().getName(mat));
+            Stage match = this.getStage(VersionController.get().getObject(loc.getBlock()));
             if (match != null) match.incrementStageBlocks();
         }
     }
@@ -215,8 +214,8 @@ public class Mine implements Runnable {
     }
 
     @Nullable
-    public Stage getStage(String search) {
-        return this.stages.stream().filter( e -> e.getName().equalsIgnoreCase(search) ).findAny().orElse(null);
+    public Stage getStage(Object search) {
+        return this.stages.stream().filter( e -> e.getStageMaterial().equals(search) ).findAny().orElse(null);
     }
 
     @Nullable
@@ -274,13 +273,21 @@ public class Mine implements Runnable {
     }
 
     synchronized public static void removeMine(Mine m) {
-        m.setStart(false); // stop the mine
-
         Mine.mines.remove(m);
-        for (MinesChangedEvent e : Mine.globalEvents) e.onMineRemoved(m);
-        for (MineChangedEvent e : m.events) e.onMineRemoved();
+
+        // notify & unsubscribe
+        for (MinesChangedEvent e : new ArrayList<>(Mine.globalEvents)) {
+            e.onMineRemoved(m);
+            Mine.globalEvents.remove(e);
+        }
+        for (MineChangedEvent e : new ArrayList<>(m.events)) {
+            e.onMineRemoved();
+            m.events.remove(e);
+        }
 
         for (Location loc : m.blocks) Mine.tree = Mine.tree.delete(m, Mine.getPoint(loc));
+
+        m.setStart(false); // stop the mine
     }
 
     /**
@@ -311,8 +318,8 @@ public class Mine implements Runnable {
         // we need to change 'changedBlocks' blocks
         for (int x = 0; x < changedBlocks; x++) {
             Location loc = this.getRandomBlockInMine();
-            Stage current = this.getStage(loc.getBlock().getType().toString());
-            if (current == null) continue; // wtf
+            Stage current = this.getStage(VersionController.get().getObject(loc.getBlock()));
+            if (current == null) continue; // ?
             Stage next = current.getNextStage();
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();

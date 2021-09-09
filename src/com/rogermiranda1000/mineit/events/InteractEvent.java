@@ -17,29 +17,24 @@ import java.util.ArrayList;
 public class InteractEvent implements Listener {
     private static final Material SELECTED_BLOCK = Material.EMERALD_BLOCK;
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent e) {
         Player ply = e.getPlayer();
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         if (!VersionController.get().hasItemInHand(ply, MineIt.item, true)) return;
 
         e.setCancelled(true);
-        if(e.getClickedBlock().getType() != Mine.SELECT_BLOCK) {
+        if(!e.getClickedBlock().getType().equals(Mine.SELECT_BLOCK)) {
             ply.sendMessage(MineIt.errorPrefix+"You can only hit stone with the Mine Creator!");
             return;
         }
 
-        if(!ply.hasPermission("mineit.create")) {
+        if(!ply.hasPermission("mineit.select")) {
             ply.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
             return;
         }
 
-        ArrayList<Location> b = MineIt.instance.selectedBlocks.get(ply.getName());
-        if (b == null) {
-            b = new ArrayList<>();
-            MineIt.instance.selectedBlocks.put(ply.getName(), b);
-        }
-        b.addAll(InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation()));
+        MineIt.instance.addSelectionBlocks(ply.getName(), InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation()));
     }
 
 

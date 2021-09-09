@@ -30,7 +30,7 @@ public class FileManager {
     }
 
     public static void removeMine(Mine mine) throws Exception {
-        File f = new File(MineIt.instance.getDataFolder(), mine.mineName + ".yml");
+        File f = new File(MineIt.instance.getDataFolder(), mine.getName() + ".yml");
         if (f.exists()) {
             if (!f.delete()) throw new IOException("error deleting the file");
         }

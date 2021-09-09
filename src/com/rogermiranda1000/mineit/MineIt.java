@@ -21,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.*;
 import org.bukkit.inventory.ItemStack;
@@ -50,9 +51,9 @@ public class MineIt extends JavaPlugin {
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
 
-    public ArrayList<ProtectionOverrider> protectionOverrider = new ArrayList<>();
+    public ArrayList<ProtectionOverrider> protectionOverrider;
 
-    public HashMap<String, ArrayList<Location>> selectedBlocks = new HashMap<>();
+    private final HashMap<String, Stack<ArrayList<Location>>> selectedBlocksHistory = new HashMap<>();
 
     public int rango;
     public boolean limit;
@@ -124,6 +125,7 @@ public class MineIt extends JavaPlugin {
 
         // Protections
         PluginManager pm = getServer().getPluginManager();
+        this.protectionOverrider = new ArrayList<>();
         Plugin residence = pm.getPlugin("Residence");
         if (residence != null) {
             this.protectionOverrider.add(new ResidenceProtectionOverrider());
@@ -189,19 +191,60 @@ public class MineIt extends JavaPlugin {
         for (BasicInventory mine : ((SelectMineInventory)this.selectMineInventory).getMinesInventories()) mine.closeInventories();
 
         // undo selected blocks
-        for(ArrayList<Location> locations : selectedBlocks.values()) {
-            for(Location l: locations) l.getBlock().setType(Mine.SELECT_BLOCK);
-        }
+        for(Location l : this.getAllSelectedBlocks()) l.getBlock().setType(Mine.SELECT_BLOCK);
 
         // save mines
         for (Mine mina : Mine.getMines()) {
             try {
-                File file = new File(getDataFolder(), mina.mineName +".yml");
+                File file = new File(getDataFolder(), mina.getName() +".yml");
                 FileManager.saveMine(file, mina);
             } catch(IOException e){
                 e.printStackTrace();
             }
         }
+    }
+
+    public void addSelectionBlocks(String name, ArrayList<Location> locations) {
+        this.selectedBlocksHistory.computeIfAbsent(name, k -> new Stack<>())
+                .add(locations);
+    }
+
+    @Nullable
+    public ArrayList<Location> getSelectedBlocks(String name) {
+        return MineIt.merge(this.selectedBlocksHistory.get(name));
+    }
+
+    public ArrayList<Location> getAllSelectedBlocks() {
+        ArrayList<Location> r = new ArrayList<>();
+        for (Stack<ArrayList<Location>> e : this.selectedBlocksHistory.values()) r.addAll(MineIt.merge(e));
+        return r;
+    }
+
+    @Nullable
+    public ArrayList<Location> getLastSelectedBlocksAndRemove(String name) {
+        Stack<ArrayList<Location>> b = this.selectedBlocksHistory.get(name);
+        if (b == null || b.empty()) return null;
+        return b.pop();
+    }
+
+    @Nullable
+    public ArrayList<Location> removeSelectionBlocks(String name) {
+        return MineIt.merge(this.selectedBlocksHistory.remove(name));
+    }
+
+    @Nullable
+    private static <T> ArrayList<T> merge(@Nullable Stack<ArrayList<T>> list) {
+        if (list == null) return null;
+
+        ArrayList<T> r = new ArrayList<>();
+        for (List<T> loc : list) {
+            r.addAll(loc);
+        }
+        return r;
+    }
+
+    public boolean isSelected(Location loc) {
+        return this.getAllSelectedBlocks().contains(loc);
     }
 
     private void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
