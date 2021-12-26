@@ -30,6 +30,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     private final int offset;
     private final HashMap<Mine,BasicInventory> editMineInventory;
     private SelectMineInventory next, pre;
+    private Plugin eventSubscriptor;
 
     @SuppressWarnings("ConstantConditions")
     public SelectMineInventory(HashMap<Mine,BasicInventory> minesInventories, int offset, SelectMineInventory pre) {
@@ -97,6 +98,8 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
         this.next = next;
         if (next == null) this.next_item = null;
         else {
+            if (this.eventSubscriptor != null) this.next.registerEvent(this.eventSubscriptor);
+
             this.next_item = new ItemStack(Material.EMERALD_BLOCK);
             ItemMeta m = this.next_item.getItemMeta();
             m.setDisplayName(ChatColor.GREEN + "->");
@@ -118,6 +121,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     @Override
     public void registerEvent(Plugin p) {
         super.registerEvent(p);
+        this.eventSubscriptor = p;
         if (this.next != null) this.next.registerEvent(p);
     }
 
