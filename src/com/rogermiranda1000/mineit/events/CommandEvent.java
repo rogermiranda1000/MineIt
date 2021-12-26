@@ -55,10 +55,6 @@ public class CommandEvent implements CommandExecutor {
         new CustomCommand("mineit create \\S+", "mineit.create", false, "mineit create [name]", null, (sender, args) -> {
             Player player = (Player) sender; // not for console usage
 
-            if(Mine.getMinesLength()>=45) {
-                player.sendMessage(MineIt.errorPrefix +"You've reached the current mines limit!");
-                return;
-            }
             if (CommandEvent.RESERVED_NAMES.contains(args[1])) {
                 player.sendMessage(MineIt.errorPrefix +"You're using a reserved name!");
                 return;
