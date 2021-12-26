@@ -2,6 +2,7 @@ package com.rogermiranda1000.mineit;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 import com.github.davidmoten.rtreemulti.Entry;
@@ -248,8 +249,12 @@ public class Mine implements Runnable {
         return Mine.mines.size();
     }
 
-    public static ArrayList<Mine> getMines() {
+    public static List<Mine> getMines() {
         return Mine.mines;
+    }
+
+    public static List<Mine> getMines(int offset, int max_lenght) {
+        return Mine.mines.subList(offset, Math.min(Mine.mines.size(), offset+max_lenght));
     }
 
     public static void addMinesListener(MinesChangedEvent e) {
