@@ -280,11 +280,9 @@ public class Mine implements Runnable {
     synchronized public static void removeMine(Mine m) {
         Mine.mines.remove(m);
 
+        for (MinesChangedEvent e : new ArrayList<>(Mine.globalEvents)) e.onMineRemoved(m);
+
         // notify & unsubscribe
-        for (MinesChangedEvent e : new ArrayList<>(Mine.globalEvents)) {
-            e.onMineRemoved(m);
-            Mine.globalEvents.remove(e);
-        }
         for (MineChangedEvent e : new ArrayList<>(m.events)) {
             e.onMineRemoved();
             m.events.remove(e);

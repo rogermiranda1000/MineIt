@@ -21,6 +21,7 @@ import java.util.*;
 
 public class SelectMineInventory extends BasicInventory implements MinesChangedEvent {
     private static final String INVENTORY_NAME = "§cEdit mine";
+    private static final int MAX_MINES_PER_INV = 45;
     private final ItemStack back;
     @Nullable private ItemStack next_item, pre_item;
 
@@ -95,16 +96,21 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     }
 
     private void setNext(SelectMineInventory next) {
-        this.next = next;
-        if (next == null) this.next_item = null;
+        if (next == null) {
+            if (this.next != null) this.next.closeInventories();
+
+            this.next_item = null;
+        }
         else {
-            if (this.eventSubscriptor != null) this.next.registerEvent(this.eventSubscriptor);
+            if (this.eventSubscriptor != null) next.registerEvent(this.eventSubscriptor);
 
             this.next_item = new ItemStack(Material.EMERALD_BLOCK);
             ItemMeta m = this.next_item.getItemMeta();
             m.setDisplayName(ChatColor.GREEN + "->");
             this.next_item.setItemMeta(m);
         }
+
+        this.next = next;
     }
 
     private void setPre(SelectMineInventory pre) {
@@ -130,6 +136,14 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     public void onMinesChanged() {
         Inventory newInventory;
 
+        if (this.next == null) {
+            if (this.editMineInventory.size() - this.offset > SelectMineInventory.MAX_MINES_PER_INV) this.setNext(new SelectMineInventory(this.editMineInventory, this.offset + SelectMineInventory.MAX_MINES_PER_INV, this)); // we need more
+        }
+        else {
+            if (this.editMineInventory.size() - this.offset <= SelectMineInventory.MAX_MINES_PER_INV) this.setNext(null); // we don't need it anymore
+            else this.next.onMinesChanged();
+        }
+
         int l = (int)Math.ceil((Mine.getMinesLength()-this.offset)/9.0);
         if(l==0) {
             newInventory = Bukkit.createInventory(null, 18, SelectMineInventory.INVENTORY_NAME);
@@ -149,7 +163,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
 
             newInventory = Bukkit.createInventory(null, l * 9, SelectMineInventory.INVENTORY_NAME);
             int pos = 0, backPos = (l - 1) * 9;
-            for (Mine mine : Mine.getMines(this.offset, 45)) {
+            for (Mine mine : Mine.getMines(this.offset, SelectMineInventory.MAX_MINES_PER_INV)) {
                 ItemStack mina = new ItemStack(Mine.SELECT_BLOCK); // TODO mine block
                 ItemMeta meta = mina.getItemMeta();
                 meta.setDisplayName(mine.getName());
@@ -175,24 +189,12 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     @Override
     public void onMineRemoved(Mine m) {
         this.editMineInventory.remove(m);
-
-        if (this.next != null) {
-            if (this.editMineInventory.size() - this.offset <= 45) this.setNext(null); // we don't need it anymore
-            else this.next.onMineRemoved(m);
-        }
-
-        this.onMinesChanged(); // we need the setNext first
+        this.onMinesChanged();
     }
 
     @Override
     public void onMineAdded(Mine m) {
         this.editMineInventory.put(m, new EditMineInventory(m));
-
-        if (this.next == null) {
-            if (this.editMineInventory.size() - this.offset > 45) this.setNext(new SelectMineInventory(this.editMineInventory, this.offset + 45, this)); // we need more
-        }
-        else this.next.onMineAdded(m);
-
-        this.onMinesChanged(); // we need the setNext first
+        this.onMinesChanged();
     }
 }
