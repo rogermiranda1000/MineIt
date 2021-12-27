@@ -21,7 +21,7 @@ public class InteractEvent implements Listener {
     public void onInteract(PlayerInteractEvent e) {
         Player ply = e.getPlayer();
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (!VersionController.get().hasItemInHand(ply, MineIt.item, true)) return;
+        if (!VersionController.get().hasItemInHand(ply, MineIt.item)) return;
 
         e.setCancelled(true);
         if(!e.getClickedBlock().getType().equals(Mine.SELECT_BLOCK)) {
