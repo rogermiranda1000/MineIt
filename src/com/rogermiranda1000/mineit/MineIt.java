@@ -39,9 +39,6 @@ import java.util.*;
 
 public class MineIt extends JavaPlugin {
     public static final String PLUGIN_ID = "69161";
-    private static final String ERROR_COLOR = Ansi.ansi().fg(Ansi.Color.RED).boldOff().toString(),
-            WARNING_COLOR = Ansi.ansi().fg(Ansi.Color.YELLOW).boldOff().toString(),
-            NO_COLOR = Ansi.ansi().fg(Ansi.Color.WHITE).boldOff().toString();
     public static final String clearPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.GREEN,
             errorPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.RED;
     public static ItemStack item;
@@ -60,11 +57,11 @@ public class MineIt extends JavaPlugin {
     public boolean overrideProtection;
 
     public void printConsoleErrorMessage(String msg) {
-        this.getLogger().warning(MineIt.ERROR_COLOR + msg + MineIt.NO_COLOR);
+        Bukkit.getConsoleSender().sendMessage(ChatColor.RED + msg);
     }
 
     public void printConsoleWarningMessage(String msg) {
-        this.getLogger().info(MineIt.WARNING_COLOR + msg + MineIt.NO_COLOR);
+        Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + msg);
     }
 
     @Override
