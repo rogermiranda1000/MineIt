@@ -5,5 +5,5 @@
 - spigot 1.16.5
 - com.github.davidmoten:rtree-multi:0.1-RC1 (link library with .jar)
 - Residence
-- WorldGuard
-- WorldEdit
+- WorldGuard 7.0.0
+- WorldEdit 7.0.0

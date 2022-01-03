@@ -12,8 +12,8 @@ import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.protections.ProtectionOverrider;
 import com.rogermiranda1000.mineit.protections.ResidenceProtectionOverrider;
-import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverrider;
-import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverriderPre18;
+import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverriderPost13;
+import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverriderPre13;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
@@ -31,7 +31,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.fusesource.jansi.Ansi;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -134,7 +133,8 @@ public class MineIt extends JavaPlugin {
         }
 
         if (pm.getPlugin("WorldGuard") != null) {
-            this.protectionOverrider.add(new WorldGuardProtectionOverriderPre18());
+            if (VersionController.version.compareTo(Version.MC_1_12) > 0) this.protectionOverrider.add(new WorldGuardProtectionOverriderPost13());
+            else this.protectionOverrider.add(new WorldGuardProtectionOverriderPre13()); // <= 1.12
             this.getLogger().info("WorldGuard plugin detected.");
         }
 
