@@ -20,7 +20,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-public class WorldGuardProtectionOverrider implements ProtectionOverrider {
+/**
+ * WorldGuard for version >= 1.13
+ */
+public class WorldGuardProtectionOverriderPost13 implements ProtectionOverrider {
     @Override
     public Object getProtection(BlockBreakEvent event) {
         org.bukkit.Location tmp = event.getBlock().getLocation();
