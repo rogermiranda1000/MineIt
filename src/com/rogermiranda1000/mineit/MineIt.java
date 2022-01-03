@@ -13,6 +13,7 @@ import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.protections.ProtectionOverrider;
 import com.rogermiranda1000.mineit.protections.ResidenceProtectionOverrider;
 import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverrider;
+import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverriderPre18;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
@@ -133,7 +134,7 @@ public class MineIt extends JavaPlugin {
         }
 
         if (pm.getPlugin("WorldGuard") != null) {
-            this.protectionOverrider.add(new WorldGuardProtectionOverrider());
+            this.protectionOverrider.add(new WorldGuardProtectionOverriderPre18());
             this.getLogger().info("WorldGuard plugin detected.");
         }
 

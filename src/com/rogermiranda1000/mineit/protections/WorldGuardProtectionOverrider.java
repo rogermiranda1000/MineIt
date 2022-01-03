@@ -1,6 +1,6 @@
 package com.rogermiranda1000.mineit.protections;
 
-import com.google.common.base.Preconditions;
+/*import com.google.common.base.Preconditions;
 import com.rogermiranda1000.mineit.MineIt;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.util.Location;
@@ -18,10 +18,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
+import java.util.ArrayList;*/
 
-public class WorldGuardProtectionOverrider implements ProtectionOverrider {
-    @Override
+public class WorldGuardProtectionOverrider /*implements ProtectionOverrider*/ {
+    /*@Override
     public Object getProtection(BlockBreakEvent event) {
         org.bukkit.Location tmp = event.getBlock().getLocation();
         LocalPlayer localPlayer = WorldGuardPlugin.inst().wrapPlayer(event.getPlayer());
@@ -53,5 +53,5 @@ public class WorldGuardProtectionOverrider implements ProtectionOverrider {
             members.addPlayer(localPlayer);
             Bukkit.getScheduler().runTaskLater(MineIt.instance,()->members.removePlayer(localPlayer),1);
         });
-    }
+    }*/
 }
