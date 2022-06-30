@@ -3,7 +3,7 @@ package com.rogermiranda1000.mineit.events;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.Stage;
-import com.rogermiranda1000.mineit.protections.ProtectionOverrider;
+import com.rogermiranda1000.mineit.protections.OnEvent;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
@@ -16,11 +16,20 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class BreakEvent implements Listener {
-    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent e) {
         Mine m = Mine.getMine(e.getBlock().getLocation());
         if (m == null) {
-            if (MineIt.instance.isSelected(e.getBlock().getLocation())) e.setCancelled(true); // trying to break a selected block
+            if (MineIt.instance.isSelected(e.getBlock().getLocation())) {
+                // trying to break a selected block
+                e.setCancelled(true);
+                return;
+            }
+
+            // no mine; launch other's protections
+            for (OnEvent prot : MineIt.instance.protectionOverrider) {
+                if (!e.isCancelled()) prot.onEvent(e);
+            }
             return;
         }
 
@@ -31,24 +40,17 @@ public class BreakEvent implements Listener {
             return;
         }
 
-        for (ProtectionOverrider prot : MineIt.instance.protectionOverrider) {
-            Object region = prot.getProtection(e);
-            if (region == null) continue;
-
-            if (!MineIt.instance.overrideProtection) return; // it's in a protected region, but in the config it's set to not change the protections
-            prot.overrideProtection(region, ply);
-        }
-
         this.breakBlock(m, e.getBlock());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent e) {
         for (Block b : e.blockList()) {
             Mine m = Mine.getMine(b.getLocation());
             if (m == null) continue;
 
             this.breakBlock(m, b);
+            // TODO e.setCancelled(false)
         }
     }
 

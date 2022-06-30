@@ -10,13 +10,11 @@ import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
-import com.rogermiranda1000.mineit.protections.ProtectionOverrider;
-import com.rogermiranda1000.mineit.protections.ResidenceProtectionOverrider;
-import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverriderPost13;
-import com.rogermiranda1000.mineit.protections.WorldGuardProtectionOverriderPre13;
+import com.rogermiranda1000.mineit.protections.OnEvent;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.sk89q.worldguard.bukkit.listener.WorldGuardBlockListener;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -34,6 +32,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -48,7 +47,7 @@ public class MineIt extends JavaPlugin {
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
 
-    public ArrayList<ProtectionOverrider> protectionOverrider;
+    public ArrayList<OnEvent> protectionOverrider;
 
     private final HashMap<String, Stack<ArrayList<Location>>> selectedBlocksHistory = new HashMap<>();
 
@@ -119,23 +118,23 @@ public class MineIt extends JavaPlugin {
             this.printConsoleErrorMessage("The air stage material '" + airStage + "' does not exist!");
         }
 
-
-        // Protections
+        // Protections [done by a higher priority]
+        // TODO allow more event types
+        // TODO save priorities (sorted list) & ignoreCancelled
         PluginManager pm = getServer().getPluginManager();
         this.protectionOverrider = new ArrayList<>();
         Plugin residence = pm.getPlugin("Residence");
         if (residence != null) {
-            this.protectionOverrider.add(new ResidenceProtectionOverrider());
             this.getLogger().info("Residence plugin detected.");
-
-            // BlockBreakEvent from Residence needs to be HIGH priority
-            this.overridePriority(residence, ResidenceBlockListener.class, EventPriority.LOWEST, EventPriority.HIGH);
+            Listener lis = getListener(residence, ResidenceBlockListener.class);
+            this.protectionOverrider.add(MineIt.getOnEventFunction(MineIt.overrideListener(residence, ResidenceBlockListener.class, "onBlockBreak"), lis));
         }
 
-        if (pm.getPlugin("WorldGuard") != null) {
-            if (VersionController.version.compareTo(Version.MC_1_12) > 0) this.protectionOverrider.add(new WorldGuardProtectionOverriderPost13());
-            else this.protectionOverrider.add(new WorldGuardProtectionOverriderPre13()); // <= 1.12
+        Plugin worldguard = pm.getPlugin("WorldGuard");
+        if (worldguard != null) {
             this.getLogger().info("WorldGuard plugin detected.");
+            Listener lis = getListener(worldguard, WorldGuardBlockListener.class);
+            this.protectionOverrider.add(MineIt.getOnEventFunction(MineIt.overrideListener(worldguard, WorldGuardBlockListener.class, "onBlockBreak"), lis));
         }
 
 
@@ -179,6 +178,16 @@ public class MineIt extends JavaPlugin {
 
         getCommand("mineit").setExecutor(new CommandEvent());
         if (VersionController.version.compareTo(Version.MC_1_10) >= 0) getCommand("mineit").setTabCompleter(new HintEvent());
+    }
+
+    private static OnEvent getOnEventFunction(Method m, Listener lis) {
+        return (e) -> {
+            try {
+                m.invoke(lis, e);
+            } catch (InvocationTargetException | IllegalAccessException invocationTargetException) {
+                invocationTargetException.printStackTrace();
+            }
+        };
     }
 
     @Override
@@ -245,7 +254,7 @@ public class MineIt extends JavaPlugin {
         return this.getAllSelectedBlocks().contains(loc);
     }
 
-    private void overridePriority(@NotNull Plugin plugin, Class<?> match, EventPriority find, EventPriority replace) {
+    private static Listener getListener(@NotNull Plugin plugin, Class<?> match) {
         Listener lis = null;
         for (RegisteredListener l : HandlerList.getRegisteredListeners(plugin)) {
             if (l.getListener().getClass().equals(match)) {
@@ -253,14 +262,23 @@ public class MineIt extends JavaPlugin {
                 break;
             }
         }
+        return lis;
+    }
 
-        if (lis == null) {
-            this.printConsoleErrorMessage("Unable to override " + plugin.getName() + " event priority: Listener not found");
-            return;
-        }
+    /**
+     * Finds the desired listener and remove it and returns it
+     * @param plugin Plugin registering the listener
+     * @param match Class registering the listener
+     * @param name Listener name
+     * @return Method to call (if any match)
+     */
+    private static Method overrideListener(@NotNull Plugin plugin, Class<?> match, String name) throws ListenerNotFoundException {
+        Listener lis = getListener(plugin, match);
+        if (lis == null) throw new ListenerNotFoundException("Unable to override " + plugin.getName() + " event priority: Listener not found");
 
         HandlerList.unregisterAll(lis); // all the RegisteredListener on reload are the same Listener
 
+        Method r = null;
         for (Method m: match.getDeclaredMethods()) {
             // is it an event?
             if (m.getParameterCount() != 1) continue;
@@ -269,13 +287,19 @@ public class MineIt extends JavaPlugin {
             if (eventHandler == null) continue;
 
             // register again the event, but with the desired priority
-            Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis, eventHandler.priority().equals(find) ? replace : eventHandler.priority(), (l,e) -> {
-                try{
-                    m.invoke(l, e);
-                }catch (Throwable t){
-                    t.printStackTrace();
-                }
-            }, plugin, eventHandler.ignoreCancelled());
+            if (m.getName().equals(name)) r = m;
+            else {
+                Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis, eventHandler.priority(), (l, e) -> {
+                    try {
+                        m.invoke(l, e);
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                    }
+                }, plugin, eventHandler.ignoreCancelled());
+            }
         }
+
+        if (r == null) throw new ListenerNotFoundException();
+        return r;
     }
 }
