@@ -12,6 +12,8 @@ public class Stage {
      */
     private int stageLimit;
 
+    private boolean isBreakable;
+
     private Stage previousStage;
 
     private Stage nextStage;
@@ -21,32 +23,29 @@ public class Stage {
      */
     private int stageBlocks;
 
-    public Stage(Object block, int stageLimit, Stage previousStage) {
+    public Stage(Object block, int stageLimit, boolean isBreakable, Stage previousStage) {
         this.block = block;
         this.stageLimit = stageLimit;
+        this.isBreakable = isBreakable;
         this.previousStage = previousStage;
         this.stageBlocks = 0;
         this.nextStage = null;
     }
 
-    public Stage(Object block, int stageLimit) {
-        this(block, stageLimit, null);
+    public Stage(Object block) {
+        this(block, Integer.MAX_VALUE, true, null);
     }
 
-    public Stage(Object block) {
-        this(block, Integer.MAX_VALUE, null);
+    public Stage(String name, int stageLimit, boolean isBreakable, Stage previousStage) {
+        this(VersionController.get().getMaterial(name), stageLimit, isBreakable, previousStage);
     }
 
     public Stage(String name, int stageLimit, Stage previousStage) {
-        this(VersionController.get().getMaterial(name), stageLimit, previousStage);
+        this(name, stageLimit, true, previousStage);
     }
 
-    public Stage(String name, int stageLimit) {
-        this(name, stageLimit, null);
-    }
-
-    public Stage(String name) {
-        this(name, Integer.MAX_VALUE, null);
+    public Stage(String name, int stageLimit, boolean isBreakable) {
+        this(name, stageLimit, isBreakable, null);
     }
 
     public void setNextStage(Stage stage) {
@@ -102,6 +101,10 @@ public class Stage {
 
     public int getStageLimit() {
         return this.stageLimit;
+    }
+
+    public boolean isBreakable() {
+        return this.isBreakable;
     }
 
     @Override

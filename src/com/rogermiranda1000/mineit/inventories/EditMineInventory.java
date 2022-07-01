@@ -8,9 +8,11 @@ import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -223,6 +225,10 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             }
             List<String> l = new ArrayList<>();
             l.add("Stage " + (x + 1));
+            if (!current.isBreakable()) {
+                meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                l.add("Unbreakable stage");
+            }
             if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
             meta.setLore(l);
             block.setItemMeta(meta);

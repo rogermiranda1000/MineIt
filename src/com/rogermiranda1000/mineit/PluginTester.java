@@ -26,7 +26,7 @@ public class PluginTester {
                     new UsualPlugin("CMILib")
             };
 
-            String []versions = new String[]{/*"1.18.1", "1.19", "1.12.2", */"1.8"};
+            String []versions = new String[]{"1.19"/*, "1.8"*/};
             for (String vestion : versions) {
                 System.out.println("Starting test for Spigot " + vestion);
                 Tester tester = new com.rogermiranda1000.watchwolf.tester.Tester(serversManagerSocket, ServerType.Spigot, vestion, plugins, new Map[]{}, new ConfigFile[]{})

@@ -168,7 +168,7 @@ public class Mine implements Runnable {
 
     private static ArrayList<Stage> getDefaultStages() {
         ArrayList<Stage> r = new ArrayList<>(4);
-        Stage bedrock = new Stage(Mine.STATE_ZERO.name(), Integer.MAX_VALUE);
+        Stage bedrock = new Stage(Mine.STATE_ZERO.name(), Integer.MAX_VALUE, false);
         r.add(bedrock);
         Stage stone = new Stage("STONE", Integer.MAX_VALUE, bedrock);
         bedrock.setNextStage(stone);
