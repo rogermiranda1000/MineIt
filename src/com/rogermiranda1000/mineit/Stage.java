@@ -5,7 +5,7 @@ import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.inventory.ItemStack;
 
 public class Stage {
-    private final Object block;
+    private Object block;
 
     /**
      * Maximum number of simultaneous blocks on that stage
@@ -46,6 +46,11 @@ public class Stage {
 
     public Stage(String name, int stageLimit, boolean isBreakable) {
         this(name, stageLimit, isBreakable, null);
+    }
+
+    public void setBlock(Object block, boolean isBreakable) {
+        this.block = block;
+        this.isBreakable = isBreakable;
     }
 
     public void setNextStage(Stage stage) {

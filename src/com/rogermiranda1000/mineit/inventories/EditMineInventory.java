@@ -134,8 +134,8 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         this.listening.removeStage(stageNum);
                     }
                     else {
-                        Object stageMaterial = VersionController.get().getObject(player.getItemOnCursor().getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
-                        boolean isBreakable = !player.getItemOnCursor().containsEnchantment(Enchantment.DURABILITY) && !player.getItemOnCursor().getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
+                        Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
+                        boolean isBreakable = !player.getItemOnCursor().containsEnchantment(Enchantment.DURABILITY) && !item.getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
                         // already exists?
                         if (this.listening.getStage(stageMaterial) != null) {
                             player.sendMessage(MineIt.errorPrefix+"There's already a " + VersionController.get().getName(stageMaterial).toLowerCase() + " stage!");
@@ -143,23 +143,16 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         }
 
                         if (stageNum < this.listening.getStageCount()) {
-                            // sobreescribir estado
-                            // TODO sobreescribir
-                            /*m.setLore(inventory.getItem(x).getItemMeta().getLore());
-                            item.setItemMeta(m);
+                            // change existing stage
+                            Object overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x));
+                            Stage overridingStage = this.listening.getStage(overridingStageMaterial);
+                            overridingStage.setBlock(stageMaterial, isBreakable);
 
-                            for (int y = 0; y<mine.getStages().size(); y++) {
-                                if(mine.getStages().get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
-                                    mine.getStages().set(y, item.getType().name());
-                                    break;
-                                }
-                            }
-                            mine.stages = mine.getStages().toArray(new String[mine.getStages().size()]);
-                            if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
-                            inventory.setItem(x, item);*/
+                            // update view
+                            this.onMineChanged();
                         }
                         else {
-                            // nuevo estado
+                            // new stage
                             this.listening.addStage(new Stage(stageMaterial, isBreakable));
                         }
                     }
