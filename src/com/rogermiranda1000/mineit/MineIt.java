@@ -14,6 +14,7 @@ import com.rogermiranda1000.mineit.protections.OnEvent;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.sk89q.worldguard.bukkit.listener.EventAbstractionListener;
 import com.sk89q.worldguard.bukkit.listener.WorldGuardBlockListener;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -56,11 +57,11 @@ public class MineIt extends JavaPlugin {
     public boolean overrideProtection;
 
     public void printConsoleErrorMessage(String msg) {
-        Bukkit.getConsoleSender().sendMessage(ChatColor.RED + msg);
+        Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[" + this.getName() + "] " + msg);
     }
 
     public void printConsoleWarningMessage(String msg) {
-        Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + msg);
+        Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[" + this.getName() + "] " + msg);
     }
 
     @Override
@@ -127,14 +128,16 @@ public class MineIt extends JavaPlugin {
         if (residence != null) {
             this.getLogger().info("Residence plugin detected.");
             Listener lis = getListener(residence, ResidenceBlockListener.class);
-            this.protectionOverrider.add(MineIt.getOnEventFunction(MineIt.overrideListener(residence, ResidenceBlockListener.class, "onBlockBreak"), lis));
+            this.protectionOverrider.add(MineIt.getOnEventFunction(residence.getName(), MineIt.overrideListener(residence, ResidenceBlockListener.class, "onBlockBreak"), lis));
         }
 
         Plugin worldguard = pm.getPlugin("WorldGuard");
         if (worldguard != null) {
             this.getLogger().info("WorldGuard plugin detected.");
             Listener lis = getListener(worldguard, WorldGuardBlockListener.class);
-            this.protectionOverrider.add(MineIt.getOnEventFunction(MineIt.overrideListener(worldguard, WorldGuardBlockListener.class, "onBlockBreak"), lis));
+            this.protectionOverrider.add(MineIt.getOnEventFunction(worldguard.getName(), MineIt.overrideListener(worldguard, WorldGuardBlockListener.class, "onBlockBreak"), lis));
+            lis = getListener(worldguard, EventAbstractionListener.class);
+            this.protectionOverrider.add(MineIt.getOnEventFunction(worldguard.getName(), MineIt.overrideListener(worldguard, EventAbstractionListener.class, "onBlockBreak"), lis));
         }
 
 
@@ -180,12 +183,15 @@ public class MineIt extends JavaPlugin {
         if (VersionController.version.compareTo(Version.MC_1_10) >= 0) getCommand("mineit").setTabCompleter(new HintEvent());
     }
 
-    private static OnEvent getOnEventFunction(Method m, Listener lis) {
+    private static OnEvent getOnEventFunction(String plugin, Method m, Listener lis) {
         return (e) -> {
             try {
                 m.invoke(lis, e);
-            } catch (InvocationTargetException | IllegalAccessException invocationTargetException) {
-                invocationTargetException.printStackTrace();
+                return false;
+            } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                MineIt.instance.printConsoleErrorMessage("Error while overriding " + plugin + " event (" + lis.getClass().getName() + "#" + m.getName() + ")");
+                ex.printStackTrace();
+                return true;
             }
         };
     }
@@ -272,14 +278,14 @@ public class MineIt extends JavaPlugin {
      * @param name Listener name
      * @return Method to call (if any match)
      */
-    private static Method overrideListener(@NotNull Plugin plugin, Class<?> match, String name) throws ListenerNotFoundException {
-        Listener lis = getListener(plugin, match);
+    private static Method overrideListener(final @NotNull Plugin plugin, Class<?> match, String name) throws ListenerNotFoundException {
+        final Listener lis = getListener(plugin, match);
         if (lis == null) throw new ListenerNotFoundException("Unable to override " + plugin.getName() + " event priority: Listener not found");
 
         HandlerList.unregisterAll(lis); // all the RegisteredListener on reload are the same Listener
 
         Method r = null;
-        for (Method m: match.getDeclaredMethods()) {
+        for (final Method m: match.getDeclaredMethods()) {
             // is it an event?
             if (m.getParameterCount() != 1) continue;
             if (!Event.class.isAssignableFrom(m.getParameterTypes()[0])) continue;
@@ -289,11 +295,16 @@ public class MineIt extends JavaPlugin {
             // register again the event, but with the desired priority
             if (m.getName().equals(name)) r = m;
             else {
-                Bukkit.getPluginManager().registerEvent(m.getParameterTypes()[0].asSubclass(Event.class), lis, eventHandler.priority(), (l, e) -> {
+                final Class<? extends Event> type = m.getParameterTypes()[0].asSubclass(Event.class);
+                Bukkit.getPluginManager().registerEvent(type, lis, eventHandler.priority(), (l, e) -> {
                     try {
-                        m.invoke(l, e);
-                    } catch (Throwable t) {
-                        t.printStackTrace();
+                        try {
+                            m.invoke(l, type.cast(e));
+                        } catch (ClassCastException ignore) {}
+                    } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                        MineIt.instance.printConsoleErrorMessage("Error while overriding " + plugin + " event (" + lis.getClass().getName() + "#" + m.getName() + ")");
+                        ex.printStackTrace();
+                        MineIt.instance.printConsoleErrorMessage("Protection override failure. Notice this may involve players being able to remove protected regions, so report this error immediately and use an older version of MineIt.");
                     }
                 }, plugin, eventHandler.ignoreCancelled());
             }

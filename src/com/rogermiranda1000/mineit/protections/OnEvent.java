@@ -3,5 +3,9 @@ package com.rogermiranda1000.mineit.protections;
 import org.bukkit.event.Event;
 
 public interface OnEvent {
-    public void onEvent(Event e);
+    /**
+     * @retval TRUE     An error has occurred
+     * @retval FALSE    All ok
+     */
+    public boolean onEvent(Event e);
 }

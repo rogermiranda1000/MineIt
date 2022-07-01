@@ -27,8 +27,15 @@ public class BreakEvent implements Listener {
             }
 
             // no mine; launch other's protections
-            for (OnEvent prot : MineIt.instance.protectionOverrider) {
-                if (!e.isCancelled()) prot.onEvent(e);
+            for (int n = 0; n < MineIt.instance.protectionOverrider.size() && !e.isCancelled(); n++) {
+                OnEvent prot = MineIt.instance.protectionOverrider.get(n);
+                // launch other protection event
+                boolean err = prot.onEvent(e);
+                if (err) {
+                    MineIt.instance.printConsoleErrorMessage("Protection override failure, removing from list. Notice this may involve players being able to remove protected regions, so report this error immediately.");
+                    MineIt.instance.protectionOverrider.remove(n);
+                    n--; // the n++ will leave the same index on the next iteration
+                }
             }
             return;
         }

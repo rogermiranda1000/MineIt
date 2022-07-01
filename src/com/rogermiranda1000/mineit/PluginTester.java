@@ -20,13 +20,13 @@ public class PluginTester {
                     new UsualPlugin("WorldEdit"),
 
                     new UsualPlugin("MineIt"),
-                    new UsualPlugin("Gson"), // only loaded prior to 1.8.3
+                    new UsualPlugin("Gson"), // only loaded prior to 1.9
 
-                    new UsualPlugin("Residence"),
+                    //new UsualPlugin("Residence"),
                     new UsualPlugin("CMILib")
             };
 
-            String []versions = new String[]{"1.18.1"/*, "1.19", "1.12.2", "1.8"*/};
+            String []versions = new String[]{/*"1.18.1", "1.19", "1.12.2", */"1.8"};
             for (String vestion : versions) {
                 System.out.println("Starting test for Spigot " + vestion);
                 Tester tester = new com.rogermiranda1000.watchwolf.tester.Tester(serversManagerSocket, ServerType.Spigot, vestion, plugins, new Map[]{}, new ConfigFile[]{})
