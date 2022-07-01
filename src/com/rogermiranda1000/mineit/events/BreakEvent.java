@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class BreakEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -47,7 +48,7 @@ public class BreakEvent implements Listener {
             return;
         }
 
-        this.breakBlock(m, e.getBlock());
+        e.setCancelled(this.breakBlock(ply, m, e.getBlock()));
     }
 
     @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
@@ -56,23 +57,32 @@ public class BreakEvent implements Listener {
             Mine m = Mine.getMine(b.getLocation());
             if (m == null) continue;
 
-            this.breakBlock(m, b);
+            this.breakBlock(null, m, b);
             // TODO e.setCancelled(false)
         }
     }
 
-    private void breakBlock(Mine m, Block block) {
-        Stage s = m.getStage(VersionController.get().getObject(block));
+    /**
+     * @retval TRUE     The event is cancelled
+     * @retval FALSE    All ok
+     */
+    private boolean breakBlock(@Nullable Player ply, Mine m, Block block) {
+        @Nullable Stage s = m.getStage(VersionController.get().getObject(block));
         Stage prev;
+
+        if (s != null && !s.isBreakable() && !ply.hasPermission("mineit.unbreakable")) return true; // cancel
+        // if he have the permission, it will enter in the next if (there's no previous stage)
+
         if (s == null || (prev = s.getPreviousStage()) == null) {
             // unstaged block in mine or first stage mined
             BreakEvent.changeBlock(block, m.getStage(0).getStageMaterial());
-            return;
+            return false;
         }
 
         s.decrementStageBlocks();
         prev.incrementStageBlocks();
         BreakEvent.changeBlock(block, prev.getStageMaterial());
+        return false;
     }
 
     private static void changeBlock(@NotNull Block b, Object type) {

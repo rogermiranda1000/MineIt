@@ -11,12 +11,14 @@ public class BasicStage {
     private final String previousState;
     private final String nextStage;
     private final int stageLimit;
+    private final Boolean isBreakable; // prior to 1.3 is null
 
     public BasicStage(Stage stage) {
         this.name = stage.getName();
         this.previousState = (stage.getPreviousStage() == null) ? "" : stage.getPreviousStage().getName();
         this.nextStage = (stage.getNextStage() == null) ? "" : stage.getNextStage().getName();
         this.stageLimit = stage.getStageLimit();
+        this.isBreakable = stage.isBreakable();
     }
 
     public static ArrayList<Stage> getStages(ArrayList<BasicStage> stages) throws IOException {
@@ -25,7 +27,8 @@ public class BasicStage {
 
         // create all stages
         for (BasicStage bs : stages) {
-            Stage now = new Stage(bs.name, bs.stageLimit);
+            Stage now = new Stage(bs.name, bs.stageLimit,
+                    (bs.isBreakable == null) || bs.isBreakable); // to keep compatibility with previous mines
             if (now.getStageMaterial() == null) throw new IOException("Unknown block material stage in mine");
 
             cache.put(bs.name, now);
