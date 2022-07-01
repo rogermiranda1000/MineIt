@@ -143,7 +143,7 @@ public class Mine implements Runnable {
 
     public void addStage(Stage stage) {
         Stage prev = this.getStage(this.getStageCount()-1);
-        stage.setPreviousStage(prev);
+        if (stage.isBreakable()) stage.setPreviousStage(prev);
         prev.setNextStage(stage);
 
         this.stages.add(stage);

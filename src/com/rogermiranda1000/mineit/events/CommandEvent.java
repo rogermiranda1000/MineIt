@@ -61,6 +61,20 @@ public class CommandEvent implements CommandExecutor {
 
             player.sendMessage(MineIt.clearPrefix + "Now use this block to create an unbreakable stage.");
         }),
+        new CustomCommand("mineit air", "mineit.create", false, "mineit air", "get the air stage", (sender, cmd) -> {
+            Player player = (Player) sender; // not for console usage
+
+            ItemStack air = new ItemStack(Mine.AIR_STAGE);
+
+            // air is unbreakable
+            ItemMeta meta = air.getItemMeta();
+            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            air.setItemMeta(meta);
+
+            // give item
+            player.getInventory().addItem(air);
+            player.sendMessage(MineIt.clearPrefix + "Now use this block to create an air stage.");
+        }),
         new CustomCommand("mineit list", null, true, "mineit list", "see all the created mines", (sender, cmd) -> {
             StringBuilder sb = new StringBuilder();
             for (Mine m : Mine.getMines()) {
