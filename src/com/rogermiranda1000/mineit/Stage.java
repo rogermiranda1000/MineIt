@@ -32,8 +32,8 @@ public class Stage {
         this.nextStage = null;
     }
 
-    public Stage(Object block) {
-        this(block, Integer.MAX_VALUE, true, null);
+    public Stage(Object block, boolean isBreakable) {
+        this(block, Integer.MAX_VALUE, isBreakable, null);
     }
 
     public Stage(String name, int stageLimit, boolean isBreakable, Stage previousStage) {
