@@ -1,11 +1,12 @@
 package com.rogermiranda1000.mineit;
 
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.inventory.ItemStack;
 
 public class Stage {
-    private Object block;
+    private BlockType block;
 
     /**
      * Maximum number of simultaneous blocks on that stage
@@ -23,7 +24,7 @@ public class Stage {
      */
     private int stageBlocks;
 
-    public Stage(Object block, int stageLimit, boolean isBreakable, Stage previousStage) {
+    public Stage(BlockType block, int stageLimit, boolean isBreakable, Stage previousStage) {
         this.block = block;
         this.stageLimit = stageLimit;
         this.isBreakable = isBreakable;
@@ -32,7 +33,7 @@ public class Stage {
         this.nextStage = null;
     }
 
-    public Stage(Object block, boolean isBreakable) {
+    public Stage(BlockType block, boolean isBreakable) {
         this(block, Integer.MAX_VALUE, isBreakable, null);
     }
 
@@ -48,7 +49,7 @@ public class Stage {
         this(name, stageLimit, isBreakable, null);
     }
 
-    public void setBlock(Object block, boolean isBreakable) {
+    public void setBlock(BlockType block, boolean isBreakable) {
         this.block = block;
         this.isBreakable = isBreakable;
     }
@@ -88,16 +89,16 @@ public class Stage {
     }
 
     public String getName() {
-        return VersionController.get().getName(this.block);
+        return this.block.getName();
     }
 
     @Nullable
-    public Object getStageMaterial() {
+    public BlockType getStageMaterial() {
         return this.block;
     }
 
     public ItemStack getStageItemStack() {
-        return VersionController.get().getItemStack(this.block);
+        return this.block.getItemStack();
     }
 
     public void setStageLimit(int limit) {

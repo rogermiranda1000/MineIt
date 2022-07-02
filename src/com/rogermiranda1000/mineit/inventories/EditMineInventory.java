@@ -7,6 +7,7 @@ import com.rogermiranda1000.mineit.Stage;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import net.md_5.bungee.api.ChatColor;
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.apache.commons.lang.StringUtils;
@@ -134,11 +135,11 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         this.listening.removeStage(stageNum);
                     }
                     else {
-                        Object stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
+                        BlockType stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
                         boolean isBreakable = !player.getItemOnCursor().containsEnchantment(Enchantment.DURABILITY) && !item.getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
                         // already exists?
                         if (this.listening.getStage(stageMaterial) != null) {
-                            player.sendMessage(MineIt.errorPrefix+"There's already a " + VersionController.get().getName(stageMaterial).toLowerCase() + " stage!");
+                            player.sendMessage(MineIt.errorPrefix+"There's already a " + stageMaterial.getName().toLowerCase() + " stage!");
                             return;
                         }
 

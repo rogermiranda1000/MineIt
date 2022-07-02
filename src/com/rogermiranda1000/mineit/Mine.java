@@ -327,7 +327,7 @@ public class Mine implements Runnable {
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();
                 next.incrementStageBlocks();
-                VersionController.get().setType(loc.getBlock(), next.getStageMaterial());
+                next.getStageMaterial().setType(loc.getBlock());
             }
         }
     }

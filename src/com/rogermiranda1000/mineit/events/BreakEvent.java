@@ -5,6 +5,7 @@ import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.Stage;
 import com.rogermiranda1000.mineit.protections.OnEvent;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -70,7 +71,7 @@ public class BreakEvent implements Listener {
         @Nullable Stage s = m.getStage(VersionController.get().getObject(block));
         Stage prev;
 
-        if (s != null && !s.isBreakable() && !ply.hasPermission("mineit.unbreakable")) return true; // cancel
+        if (s != null && !s.isBreakable() && (ply == null || !ply.hasPermission("mineit.unbreakable"))) return true; // cancel
         // if he have the permission, it will enter in the next if (there's no previous stage)
 
         if (s == null || (prev = s.getPreviousStage()) == null) {
@@ -85,7 +86,7 @@ public class BreakEvent implements Listener {
         return false;
     }
 
-    private static void changeBlock(@NotNull Block b, Object type) {
-        Bukkit.getScheduler().runTaskLater(MineIt.instance,()->VersionController.get().setType(b, type),1);
+    private static void changeBlock(@NotNull Block b, BlockType type) {
+        Bukkit.getScheduler().runTaskLater(MineIt.instance,()->type.setType(b),1);
     }
 }

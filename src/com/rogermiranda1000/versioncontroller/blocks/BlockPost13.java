@@ -11,11 +11,11 @@ import org.jetbrains.annotations.Nullable;
  */
 public class BlockPost13 implements BlockManager {
     @Override
-    public @Nullable Object getMaterial(String type) {
-        Material r = null;
+    public @Nullable BlockType getMaterial(String type) {
+        BlockType r = null;
 
         try {
-            r = Material.valueOf(type);
+            r = new BlockTypePost13(Material.valueOf(type));
         }
         catch (IllegalArgumentException ignored) { }
 
@@ -23,32 +23,17 @@ public class BlockPost13 implements BlockManager {
     }
 
     @Override
-    public Object getObject(@NotNull Block block) {
-        return block.getType();
+    public BlockType getObject(@NotNull Block block) {
+        return new BlockTypePost13(block.getType());
     }
 
     @Override
-    public Object getObject(@NotNull ItemStack item) {
-        return item.getType();
+    public BlockType getObject(@NotNull ItemStack item) {
+        return new BlockTypePost13(item.getType());
     }
 
     @Override
     public boolean isPassable(@NotNull Block block) {
         return block.isPassable();
-    }
-
-    @Override
-    public String getName(@NotNull Object block) {
-        return ((Material)block).name();
-    }
-
-    @Override
-    public void setType(@NotNull Block block, Object type) {
-        block.setType((Material) type);
-    }
-
-    @Override
-    public ItemStack getItemStack(Object type) {
-        return new ItemStack((Material) type);
     }
 }
