@@ -98,7 +98,7 @@ public class Stage {
     }
 
     public ItemStack getStageItemStack() {
-        return this.block.getItemStack();
+        return this.block.getItemStack(true);
     }
 
     public void setStageLimit(int limit) {

@@ -1,6 +1,5 @@
 package com.rogermiranda1000.versioncontroller.blocks;
 
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -12,19 +11,17 @@ import org.jetbrains.annotations.Nullable;
 public class BlockPost13 implements BlockManager {
     @Override
     public @Nullable BlockType getMaterial(String type) {
-        BlockType r = null;
-
         try {
-            r = new BlockTypePost13(Material.valueOf(type));
+            return new BlockTypePost13(type);
         }
-        catch (IllegalArgumentException ignored) { }
-
-        return r;
+        catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     @Override
     public BlockType getObject(@NotNull Block block) {
-        return new BlockTypePost13(block.getType());
+        return new BlockTypePost13(block);
     }
 
     @Override

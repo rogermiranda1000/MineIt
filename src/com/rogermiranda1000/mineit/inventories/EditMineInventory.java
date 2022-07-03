@@ -218,7 +218,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 meta = block.getItemMeta();
                 meta.setDisplayName("Air");
             }
-            List<String> l = new ArrayList<>();
+            List<String> l = new ArrayList<>(meta.getLore());
             l.add("Stage " + (x + 1));
             if (!current.isBreakable()) {
                 meta.addEnchant(Enchantment.DURABILITY, 1, true);
@@ -239,7 +239,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     meta = bottomBlock.getItemMeta();
                     meta.setDisplayName("Air");
                 }
-                l = new ArrayList<>();
+                l = new ArrayList<>(meta.getLore());
                 l.add("On break, go to stage " + previousStage.getName());
                 if (!previousStage.isBreakable()) {
                     meta.addEnchant(Enchantment.DURABILITY, 1, true);

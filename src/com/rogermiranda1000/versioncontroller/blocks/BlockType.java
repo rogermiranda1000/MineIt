@@ -19,7 +19,8 @@ public abstract class BlockType {
 
     /**
      * Given an object created by this class, it returns the ItemStack
+     * @param verbose If the material is non-standard, use the lore to be more precise
      * @return Object's ItemStack
      */
-    public abstract ItemStack getItemStack();
+    public abstract ItemStack getItemStack(boolean verbose);
 }

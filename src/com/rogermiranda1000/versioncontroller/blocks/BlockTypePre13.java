@@ -45,7 +45,7 @@ public class BlockTypePre13 extends BlockType {
     }
 
     @Override
-    public ItemStack getItemStack() {
+    public ItemStack getItemStack(boolean verbose) {
         return (type == null) ? null : new ItemStack(this.type);
     }
 }
