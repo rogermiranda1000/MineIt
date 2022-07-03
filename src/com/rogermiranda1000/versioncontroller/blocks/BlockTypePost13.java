@@ -58,8 +58,12 @@ public class BlockTypePost13 extends BlockType {
         ItemStack item = new ItemStack(this.data.getMaterial());
         List<String> data;
         if (verbose && (data = BlockTypePost13.getNonStandardDataList(this.data)).size() > 0) {
+            data.add(0, "BlockData:");
+            for (int i = 1; i < data.size(); i++) data.set(i, "- " + data.get(i).replaceAll("=", ": "));
+
             ItemMeta meta = item.getItemMeta();
             meta.setLore(data);
+            item.setItemMeta(meta);
         }
         return item;
     }
@@ -73,11 +77,11 @@ public class BlockTypePost13 extends BlockType {
     }
 
     private static List<String> getNonStandardDataList(BlockData data) {
-        String []current = BlockTypePost13.getDataList(data);
-        List<String> original = Arrays.asList(BlockTypePost13.getDataList(data.getMaterial().createBlockData()));
+        String []current = BlockTypePost13.getDataList(data),
+                original = BlockTypePost13.getDataList(data.getMaterial().createBlockData());
         ArrayList<String> r = new ArrayList<>();
         for (String e : current) {
-            if (!original.contains(e)) r.add(e);
+            if (Arrays.stream(original).noneMatch(e::equals)) r.add(e);
         }
         return r;
     }

@@ -29,11 +29,8 @@ public class InteractEvent implements Listener {
             if (!VersionController.get().sameItem(hand, MineIt.mimicBlock) || e.getAction() == Action.LEFT_CLICK_BLOCK || e.getClickedBlock() == null) return;
 
             // mimic the block
-            PlayerInventory inv = ply.getInventory();
-            inv.remove(hand);
             ItemStack mimic = VersionController.get().getObject(e.getClickedBlock()).getItemStack(true);
-            inv.addItem(mimic);
-            VersionController.get().setItemInHand(inv, mimic);
+            VersionController.get().setItemInHand(ply.getInventory(), mimic);
             e.setCancelled(true);
             return;
         }
