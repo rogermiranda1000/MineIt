@@ -68,6 +68,7 @@ public class CommandEvent implements CommandExecutor {
 
             // air is unbreakable
             ItemMeta meta = air.getItemMeta();
+            meta.setDisplayName("Air");
             meta.addEnchant(Enchantment.DURABILITY, 1, true);
             air.setItemMeta(meta);
 
