@@ -26,7 +26,7 @@ public class BlockPost13 implements BlockManager {
 
     @Override
     public BlockType getObject(@NotNull ItemStack item) {
-        return new BlockTypePost13(item.getType());
+        return new BlockTypePost13(item);
     }
 
     @Override
