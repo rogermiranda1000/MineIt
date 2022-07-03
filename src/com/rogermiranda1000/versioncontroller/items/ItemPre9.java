@@ -15,9 +15,22 @@ public class ItemPre9 extends ItemManager {
     private static final Method getItemInHandMethod = ItemPre9.getItemInHandMethod();
 
     @Nullable
+    private static final Method setItemInHandMethod = ItemPre9.setItemInHandMethod();
+
+    @Nullable
     private static Method getItemInHandMethod() {
         try {
             return PlayerInventory.class.getMethod("getItemInHand");
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    @Nullable
+    private static Method setItemInHandMethod() {
+        try {
+            return PlayerInventory.class.getMethod("setItemInHand", ItemStack.class);
         } catch (NoSuchMethodException ex) {
             ex.printStackTrace();
             return null;
@@ -35,5 +48,13 @@ public class ItemPre9 extends ItemManager {
             //e.printStackTrace();
             return new ItemStack[0];
         }
+    }
+
+    @SuppressWarnings("ConstantConditions") // ignore NPE
+    @Override
+    public void setItemInHand(PlayerInventory playerInventory, ItemStack item) {
+        try {
+            ItemPre9.setItemInHandMethod.invoke(playerInventory, item);
+        } catch (IllegalAccessException | NullPointerException | InvocationTargetException ignore) {}
     }
 }

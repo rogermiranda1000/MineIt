@@ -67,7 +67,8 @@ public class VersionController extends ItemManager implements BlockManager, Part
         return VersionController.versionController;
     }
 
-    public @Nullable BlockType getMaterial(String type) {
+    @Nullable
+    public BlockType getMaterial(String type) {
         return VersionController.blockManager.getMaterial(type);
     }
 
@@ -96,6 +97,11 @@ public class VersionController extends ItemManager implements BlockManager, Part
     @Override
     public ItemStack[] getItemInHand(PlayerInventory playerInventory) {
         return VersionController.itemManager.getItemInHand(playerInventory);
+    }
+
+    @Override
+    public void setItemInHand(PlayerInventory playerInventory, ItemStack item) {
+        VersionController.itemManager.setItemInHand(playerInventory, item);
     }
 
     @Override

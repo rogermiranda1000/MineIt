@@ -14,4 +14,9 @@ public class ItemPost9 extends ItemManager {
         r[1] = playerInventory.getItemInOffHand();
         return r;
     }
+
+    @Override
+    public void setItemInHand(PlayerInventory playerInventory, ItemStack item) {
+        playerInventory.setItemInMainHand(item);
+    }
 }

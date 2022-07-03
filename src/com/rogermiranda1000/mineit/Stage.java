@@ -4,6 +4,9 @@ import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.locks.Condition;
 
 public class Stage {
     private BlockType block;
@@ -24,7 +27,7 @@ public class Stage {
      */
     private int stageBlocks;
 
-    public Stage(BlockType block, int stageLimit, boolean isBreakable, Stage previousStage) {
+    public Stage(@NotNull BlockType block, int stageLimit, boolean isBreakable, Stage previousStage) {
         this.block = block;
         this.stageLimit = stageLimit;
         this.isBreakable = isBreakable;
@@ -37,7 +40,7 @@ public class Stage {
         this(block, Integer.MAX_VALUE, isBreakable, null);
     }
 
-    public Stage(String name, int stageLimit, boolean isBreakable, Stage previousStage) {
+    public Stage(String name, int stageLimit, boolean isBreakable, Stage previousStage) throws IllegalArgumentException {
         this(VersionController.get().getMaterial(name), stageLimit, isBreakable, previousStage);
     }
 
@@ -49,7 +52,7 @@ public class Stage {
         this(name, stageLimit, isBreakable, null);
     }
 
-    public void setBlock(BlockType block, boolean isBreakable) {
+    public void setBlock(@NotNull BlockType block, boolean isBreakable) {
         this.block = block;
         this.isBreakable = isBreakable;
     }
@@ -92,7 +95,10 @@ public class Stage {
         return this.block.getName();
     }
 
-    @Nullable
+    public String getFriendlyName() {
+        return this.block.getFriendlyName();
+    }
+
     public BlockType getStageMaterial() {
         return this.block;
     }

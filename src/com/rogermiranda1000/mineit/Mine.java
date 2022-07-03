@@ -9,10 +9,12 @@ import com.github.davidmoten.rtreemulti.Entry;
 import com.github.davidmoten.rtreemulti.RTree;
 import com.github.davidmoten.rtreemulti.geometry.Point;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
+import org.bukkit.inventory.ItemStack;
 
 public class Mine implements Runnable {
     @Nullable public static Material AIR_STAGE;
@@ -215,7 +217,7 @@ public class Mine implements Runnable {
     }
 
     @Nullable
-    public Stage getStage(Object search) {
+    public Stage getStage(BlockType search) {
         return this.stages.stream().filter( e -> e.getStageMaterial().equals(search) ).findAny().orElse(null);
     }
 

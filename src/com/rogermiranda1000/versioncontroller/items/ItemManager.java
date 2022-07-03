@@ -4,6 +4,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Map;
 
@@ -24,6 +25,8 @@ public abstract class ItemManager {
         return this.getItemInHand(player.getInventory());
     }
 
+    public abstract void setItemInHand(PlayerInventory playerInventory, ItemStack item);
+
     /**
      * It checks the material, name and enchantments of an item
      * @param i First item
@@ -31,6 +34,9 @@ public abstract class ItemManager {
      * @return If i == i2
      */
     public boolean sameItem(ItemStack i, ItemStack i2) {
+        if (i == null && i2 == null) return true;
+        if (i == null || i2 == null) return false;
+
         if (!i2.getType().equals(i.getType())) return false;
         if (i.getEnchantments().size() != i2.getEnchantments().size()) return false;
 
@@ -42,7 +48,13 @@ public abstract class ItemManager {
                 break;
             }
         }
-        return match;
+        if (!match) return false;
+
+        ItemMeta m = i.getItemMeta(),
+                m2 = i2.getItemMeta();
+        if (m == null && m2 == null) return true;
+        if (m == null || m2 == null) return false;
+        return m.getDisplayName().equals(m2.getDisplayName());
     }
 
     /**

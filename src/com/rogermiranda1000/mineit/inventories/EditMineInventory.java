@@ -145,7 +145,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
 
                         if (stageNum < this.listening.getStageCount()) {
                             // change existing stage
-                            Object overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x));
+                            BlockType overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x));
                             Stage overridingStage = this.listening.getStage(overridingStageMaterial);
                             overridingStage.setBlock(stageMaterial, isBreakable);
 
@@ -218,7 +218,8 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 meta = block.getItemMeta();
                 meta.setDisplayName("Air");
             }
-            List<String> l = new ArrayList<>(meta.getLore());
+            List<String> l = new ArrayList<>();
+            if (meta.getLore() != null) l.addAll(meta.getLore());
             l.add("Stage " + (x + 1));
             if (!current.isBreakable()) {
                 meta.addEnchant(Enchantment.DURABILITY, 1, true);
@@ -239,8 +240,9 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     meta = bottomBlock.getItemMeta();
                     meta.setDisplayName("Air");
                 }
-                l = new ArrayList<>(meta.getLore());
-                l.add("On break, go to stage " + previousStage.getName());
+                l = new ArrayList<>();
+                if (meta.getLore() != null) l.addAll(meta.getLore());
+                l.add("On break, go to stage " + previousStage.getFriendlyName());
                 if (!previousStage.isBreakable()) {
                     meta.addEnchant(Enchantment.DURABILITY, 1, true);
                     l.add("Unbreakable stage");

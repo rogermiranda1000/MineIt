@@ -15,8 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class BlockTypePost13 extends BlockType {
-    private static final Pattern blockDataData = Pattern.compile("minecraft:[^\\[]+\\[(.+)\\]");
-    private BlockData data;
+    private static final Pattern blockDataData = Pattern.compile("minecraft:[^\\[]+(\\[(.+)\\])?");
+    private final BlockData data;
 
     public BlockTypePost13(Material type) {
         this.data = type.createBlockData();
@@ -27,12 +27,25 @@ public class BlockTypePost13 extends BlockType {
     }
 
     public BlockTypePost13(String str) throws IllegalArgumentException {
-        this.data = Bukkit.createBlockData(str);
+        BlockData data;
+        try {
+            data = Bukkit.createBlockData(str);
+        } catch (IllegalArgumentException ex) {
+            Material mat = Material.getMaterial(str);
+            if (mat == null) throw new IllegalArgumentException(str + " is not a Material, nor BlockData");
+            data = mat.createBlockData();
+        }
+        this.data = data;
     }
 
     @Override
     public String getName() {
         return this.data.getAsString();
+    }
+
+    @Override
+    public String getFriendlyName() {
+        return this.data.getMaterial().name().toLowerCase();
     }
 
     @Override
@@ -53,8 +66,10 @@ public class BlockTypePost13 extends BlockType {
 
     private static String []getDataList(BlockData data) {
         Matcher m = BlockTypePost13.blockDataData.matcher(data.getAsString());
-        if (!m.find()) throw new IllegalArgumentException("Expecting block data to be 'minecraft:...[...]'");
-        return m.group(1).split(",");
+        if (!m.find()) throw new IllegalArgumentException("Expecting block data to be 'minecraft:...[...]', found '" + data.getAsString() + "' instead.");
+        String match = m.group(2);
+        if (match == null) return new String[]{};
+        return match.split(",");
     }
 
     private static List<String> getNonStandardDataList(BlockData data) {

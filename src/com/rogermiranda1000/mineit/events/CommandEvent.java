@@ -76,6 +76,13 @@ public class CommandEvent implements CommandExecutor {
             player.getInventory().addItem(air);
             player.sendMessage(MineIt.clearPrefix + "Now use this block to create an air stage.");
         }),
+        new CustomCommand("mineit mimic", "mineit.create", false, "mineit mimic", "get the mimic block", (sender, cmd) -> {
+            Player player = (Player) sender; // not for console usage
+
+            // give item
+            player.getInventory().addItem(MineIt.mimicBlock.clone());
+            player.sendMessage(MineIt.clearPrefix + "Now use this block to mimic the desired stage block.");
+        }),
         new CustomCommand("mineit list", null, true, "mineit list", "see all the created mines", (sender, cmd) -> {
             StringBuilder sb = new StringBuilder();
             for (Mine m : Mine.getMines()) {
