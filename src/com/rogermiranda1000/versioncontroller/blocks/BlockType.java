@@ -12,6 +12,14 @@ public abstract class BlockType {
     public abstract String getName();
 
     /**
+     * Get the block's name (material/id)
+     * @return Material/ID partially identifying the block
+     */
+    public String getFriendlyName() {
+        return this.getName();
+    }
+
+    /**
      * Change the block's type
      * @param block Block to change
      */
@@ -19,7 +27,16 @@ public abstract class BlockType {
 
     /**
      * Given an object created by this class, it returns the ItemStack
+     * @param verbose If the material is non-standard, use the lore to be more precise
      * @return Object's ItemStack
      */
-    public abstract ItemStack getItemStack();
+    public abstract ItemStack getItemStack(boolean verbose);
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof BlockType)) return false;
+
+        if (this == o) return true;
+        return this.getName().equals(((BlockType)o).getName());
+    }
 }

@@ -136,7 +136,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     }
                     else {
                         BlockType stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
-                        boolean isBreakable = !player.getItemOnCursor().containsEnchantment(Enchantment.DURABILITY) && !item.getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
+                        boolean isBreakable = player.getItemOnCursor().getEnchantmentLevel(Enchantment.DURABILITY) != 1 && !item.getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
                         // already exists?
                         if (this.listening.getStage(stageMaterial) != null) {
                             player.sendMessage(MineIt.errorPrefix+"There's already a " + stageMaterial.getName().toLowerCase() + " stage!");
@@ -144,8 +144,14 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         }
 
                         if (stageNum < this.listening.getStageCount()) {
+                            if (x == 0 && isBreakable) {
+                                // updating bedrock stage with a breakable stage
+                                player.sendMessage(MineIt.errorPrefix + "The bedrock stage must be unbreakable!");
+                                return;
+                            }
+
                             // change existing stage
-                            Object overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x));
+                            BlockType overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x).getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : this.inv.getItem(x));
                             Stage overridingStage = this.listening.getStage(overridingStageMaterial);
                             overridingStage.setBlock(stageMaterial, isBreakable);
 
@@ -163,9 +169,10 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     // segunda fila (la de on break go to X stage)
                     if (item.getType().equals(Material.AIR) || stageNum >= this.listening.getStageCount()) return; // no previous stage configuration
 
-                    Stage match = this.listening.getStage(VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item));
+                    BlockType realItem = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
+                    Stage match = this.listening.getStage(realItem);
                     if(match == null) {
-                        player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
+                        player.sendMessage(MineIt.errorPrefix+realItem.getFriendlyName()+" stage doesn't exists in this mine!");
                         return;
                     }
 
@@ -174,7 +181,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     // update view
                     ItemMeta m = item.getItemMeta();
                     List<String> str = new ArrayList<>();
-                    str.add("On break, go to stage " + item.getType().name());
+                    str.add("On break, go to stage " + realItem.getFriendlyName());
                     m.setLore(str);
                     item.setItemMeta(m);
                     this.inv.setItem(x, item);
@@ -219,6 +226,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 meta.setDisplayName("Air");
             }
             List<String> l = new ArrayList<>();
+            if (meta.getLore() != null) l.addAll(meta.getLore());
             l.add("Stage " + (x + 1));
             if (!current.isBreakable()) {
                 meta.addEnchant(Enchantment.DURABILITY, 1, true);
@@ -240,7 +248,8 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     meta.setDisplayName("Air");
                 }
                 l = new ArrayList<>();
-                l.add("On break, go to stage " + previousStage.getName());
+                if (meta.getLore() != null) l.addAll(meta.getLore());
+                l.add("On break, go to stage " + previousStage.getFriendlyName());
                 if (!previousStage.isBreakable()) {
                     meta.addEnchant(Enchantment.DURABILITY, 1, true);
                     l.add("Unbreakable stage");

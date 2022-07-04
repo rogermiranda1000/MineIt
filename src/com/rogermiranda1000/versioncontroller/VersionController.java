@@ -33,6 +33,8 @@ public class VersionController extends ItemManager implements BlockManager, Part
     private static VersionController versionController = null;
     public static final Version version = VersionController.getVersion();
     public static final boolean isPaper = VersionController.getMCPaper();
+    public static final String nmsPackage = Bukkit.getServer().getClass().getPackage().getName()
+            .replace("org.bukkit.craftbukkit", "net.minecraft.server");
 
     private static final BlockManager blockManager = (VersionController.version.compareTo(Version.MC_1_13) < 0) ? new BlockPre13() : new BlockPost13();
     private static final ItemManager itemManager = (VersionController.version.compareTo(Version.MC_1_9) < 0) ? new ItemPre9() : new ItemPost9();
@@ -67,7 +69,8 @@ public class VersionController extends ItemManager implements BlockManager, Part
         return VersionController.versionController;
     }
 
-    public @Nullable BlockType getMaterial(String type) {
+    @Nullable
+    public BlockType getMaterial(String type) {
         return VersionController.blockManager.getMaterial(type);
     }
 
@@ -90,12 +93,22 @@ public class VersionController extends ItemManager implements BlockManager, Part
      * @return ItemStack clone
      */
     public ItemStack cloneItemStack(ItemStack item) {
-        return this.getObject(item).getItemStack();
+        return this.getObject(item).getItemStack(false);
     }
 
     @Override
     public ItemStack[] getItemInHand(PlayerInventory playerInventory) {
         return VersionController.itemManager.getItemInHand(playerInventory);
+    }
+
+    @Override
+    public void setItemInHand(PlayerInventory playerInventory, ItemStack item) {
+        VersionController.itemManager.setItemInHand(playerInventory, item);
+    }
+
+    @Override
+    public boolean isItem(ItemStack item) {
+        return VersionController.itemManager.isItem(item);
     }
 
     @Override

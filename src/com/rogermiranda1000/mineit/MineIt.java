@@ -41,7 +41,7 @@ public class MineIt extends JavaPlugin {
     public static final String PLUGIN_ID = "69161";
     public static final String clearPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.GREEN,
             errorPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.RED;
-    public static ItemStack item;
+    public static ItemStack item, mimicBlock;
     public static MineIt instance;
 
     //Inv
@@ -149,6 +149,17 @@ public class MineIt extends JavaPlugin {
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
+        mimicBlock = new ItemStack(Material.STONE);
+        m = mimicBlock.getItemMeta();
+        m.setDisplayName(ChatColor.GOLD+"Mimic block");
+        ArrayList<String> l = new ArrayList<>();
+        l.add("Click the right mouse button");
+        l.add("while holding this block and");
+        l.add("looking the desired block.");
+        m.setLore(l);
+        m.addEnchant(Enchantment.DURABILITY, 1, true);
+        mimicBlock.setItemMeta(m);
+
         // @pre before mine import
         this.mainInventory = new MainInventory();
         this.selectMineInventory = new SelectMineInventory();
@@ -162,9 +173,9 @@ public class MineIt extends JavaPlugin {
                 String mineName = archivo.getName().replaceAll("\\.yml$", "");
                 try {
                     getLogger().info("Loading mine " + mineName + "..."); // TODO .json
-                    Mine mine = FileManager.loadMines(archivo);
+                    Mine mine = FileManager.loadMine(archivo);
                     Mine.addMine(mine);
-                } catch (IOException ex) {
+                } catch (IOException | IllegalArgumentException ex) {
                     this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
                 } catch (InvalidLocationException ex) {
                     this.printConsoleErrorMessage("Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());

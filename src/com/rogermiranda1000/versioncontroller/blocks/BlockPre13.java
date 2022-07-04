@@ -33,7 +33,7 @@ public class BlockPre13 implements BlockManager {
 
     @Override
     public BlockType getObject(@NotNull ItemStack item) {
-        return new BlockTypePre13(new ItemStack(item.getType(), 1, item.getData().getData()));
+        return new BlockTypePre13(item);
     }
 
     @Override
