@@ -163,9 +163,10 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     // segunda fila (la de on break go to X stage)
                     if (item.getType().equals(Material.AIR) || stageNum >= this.listening.getStageCount()) return; // no previous stage configuration
 
-                    Stage match = this.listening.getStage(VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item));
+                    BlockType realItem = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
+                    Stage match = this.listening.getStage(realItem);
                     if(match == null) {
-                        player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
+                        player.sendMessage(MineIt.errorPrefix+realItem.getFriendlyName()+" stage doesn't exists in this mine!");
                         return;
                     }
 
@@ -174,7 +175,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     // update view
                     ItemMeta m = item.getItemMeta();
                     List<String> str = new ArrayList<>();
-                    str.add("On break, go to stage " + item.getType().name());
+                    str.add("On break, go to stage " + realItem.getFriendlyName());
                     m.setLore(str);
                     item.setItemMeta(m);
                     this.inv.setItem(x, item);
