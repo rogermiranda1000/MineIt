@@ -1,5 +1,6 @@
 package com.rogermiranda1000.versioncontroller.blocks;
 
+import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +10,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class BlockTypePre13 extends BlockType {
-    private ItemStack type;
+    private final ItemStack type;
 
     @Nullable
     private static final Method setTypeMethod = BlockTypePre13.getSetTypeMethod();
@@ -24,7 +25,7 @@ public class BlockTypePre13 extends BlockType {
         }
     }
 
-    public BlockTypePre13(ItemStack type) {
+    public BlockTypePre13(@NotNull ItemStack type) {
         this.type = type;
     }
 
@@ -46,6 +47,8 @@ public class BlockTypePre13 extends BlockType {
 
     @Override
     public ItemStack getItemStack(boolean verbose) {
-        return (type == null) ? null : new ItemStack(this.type);
+        System.out.println(VersionController.get().isItem(this.type));
+        //System.out.println(new ItemStack(this.type.getType().getId(), (short)1, this.type.getDurability()));
+        return this.type.clone();
     }
 }

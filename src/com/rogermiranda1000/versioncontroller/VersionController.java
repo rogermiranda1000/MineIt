@@ -33,6 +33,8 @@ public class VersionController extends ItemManager implements BlockManager, Part
     private static VersionController versionController = null;
     public static final Version version = VersionController.getVersion();
     public static final boolean isPaper = VersionController.getMCPaper();
+    public static final String nmsPackage = Bukkit.getServer().getClass().getPackage().getName()
+            .replace("org.bukkit.craftbukkit", "net.minecraft.server");
 
     private static final BlockManager blockManager = (VersionController.version.compareTo(Version.MC_1_13) < 0) ? new BlockPre13() : new BlockPost13();
     private static final ItemManager itemManager = (VersionController.version.compareTo(Version.MC_1_9) < 0) ? new ItemPre9() : new ItemPost9();
@@ -102,6 +104,11 @@ public class VersionController extends ItemManager implements BlockManager, Part
     @Override
     public void setItemInHand(PlayerInventory playerInventory, ItemStack item) {
         VersionController.itemManager.setItemInHand(playerInventory, item);
+    }
+
+    @Override
+    public boolean isItem(ItemStack item) {
+        return VersionController.itemManager.isItem(item);
     }
 
     @Override

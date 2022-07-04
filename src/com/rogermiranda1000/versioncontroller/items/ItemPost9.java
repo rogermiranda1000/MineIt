@@ -19,4 +19,9 @@ public class ItemPost9 extends ItemManager {
     public void setItemInHand(PlayerInventory playerInventory, ItemStack item) {
         playerInventory.setItemInMainHand(item);
     }
+
+    @Override
+    public boolean isItem(ItemStack item) {
+        return item.getType().isItem(); // TODO will work in <1.13?
+    }
 }

@@ -27,6 +27,8 @@ public abstract class ItemManager {
 
     public abstract void setItemInHand(PlayerInventory playerInventory, ItemStack item);
 
+    public abstract boolean isItem(ItemStack item);
+
     /**
      * It checks the material, name and enchantments of an item
      * @param i First item
