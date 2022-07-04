@@ -136,7 +136,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     }
                     else {
                         BlockType stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
-                        boolean isBreakable = !player.getItemOnCursor().containsEnchantment(Enchantment.DURABILITY) && !item.getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
+                        boolean isBreakable = player.getItemOnCursor().getEnchantments().get(Enchantment.DURABILITY) == 1 && !item.getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
                         // already exists?
                         if (this.listening.getStage(stageMaterial) != null) {
                             player.sendMessage(MineIt.errorPrefix+"There's already a " + stageMaterial.getName().toLowerCase() + " stage!");
