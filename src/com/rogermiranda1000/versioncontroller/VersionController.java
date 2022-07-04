@@ -3,6 +3,7 @@ package com.rogermiranda1000.versioncontroller;
 import com.rogermiranda1000.versioncontroller.blocks.BlockManager;
 import com.rogermiranda1000.versioncontroller.blocks.BlockPost13;
 import com.rogermiranda1000.versioncontroller.blocks.BlockPre13;
+import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import com.rogermiranda1000.versioncontroller.entities.EntityManager;
 import com.rogermiranda1000.versioncontroller.entities.EntityPaper;
 import com.rogermiranda1000.versioncontroller.entities.EntitySpigot;
@@ -32,6 +33,8 @@ public class VersionController extends ItemManager implements BlockManager, Part
     private static VersionController versionController = null;
     public static final Version version = VersionController.getVersion();
     public static final boolean isPaper = VersionController.getMCPaper();
+    public static final String nmsPackage = Bukkit.getServer().getClass().getPackage().getName()
+            .replace("org.bukkit.craftbukkit", "net.minecraft.server");
 
     private static final BlockManager blockManager = (VersionController.version.compareTo(Version.MC_1_13) < 0) ? new BlockPre13() : new BlockPost13();
     private static final ItemManager itemManager = (VersionController.version.compareTo(Version.MC_1_9) < 0) ? new ItemPre9() : new ItemPost9();
@@ -66,36 +69,22 @@ public class VersionController extends ItemManager implements BlockManager, Part
         return VersionController.versionController;
     }
 
-    public @Nullable Object getMaterial(String type) {
+    @Nullable
+    public BlockType getMaterial(String type) {
         return VersionController.blockManager.getMaterial(type);
     }
 
-    public Object getObject(@NotNull Block block) {
+    public BlockType getObject(@NotNull Block block) {
         return VersionController.blockManager.getObject(block);
     }
 
     @Override
-    public Object getObject(@NotNull ItemStack item) {
+    public BlockType getObject(@NotNull ItemStack item) {
         return VersionController.blockManager.getObject(item);
     }
 
     public boolean isPassable(@NotNull Block block) {
         return VersionController.blockManager.isPassable(block);
-    }
-
-    @Override
-    public String getName(@NotNull Object block) {
-        return VersionController.blockManager.getName(block);
-    }
-
-    @Override
-    public void setType(@NotNull Block block, Object type) {
-        VersionController.blockManager.setType(block, type);
-    }
-
-    @Override
-    public ItemStack getItemStack(Object type) {
-        return VersionController.blockManager.getItemStack(type);
     }
 
     /**
@@ -104,12 +93,22 @@ public class VersionController extends ItemManager implements BlockManager, Part
      * @return ItemStack clone
      */
     public ItemStack cloneItemStack(ItemStack item) {
-        return this.getItemStack(this.getObject(item));
+        return this.getObject(item).getItemStack(false);
     }
 
     @Override
     public ItemStack[] getItemInHand(PlayerInventory playerInventory) {
         return VersionController.itemManager.getItemInHand(playerInventory);
+    }
+
+    @Override
+    public void setItemInHand(PlayerInventory playerInventory, ItemStack item) {
+        VersionController.itemManager.setItemInHand(playerInventory, item);
+    }
+
+    @Override
+    public boolean isItem(ItemStack item) {
+        return VersionController.itemManager.isItem(item);
     }
 
     @Override

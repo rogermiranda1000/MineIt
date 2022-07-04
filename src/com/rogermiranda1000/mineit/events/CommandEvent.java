@@ -6,16 +6,21 @@ import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
+import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -41,6 +46,42 @@ public class CommandEvent implements CommandExecutor {
         }),
         new CustomCommand("mineit tool", "mineit.create", false, "mineit tool", "get the selection tool", (sender, cmd) -> {
             ((Player)sender).getInventory().addItem(MineIt.item);
+        }),
+        new CustomCommand("mineit unbreakable", "mineit.create", false, "mineit unbreakable", "set the current block as unbreakable, so the stage won't be mined", (sender, cmd) -> {
+            Player player = (Player) sender; // not for console usage
+            ItemStack []hand = VersionController.get().getItemInHand(player);
+            if (hand[0].getType() == Material.AIR || !hand[0].getType().isBlock()) {
+                player.sendMessage(MineIt.errorPrefix +"You need to hold a block while using this command.");
+                return;
+            }
+
+            ItemMeta meta = hand[0].getItemMeta();
+            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            hand[0].setItemMeta(meta);
+
+            player.sendMessage(MineIt.clearPrefix + "Now use this block to create an unbreakable stage.");
+        }),
+        new CustomCommand("mineit air", "mineit.create", false, "mineit air", "get the air stage", (sender, cmd) -> {
+            Player player = (Player) sender; // not for console usage
+
+            ItemStack air = new ItemStack(Mine.AIR_STAGE);
+
+            // air is unbreakable
+            ItemMeta meta = air.getItemMeta();
+            meta.setDisplayName("Air");
+            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            air.setItemMeta(meta);
+
+            // give item
+            player.getInventory().addItem(air);
+            player.sendMessage(MineIt.clearPrefix + "Now use this block to create an air stage.");
+        }),
+        new CustomCommand("mineit mimic", "mineit.create", false, "mineit mimic", "get the mimic block", (sender, cmd) -> {
+            Player player = (Player) sender; // not for console usage
+
+            // give item
+            player.getInventory().addItem(MineIt.mimicBlock.clone());
+            player.sendMessage(MineIt.clearPrefix + "Now use this block to mimic the desired stage block.");
         }),
         new CustomCommand("mineit list", null, true, "mineit list", "see all the created mines", (sender, cmd) -> {
             StringBuilder sb = new StringBuilder();
@@ -75,7 +116,7 @@ public class CommandEvent implements CommandExecutor {
             MineIt.instance.removeSelectionBlocks(player.getName());
             locations.forEach(l -> l.getBlock().setType(Mine.STATE_ZERO));
 
-            player.sendMessage(MineIt.clearPrefix+ChatColor.GREEN+"Mine created successfully.");
+            player.sendMessage(MineIt.clearPrefix + "Mine created successfully.");
 
             TextComponent edit = new TextComponent(ChatColor.GREEN + "/mineit edit mine " + args[1]);
             edit.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mineit edit mine " + args[1]));

@@ -1,16 +1,22 @@
 package com.rogermiranda1000.mineit;
 
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.locks.Condition;
 
 public class Stage {
-    private final Object block;
+    private BlockType block;
 
     /**
      * Maximum number of simultaneous blocks on that stage
      */
     private int stageLimit;
+
+    private boolean isBreakable;
 
     private Stage previousStage;
 
@@ -21,32 +27,34 @@ public class Stage {
      */
     private int stageBlocks;
 
-    public Stage(Object block, int stageLimit, Stage previousStage) {
+    public Stage(@NotNull BlockType block, int stageLimit, boolean isBreakable, Stage previousStage) {
         this.block = block;
         this.stageLimit = stageLimit;
+        this.isBreakable = isBreakable;
         this.previousStage = previousStage;
         this.stageBlocks = 0;
         this.nextStage = null;
     }
 
-    public Stage(Object block, int stageLimit) {
-        this(block, stageLimit, null);
+    public Stage(BlockType block, boolean isBreakable) {
+        this(block, Integer.MAX_VALUE, isBreakable, null);
     }
 
-    public Stage(Object block) {
-        this(block, Integer.MAX_VALUE, null);
+    public Stage(String name, int stageLimit, boolean isBreakable, Stage previousStage) throws IllegalArgumentException {
+        this(VersionController.get().getMaterial(name), stageLimit, isBreakable, previousStage);
     }
 
     public Stage(String name, int stageLimit, Stage previousStage) {
-        this(VersionController.get().getMaterial(name), stageLimit, previousStage);
+        this(name, stageLimit, true, previousStage);
     }
 
-    public Stage(String name, int stageLimit) {
-        this(name, stageLimit, null);
+    public Stage(String name, int stageLimit, boolean isBreakable) {
+        this(name, stageLimit, isBreakable, null);
     }
 
-    public Stage(String name) {
-        this(name, Integer.MAX_VALUE, null);
+    public void setBlock(@NotNull BlockType block, boolean isBreakable) {
+        this.block = block;
+        this.isBreakable = isBreakable;
     }
 
     public void setNextStage(Stage stage) {
@@ -84,16 +92,19 @@ public class Stage {
     }
 
     public String getName() {
-        return VersionController.get().getName(this.block);
+        return this.block.getName();
     }
 
-    @Nullable
-    public Object getStageMaterial() {
+    public String getFriendlyName() {
+        return this.block.getFriendlyName();
+    }
+
+    public BlockType getStageMaterial() {
         return this.block;
     }
 
     public ItemStack getStageItemStack() {
-        return VersionController.get().getItemStack(this.block);
+        return this.block.getItemStack(true);
     }
 
     public void setStageLimit(int limit) {
@@ -102,6 +113,10 @@ public class Stage {
 
     public int getStageLimit() {
         return this.stageLimit;
+    }
+
+    public boolean isBreakable() {
+        return this.isBreakable;
     }
 
     @Override

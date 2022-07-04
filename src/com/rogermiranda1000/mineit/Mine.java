@@ -9,10 +9,12 @@ import com.github.davidmoten.rtreemulti.Entry;
 import com.github.davidmoten.rtreemulti.RTree;
 import com.github.davidmoten.rtreemulti.geometry.Point;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
+import org.bukkit.inventory.ItemStack;
 
 public class Mine implements Runnable {
     @Nullable public static Material AIR_STAGE;
@@ -143,7 +145,7 @@ public class Mine implements Runnable {
 
     public void addStage(Stage stage) {
         Stage prev = this.getStage(this.getStageCount()-1);
-        stage.setPreviousStage(prev);
+        if (stage.isBreakable()) stage.setPreviousStage(prev);
         prev.setNextStage(stage);
 
         this.stages.add(stage);
@@ -168,7 +170,7 @@ public class Mine implements Runnable {
 
     private static ArrayList<Stage> getDefaultStages() {
         ArrayList<Stage> r = new ArrayList<>(4);
-        Stage bedrock = new Stage(Mine.STATE_ZERO.name(), Integer.MAX_VALUE);
+        Stage bedrock = new Stage(Mine.STATE_ZERO.name(), Integer.MAX_VALUE, false);
         r.add(bedrock);
         Stage stone = new Stage("STONE", Integer.MAX_VALUE, bedrock);
         bedrock.setNextStage(stone);
@@ -215,7 +217,7 @@ public class Mine implements Runnable {
     }
 
     @Nullable
-    public Stage getStage(Object search) {
+    public Stage getStage(BlockType search) {
         return this.stages.stream().filter( e -> e.getStageMaterial().equals(search) ).findAny().orElse(null);
     }
 
@@ -327,7 +329,7 @@ public class Mine implements Runnable {
             if (next != null && next.fitsOneBlock()) {
                 current.decrementStageBlocks();
                 next.incrementStageBlocks();
-                VersionController.get().setType(loc.getBlock(), next.getStageMaterial());
+                next.getStageMaterial().setType(loc.getBlock());
             }
         }
     }

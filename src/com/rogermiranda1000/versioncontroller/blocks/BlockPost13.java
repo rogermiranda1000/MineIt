@@ -1,6 +1,5 @@
 package com.rogermiranda1000.versioncontroller.blocks;
 
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -11,44 +10,27 @@ import org.jetbrains.annotations.Nullable;
  */
 public class BlockPost13 implements BlockManager {
     @Override
-    public @Nullable Object getMaterial(String type) {
-        Material r = null;
-
+    public @Nullable BlockType getMaterial(String type) {
         try {
-            r = Material.valueOf(type);
+            return new BlockTypePost13(type);
         }
-        catch (IllegalArgumentException ignored) { }
-
-        return r;
+        catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     @Override
-    public Object getObject(@NotNull Block block) {
-        return block.getType();
+    public BlockType getObject(@NotNull Block block) {
+        return new BlockTypePost13(block);
     }
 
     @Override
-    public Object getObject(@NotNull ItemStack item) {
-        return item.getType();
+    public BlockType getObject(@NotNull ItemStack item) {
+        return new BlockTypePost13(item);
     }
 
     @Override
     public boolean isPassable(@NotNull Block block) {
         return block.isPassable();
-    }
-
-    @Override
-    public String getName(@NotNull Object block) {
-        return ((Material)block).name();
-    }
-
-    @Override
-    public void setType(@NotNull Block block, Object type) {
-        block.setType((Material) type);
-    }
-
-    @Override
-    public ItemStack getItemStack(Object type) {
-        return new ItemStack((Material) type);
     }
 }

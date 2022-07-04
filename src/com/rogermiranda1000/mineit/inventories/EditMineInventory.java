@@ -7,10 +7,13 @@ import com.rogermiranda1000.mineit.Stage;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import net.md_5.bungee.api.ChatColor;
+import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -132,32 +135,32 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         this.listening.removeStage(stageNum);
                     }
                     else {
-                        Object stageMaterial = VersionController.get().getObject(player.getItemOnCursor().getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
+                        BlockType stageMaterial = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
+                        boolean isBreakable = player.getItemOnCursor().getEnchantmentLevel(Enchantment.DURABILITY) != 1 && !item.getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
                         // already exists?
                         if (this.listening.getStage(stageMaterial) != null) {
-                            player.sendMessage(MineIt.errorPrefix+"There's already a " + VersionController.get().getName(stageMaterial).toLowerCase() + " stage!");
+                            player.sendMessage(MineIt.errorPrefix+"There's already a " + stageMaterial.getName().toLowerCase() + " stage!");
                             return;
                         }
 
                         if (stageNum < this.listening.getStageCount()) {
-                            // sobreescribir estado
-                            // TODO sobreescribir
-                            /*m.setLore(inventory.getItem(x).getItemMeta().getLore());
-                            item.setItemMeta(m);
-
-                            for (int y = 0; y<mine.getStages().size(); y++) {
-                                if(mine.getStages().get(y).equalsIgnoreCase(inventory.getItem(x).getType().name())) {
-                                    mine.getStages().set(y, item.getType().name());
-                                    break;
-                                }
+                            if (x == 0 && isBreakable) {
+                                // updating bedrock stage with a breakable stage
+                                player.sendMessage(MineIt.errorPrefix + "The bedrock stage must be unbreakable!");
+                                return;
                             }
-                            mine.stages = mine.getStages().toArray(new String[mine.getStages().size()]);
-                            if(MineIt.instance.limit) MineIt.instance.updateStages(mine);
-                            inventory.setItem(x, item);*/
+
+                            // change existing stage
+                            BlockType overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x).getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : this.inv.getItem(x));
+                            Stage overridingStage = this.listening.getStage(overridingStageMaterial);
+                            overridingStage.setBlock(stageMaterial, isBreakable);
+
+                            // update view
+                            this.onMineChanged();
                         }
                         else {
-                            // nuevo estado
-                            this.listening.addStage(new Stage(stageMaterial));
+                            // new stage
+                            this.listening.addStage(new Stage(stageMaterial, isBreakable));
                         }
                     }
                     break;
@@ -166,9 +169,10 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     // segunda fila (la de on break go to X stage)
                     if (item.getType().equals(Material.AIR) || stageNum >= this.listening.getStageCount()) return; // no previous stage configuration
 
-                    Stage match = this.listening.getStage(VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : item));
+                    BlockType realItem = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
+                    Stage match = this.listening.getStage(realItem);
                     if(match == null) {
-                        player.sendMessage(MineIt.errorPrefix+item.getType().name().toLowerCase()+" stage doesn't exists in this mine!");
+                        player.sendMessage(MineIt.errorPrefix+realItem.getFriendlyName()+" stage doesn't exists in this mine!");
                         return;
                     }
 
@@ -177,7 +181,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     // update view
                     ItemMeta m = item.getItemMeta();
                     List<String> str = new ArrayList<>();
-                    str.add("On break, go to stage " + item.getType().name());
+                    str.add("On break, go to stage " + realItem.getFriendlyName());
                     m.setLore(str);
                     item.setItemMeta(m);
                     this.inv.setItem(x, item);
@@ -222,13 +226,19 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 meta.setDisplayName("Air");
             }
             List<String> l = new ArrayList<>();
+            if (meta.getLore() != null) l.addAll(meta.getLore());
             l.add("Stage " + (x + 1));
+            if (!current.isBreakable()) {
+                meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                l.add("Unbreakable stage");
+            }
             if(MineIt.instance.limit) l.add("Limit setted to " + current.getStageLimit() + " blocks");
             meta.setLore(l);
             block.setItemMeta(meta);
             newInventory.setItem(actualLine, block);
 
-            if(current.getPreviousStage() != null && !block.getType().equals(Mine.AIR_STAGE)) {
+            Stage previousStage = current.getPreviousStage();
+            if(previousStage != null && !block.getType().equals(Mine.AIR_STAGE)) {
                 ItemStack bottomBlock = current.getPreviousStage().getStageItemStack();
                 meta = bottomBlock.getItemMeta();
                 if (Mine.AIR_STAGE != null && (bottomBlock.getType().equals(Material.AIR) || meta == null)) {
@@ -238,7 +248,12 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     meta.setDisplayName("Air");
                 }
                 l = new ArrayList<>();
-                l.add("On break, go to stage " + current.getPreviousStage().getName());
+                if (meta.getLore() != null) l.addAll(meta.getLore());
+                l.add("On break, go to stage " + previousStage.getFriendlyName());
+                if (!previousStage.isBreakable()) {
+                    meta.addEnchant(Enchantment.DURABILITY, 1, true);
+                    l.add("Unbreakable stage");
+                }
                 meta.setLore(l);
                 bottomBlock.setItemMeta(meta);
 

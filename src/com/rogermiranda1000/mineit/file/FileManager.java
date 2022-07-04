@@ -15,7 +15,7 @@ import java.util.Scanner;
 public class FileManager {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static Mine loadMines(File f) throws IOException, InvalidLocationException {
+    public static Mine loadMine(File f) throws IOException, InvalidLocationException, IllegalArgumentException {
         try {
             return FileManager.gson.fromJson(FileManager.getFileContents(f), BasicMine.class).getMine();
         } catch (JsonSyntaxException ex) {

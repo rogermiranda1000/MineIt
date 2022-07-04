@@ -1,6 +1,6 @@
 name: MineIt
 main: com.rogermiranda1000.mineit.MineIt
-version: 1.2.5
+version: 1.3
 author: rogermiranda1000
 api-version: 1.13
 softdepend: [Multiverse-Core,Residence,WorldGuard]
@@ -30,6 +30,9 @@ permissions:
   mineit.mine.all:
     description: Mine in all the mines
     default: true
+  mineit.unbreakable:
+    description: Break unbreakable stages
+    default: false
   mineit.reset:
     description: Set all the mine blocks to bedrock
     default: op
