@@ -144,8 +144,14 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         }
 
                         if (stageNum < this.listening.getStageCount()) {
+                            if (x == 0 && isBreakable) {
+                                // updating bedrock stage with a breakable stage
+                                player.sendMessage(MineIt.errorPrefix + "The bedrock stage must be unbreakable!");
+                                return;
+                            }
+
                             // change existing stage
-                            BlockType overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x));
+                            BlockType overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x).getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : this.inv.getItem(x));
                             Stage overridingStage = this.listening.getStage(overridingStageMaterial);
                             overridingStage.setBlock(stageMaterial, isBreakable);
 
