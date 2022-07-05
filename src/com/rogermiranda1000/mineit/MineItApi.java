@@ -3,6 +3,8 @@ package com.rogermiranda1000.mineit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
+import java.util.List;
+
 /**
  * MineIt API. Use it to access to the plugin's functions.
  */
@@ -15,7 +17,7 @@ public class MineItApi {
      * Get the singletone class
      * @return Object to run all the MineIt API's functions
      */
-    public MineItApi getInstance() {
+    public static MineItApi getInstance() {
         if (MineItApi.mineItApi == null) MineItApi.mineItApi = new MineItApi();
         return MineItApi.mineItApi;
     }
@@ -36,5 +38,13 @@ public class MineItApi {
      */
     public Mine getMine(Location loc) {
         return Mine.getMine(loc);
+    }
+
+    public int getMineCount() {
+        return Mine.getMinesLength();
+    }
+
+    public List<Mine> getMines() {
+        return Mine.getMines();
     }
 }
