@@ -14,13 +14,12 @@ import com.rogermiranda1000.mineit.protections.OnEvent;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.bstats.bukkit.Metrics;
+import com.rogermiranda1000.versioncontroller.bstats.charts.MultiLineChart;
+import com.rogermiranda1000.versioncontroller.bstats.charts.SimplePie;
 import com.sk89q.worldguard.bukkit.listener.EventAbstractionListener;
 import com.sk89q.worldguard.bukkit.listener.WorldGuardBlockListener;
 import net.md_5.bungee.api.ChatColor;
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.MultiLineChart;
-import org.bstats.charts.SimplePie;
-import org.bstats.charts.SingleLineChart;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -89,7 +88,6 @@ public class MineIt extends JavaPlugin {
         c.put("limit_blocks_per_stage", false);
         c.put("air_stage", Material.STONE_BUTTON.name());
         c.put("override_protections", true);
-        c.put("report_data", true);
         FileConfiguration config = getConfig();
         //Create/actualize config file
         try {
@@ -200,28 +198,31 @@ public class MineIt extends JavaPlugin {
         getCommand("mineit").setExecutor(new CommandEvent());
         if (VersionController.version.compareTo(Version.MC_1_10) >= 0) getCommand("mineit").setTabCompleter(new HintEvent());
 
-        if (config.getBoolean("report_data")) {
-            Metrics metrics = new Metrics(this, MineIt.PLUGIN_BSTATS_ID);
-            metrics.addCustomChart(new MultiLineChart("mines", ()->{
-                Map<String, Integer> minesAndBlocks = new HashMap<>();
+        this.setupReporter(worldguard, residence);
+    }
 
-                minesAndBlocks.put("mines", MineItApi.getInstance().getMineCount());
+    private void setupReporter(Plugin worldguard, Plugin residence) {
+        Metrics metrics = new Metrics(this, MineIt.PLUGIN_BSTATS_ID);
+        metrics.addCustomChart(new SimplePie("plugin_version", ()->this.getDescription().getVersion()));
+        metrics.addCustomChart(new MultiLineChart("mines", ()->{
+            Map<String, Integer> minesAndBlocks = new HashMap<>();
 
-                int blocks = 0;
-                for (Mine mine : MineItApi.getInstance().getMines()) blocks += mine.getMineBlocks().size();
-                minesAndBlocks.put("blocks", blocks);
+            minesAndBlocks.put("mines", MineItApi.getInstance().getMineCount());
 
-                return minesAndBlocks;
-            }));
-            metrics.addCustomChart(new SimplePie("protections", ()->{
-                if (overrideProtection) return "None";
-                if (residence != null) {
-                    return (worldguard != null) ? "Residence & WorldGuard" : "Residence";
-                }
-                if (worldguard != null) return "WorldGuard";
-                return "None";
-            }));
-        }
+            int blocks = 0;
+            for (Mine mine : MineItApi.getInstance().getMines()) blocks += mine.getMineBlocks().size();
+            minesAndBlocks.put("blocks", blocks);
+
+            return minesAndBlocks;
+        }));
+        metrics.addCustomChart(new SimplePie("protections", ()->{
+            if (overrideProtection) return "None";
+            if (residence != null) {
+                return (worldguard != null) ? "Residence & WorldGuard" : "Residence";
+            }
+            if (worldguard != null) return "WorldGuard";
+            return "None";
+        }));
     }
 
     private static OnEvent getOnEventFunction(String plugin, Method m, Listener lis) {

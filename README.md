@@ -7,4 +7,4 @@
 - Residence
 - WorldGuard 7.0.0
 - WorldEdit 7.0.0
-- org.bstats:bstats-bukkit:3.0.0
+- org.bstats:bstats-bukkit:3.0.0 (already inside VersionController)
