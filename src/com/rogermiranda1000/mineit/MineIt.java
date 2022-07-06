@@ -39,6 +39,7 @@ import java.util.*;
 
 public class MineIt extends JavaPlugin {
     public static final String PLUGIN_ID = "69161";
+    public static final int PLUGIN_BSTATS_ID = 15679;
     public static final String clearPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.GREEN,
             errorPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.RED;
     public static ItemStack item, mimicBlock;
@@ -109,6 +110,7 @@ public class MineIt extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         this.rango = config.getInt("mine_creator_range");
         this.limit = config.getBoolean("limit_blocks_per_stage");
         this.overrideProtection = config.getBoolean("override_protections");
