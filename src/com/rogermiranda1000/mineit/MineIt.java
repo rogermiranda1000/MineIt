@@ -14,9 +14,6 @@ import com.rogermiranda1000.mineit.protections.OnEvent;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionChecker;
 import com.rogermiranda1000.versioncontroller.VersionController;
-import com.rogermiranda1000.versioncontroller.bstats.bukkit.Metrics;
-import com.rogermiranda1000.versioncontroller.bstats.charts.MultiLineChart;
-import com.rogermiranda1000.versioncontroller.bstats.charts.SimplePie;
 import com.sk89q.worldguard.bukkit.listener.EventAbstractionListener;
 import com.sk89q.worldguard.bukkit.listener.WorldGuardBlockListener;
 import net.md_5.bungee.api.ChatColor;
@@ -197,32 +194,6 @@ public class MineIt extends JavaPlugin {
 
         getCommand("mineit").setExecutor(new CommandEvent());
         if (VersionController.version.compareTo(Version.MC_1_10) >= 0) getCommand("mineit").setTabCompleter(new HintEvent());
-
-        this.setupReporter(worldguard, residence);
-    }
-
-    private void setupReporter(Plugin worldguard, Plugin residence) {
-        Metrics metrics = new Metrics(this, MineIt.PLUGIN_BSTATS_ID);
-        metrics.addCustomChart(new SimplePie("plugin_version", ()->this.getDescription().getVersion()));
-        metrics.addCustomChart(new MultiLineChart("mines", ()->{
-            Map<String, Integer> minesAndBlocks = new HashMap<>();
-
-            minesAndBlocks.put("mines", MineItApi.getInstance().getMineCount());
-
-            int blocks = 0;
-            for (Mine mine : MineItApi.getInstance().getMines()) blocks += mine.getMineBlocks().size();
-            minesAndBlocks.put("blocks", blocks);
-
-            return minesAndBlocks;
-        }));
-        metrics.addCustomChart(new SimplePie("protections", ()->{
-            if (overrideProtection) return "None";
-            if (residence != null) {
-                return (worldguard != null) ? "Residence & WorldGuard" : "Residence";
-            }
-            if (worldguard != null) return "WorldGuard";
-            return "None";
-        }));
     }
 
     private static OnEvent getOnEventFunction(String plugin, Method m, Listener lis) {
