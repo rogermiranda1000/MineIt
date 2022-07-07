@@ -44,7 +44,6 @@ public class ItemPre9 extends ItemManager {
     private static Method getGetItemByIdMethod() {
         try {
             Class<?> nmsItemClass = Class.forName(VersionController.nmsPackage + ".Item");
-            System.out.println(VersionController.nmsPackage);
             return nmsItemClass.getMethod("getById", int.class);
         } catch (ClassNotFoundException | NoSuchMethodException | SecurityException ex) {
             ex.printStackTrace();
