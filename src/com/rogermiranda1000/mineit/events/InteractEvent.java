@@ -37,12 +37,12 @@ public class InteractEvent implements Listener {
 
         e.setCancelled(true);
         if(!e.getClickedBlock().getType().equals(Mine.SELECT_BLOCK)) {
-            ply.sendMessage(MineIt.errorPrefix+"You can only hit stone with the Mine Creator!");
+            ply.sendMessage(MineIt.instance.errorPrefix+"You can only hit stone with the Mine Creator!");
             return;
         }
 
         if(!ply.hasPermission("mineit.select")) {
-            ply.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
+            ply.sendMessage(MineIt.instance.errorPrefix + "You don't have the permissions to do that.");
             return;
         }
 

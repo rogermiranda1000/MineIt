@@ -1,47 +1,34 @@
 package com.rogermiranda1000.mineit;
 
 import com.bekvon.bukkit.residence.listeners.ResidenceBlockListener;
+import com.rogermiranda1000.helper.RogerPlugin;
+import com.rogermiranda1000.helper.reflection.OnServerEvent;
+import com.rogermiranda1000.helper.reflection.SpigotEventOverrider;
 import com.rogermiranda1000.mineit.events.BreakEvent;
-import com.rogermiranda1000.mineit.events.CommandEvent;
 import com.rogermiranda1000.mineit.events.InteractEvent;
-import com.rogermiranda1000.mineit.events.HintEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
-import com.rogermiranda1000.mineit.protections.OnEvent;
-import com.rogermiranda1000.versioncontroller.Version;
-import com.rogermiranda1000.versioncontroller.VersionChecker;
-import com.rogermiranda1000.versioncontroller.VersionController;
 import com.sk89q.worldguard.bukkit.listener.EventAbstractionListener;
 import com.sk89q.worldguard.bukkit.listener.WorldGuardBlockListener;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.event.*;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.plugin.RegisteredListener;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
-public class MineIt extends JavaPlugin {
-    public static final String PLUGIN_ID = "69161";
-    public static final int PLUGIN_BSTATS_ID = 15679;
-    public static final String clearPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.GREEN,
-            errorPrefix = ChatColor.GOLD.toString() + ChatColor.BOLD + "[MineIt] " + ChatColor.RED;
+public class MineIt extends RogerPlugin {
     public static ItemStack item, mimicBlock;
     public static MineIt instance;
 
@@ -49,7 +36,7 @@ public class MineIt extends JavaPlugin {
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
 
-    public ArrayList<OnEvent> protectionOverrider;
+    public ArrayList<OnServerEvent<BlockBreakEvent>> protectionOverrider;
 
     private final HashMap<String, Stack<ArrayList<Location>>> selectedBlocksHistory = new HashMap<>();
 
@@ -57,27 +44,21 @@ public class MineIt extends JavaPlugin {
     public boolean limit;
     public boolean overrideProtection;
 
-    public void printConsoleErrorMessage(String msg) {
-        Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "[" + this.getName() + "] " + msg);
+    @Override
+    public String getPluginID() {
+        return "69161";
     }
 
-    public void printConsoleWarningMessage(String msg) {
-        Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW + "[" + this.getName() + "] " + msg);
+    public MineIt() {
+        super(CustomMineItCommand.commands, new BreakEvent(), new InteractEvent());
     }
 
     @Override
     @SuppressWarnings("ConstantConditions")
     public void onEnable() {
-        MineIt.instance = this;
+        super.onEnable();
 
-        Bukkit.getScheduler().runTaskAsynchronously(this,()->{
-            try {
-                String version = VersionChecker.getVersion(MineIt.PLUGIN_ID);
-                if (VersionChecker.isLower(this.getDescription().getVersion(), version)) this.printConsoleWarningMessage("v" + version + " is now available! You should consider updating the plugin.");
-            } catch (IOException e) {
-                this.printConsoleWarningMessage("Can't check for updates.");
-            }
-        });
+        MineIt.instance = this;
 
         //Config
         HashMap<String,Object> c = new HashMap<>();
@@ -129,17 +110,14 @@ public class MineIt extends JavaPlugin {
         Plugin residence = pm.getPlugin("Residence");
         if (residence != null) {
             this.getLogger().info("Residence plugin detected.");
-            Listener lis = getListener(residence, ResidenceBlockListener.class);
-            this.protectionOverrider.add(MineIt.getOnEventFunction(residence.getName(), MineIt.overrideListener(residence, ResidenceBlockListener.class, "onBlockBreak"), lis));
+            this.protectionOverrider.add(SpigotEventOverrider.overrideListener(residence, ResidenceBlockListener.class, BlockBreakEvent.class));
         }
 
         Plugin worldguard = pm.getPlugin("WorldGuard");
         if (worldguard != null) {
             this.getLogger().info("WorldGuard plugin detected.");
-            Listener lis = getListener(worldguard, WorldGuardBlockListener.class);
-            this.protectionOverrider.add(MineIt.getOnEventFunction(worldguard.getName(), MineIt.overrideListener(worldguard, WorldGuardBlockListener.class, "onBlockBreak"), lis));
-            lis = getListener(worldguard, EventAbstractionListener.class);
-            this.protectionOverrider.add(MineIt.getOnEventFunction(worldguard.getName(), MineIt.overrideListener(worldguard, EventAbstractionListener.class, "onBlockBreak"), lis));
+            this.protectionOverrider.add(SpigotEventOverrider.overrideListener(worldguard, WorldGuardBlockListener.class, BlockBreakEvent.class));
+            this.protectionOverrider.add(SpigotEventOverrider.overrideListener(worldguard, EventAbstractionListener.class, BlockBreakEvent.class));
         }
 
 
@@ -187,26 +165,8 @@ public class MineIt extends JavaPlugin {
             this.printConsoleErrorMessage( "MineIt needs Gson in order to work.");
         }
 
-        getServer().getPluginManager().registerEvents(new BreakEvent(), this);
-        getServer().getPluginManager().registerEvents(new InteractEvent(), this);
         this.mainInventory.registerEvent(this);
         this.selectMineInventory.registerEvent(this);
-
-        getCommand("mineit").setExecutor(new CommandEvent());
-        if (VersionController.version.compareTo(Version.MC_1_10) >= 0) getCommand("mineit").setTabCompleter(new HintEvent());
-    }
-
-    private static OnEvent getOnEventFunction(String plugin, Method m, Listener lis) {
-        return (e) -> {
-            try {
-                m.invoke(lis, e);
-                return false;
-            } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                MineIt.instance.printConsoleErrorMessage("Error while overriding " + plugin + " event (" + lis.getClass().getName() + "#" + m.getName() + ")");
-                ex.printStackTrace();
-                return true;
-            }
-        };
     }
 
     @Override
@@ -271,59 +231,5 @@ public class MineIt extends JavaPlugin {
 
     public boolean isSelected(Location loc) {
         return this.getAllSelectedBlocks().contains(loc);
-    }
-
-    private static Listener getListener(@NotNull Plugin plugin, Class<?> match) {
-        Listener lis = null;
-        for (RegisteredListener l : HandlerList.getRegisteredListeners(plugin)) {
-            if (l.getListener().getClass().equals(match)) {
-                lis = l.getListener();
-                break;
-            }
-        }
-        return lis;
-    }
-
-    /**
-     * Finds the desired listener and remove it and returns it
-     * @param plugin Plugin registering the listener
-     * @param match Class registering the listener
-     * @param name Listener name
-     * @return Method to call (if any match)
-     */
-    private static Method overrideListener(final @NotNull Plugin plugin, Class<?> match, String name) throws ListenerNotFoundException {
-        final Listener lis = getListener(plugin, match);
-        if (lis == null) throw new ListenerNotFoundException("Unable to override " + plugin.getName() + " event priority: Listener not found");
-
-        HandlerList.unregisterAll(lis); // all the RegisteredListener on reload are the same Listener
-
-        Method r = null;
-        for (final Method m: match.getDeclaredMethods()) {
-            // is it an event?
-            if (m.getParameterCount() != 1) continue;
-            if (!Event.class.isAssignableFrom(m.getParameterTypes()[0])) continue;
-            EventHandler eventHandler = m.getAnnotation(EventHandler.class);
-            if (eventHandler == null) continue;
-
-            // register again the event, but with the desired priority
-            if (m.getName().equals(name)) r = m;
-            else {
-                final Class<? extends Event> type = m.getParameterTypes()[0].asSubclass(Event.class);
-                Bukkit.getPluginManager().registerEvent(type, lis, eventHandler.priority(), (l, e) -> {
-                    try {
-                        try {
-                            m.invoke(l, type.cast(e));
-                        } catch (ClassCastException ignore) {}
-                    } catch (SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                        MineIt.instance.printConsoleErrorMessage("Error while overriding " + plugin + " event (" + lis.getClass().getName() + "#" + m.getName() + ")");
-                        ex.printStackTrace();
-                        MineIt.instance.printConsoleErrorMessage("Protection override failure. Notice this may involve players being able to remove protected regions, so report this error immediately and use an older version of MineIt.");
-                    }
-                }, plugin, eventHandler.ignoreCancelled());
-            }
-        }
-
-        if (r == null) throw new ListenerNotFoundException();
-        return r;
     }
 }

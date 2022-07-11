@@ -65,7 +65,7 @@ public class MainInventory extends BasicInventory {
         // permisions
         if(!player.hasPermission("mineit.open")) {
             player.closeInventory();
-            player.sendMessage(MineIt.errorPrefix + "You can't use this menu.");
+            player.sendMessage(MineIt.instance.errorPrefix + "You can't use this menu.");
             return;
         }
 
@@ -75,7 +75,7 @@ public class MainInventory extends BasicInventory {
         if (!toolClicked) return;
 
         if(!player.hasPermission("mineit.create")) {
-            player.sendMessage(MineIt.errorPrefix + "You can't use this action.");
+            player.sendMessage(MineIt.instance.errorPrefix + "You can't use this action.");
             return;
         }
 
@@ -86,7 +86,7 @@ public class MainInventory extends BasicInventory {
         }
         else if(clicked.equals(this.createMine)) {
             player.closeInventory();
-            player.sendMessage(MineIt.errorPrefix + "Under construction, use " + ChatColor.AQUA + "/mineit create [name]" + ChatColor.RED + " instead.");
+            player.sendMessage(MineIt.instance.errorPrefix + "Under construction, use " + ChatColor.AQUA + "/mineit create [name]" + ChatColor.RED + " instead.");
         }
         else {
             // clicked.equals(this.editMine)

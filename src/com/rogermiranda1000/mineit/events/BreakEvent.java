@@ -1,9 +1,9 @@
 package com.rogermiranda1000.mineit.events;
 
+import com.rogermiranda1000.helper.reflection.OnServerEvent;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.Stage;
-import com.rogermiranda1000.mineit.protections.OnEvent;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.Bukkit;
@@ -30,7 +30,7 @@ public class BreakEvent implements Listener {
 
             // no mine; launch other's protections
             for (int n = 0; n < MineIt.instance.protectionOverrider.size() && !e.isCancelled(); n++) {
-                OnEvent prot = MineIt.instance.protectionOverrider.get(n);
+                OnServerEvent<BlockBreakEvent> prot = MineIt.instance.protectionOverrider.get(n);
                 // launch other protection event
                 boolean err = prot.onEvent(e);
                 if (err) {
@@ -44,7 +44,7 @@ public class BreakEvent implements Listener {
 
         Player ply = e.getPlayer();
         if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.getName())) {
-            ply.sendMessage(MineIt.errorPrefix + "You can't mine here!");
+            ply.sendMessage(MineIt.instance.errorPrefix + "You can't mine here!");
             e.setCancelled(true);
             return;
         }

@@ -71,7 +71,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
         // permisions
         if(!player.hasPermission("mineit.open")) {
             player.closeInventory();
-            player.sendMessage(MineIt.errorPrefix + "You can't use this menu.");
+            player.sendMessage(MineIt.instance.errorPrefix + "You can't use this menu.");
             return;
         }
 
