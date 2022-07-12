@@ -4,12 +4,12 @@ import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineChangedEvent;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import net.md_5.bungee.api.ChatColor;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -86,7 +86,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 return;
             }
 
-            Mine.removeMine(this.listening);
+            Mines.getInstance().removeMine(this.listening);
             try {
                 FileManager.removeMine(this.listening);
             } catch (Exception ignored) {}

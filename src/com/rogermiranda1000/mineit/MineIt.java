@@ -4,7 +4,8 @@ import com.bekvon.bukkit.residence.listeners.ResidenceBlockListener;
 import com.rogermiranda1000.helper.RogerPlugin;
 import com.rogermiranda1000.helper.reflection.OnServerEvent;
 import com.rogermiranda1000.helper.reflection.SpigotEventOverrider;
-import com.rogermiranda1000.mineit.events.BreakEvent;
+import com.rogermiranda1000.mineit.blocks.Mines;
+import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
@@ -14,7 +15,6 @@ import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.sk89q.worldguard.bukkit.listener.EventAbstractionListener;
 import com.sk89q.worldguard.bukkit.listener.WorldGuardBlockListener;
 import net.md_5.bungee.api.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
@@ -25,7 +25,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class MineIt extends RogerPlugin {
@@ -38,8 +39,6 @@ public class MineIt extends RogerPlugin {
 
     public ArrayList<OnServerEvent<BlockBreakEvent>> protectionOverrider;
 
-    private final HashMap<String, Stack<ArrayList<Location>>> selectedBlocksHistory = new HashMap<>();
-
     public int rango;
     public boolean limit;
     public boolean overrideProtection;
@@ -50,7 +49,10 @@ public class MineIt extends RogerPlugin {
     }
 
     public MineIt() {
-        super(CustomMineItCommand.commands, new BreakEvent(), new InteractEvent());
+        super(CustomMineItCommand.commands, new InteractEvent());
+
+        this.addCustomBlock(Mines.setInstance(new Mines(this)));
+        this.addCustomBlock(SelectedBlocks.setInstance(new SelectedBlocks(this)));
     }
 
     @Override
@@ -154,7 +156,7 @@ public class MineIt extends RogerPlugin {
                 try {
                     getLogger().info("Loading mine " + mineName + "..."); // TODO .json
                     Mine mine = FileManager.loadMine(archivo);
-                    Mine.addMine(mine);
+                    Mines.getInstance().addMine(mine);
                 } catch (IOException | IllegalArgumentException ex) {
                     this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
                 } catch (InvalidLocationException ex) {
@@ -171,51 +173,26 @@ public class MineIt extends RogerPlugin {
 
     @Override
     public void onDisable() {
+        super.onDisable();
+
         // close inventories (if it's a reboot the players may be able to keep the items)
         this.mainInventory.closeInventories();
         this.selectMineInventory.closeInventories();
         for (BasicInventory mine : ((SelectMineInventory)this.selectMineInventory).getMinesInventories()) mine.closeInventories();
 
         // undo selected blocks
-        for(Location l : this.getAllSelectedBlocks()) l.getBlock().setType(Mine.SELECT_BLOCK);
+        SelectedBlocks.getInstance().getAllBlocks(e -> e.getValue().getBlock().setType(Mine.SELECT_BLOCK));
 
         // save mines
-        for (Mine mina : Mine.getMines()) {
+        Mines.getInstance().getAllBlocks(e -> {
+            Mine m = e.getKey();
             try {
-                File file = new File(getDataFolder(), mina.getName() +".yml");
-                FileManager.saveMine(file, mina);
-            } catch(IOException e){
-                e.printStackTrace();
+                File file = new File(getDataFolder(), m.getName() +".yml");
+                FileManager.saveMine(file, m);
+            } catch(IOException ex){
+                ex.printStackTrace();
             }
-        }
-    }
-
-    public void addSelectionBlocks(String name, ArrayList<Location> locations) {
-        this.selectedBlocksHistory.computeIfAbsent(name, k -> new Stack<>())
-                .add(locations);
-    }
-
-    @Nullable
-    public ArrayList<Location> getSelectedBlocks(String name) {
-        return MineIt.merge(this.selectedBlocksHistory.get(name));
-    }
-
-    public ArrayList<Location> getAllSelectedBlocks() {
-        ArrayList<Location> r = new ArrayList<>();
-        for (Stack<ArrayList<Location>> e : this.selectedBlocksHistory.values()) r.addAll(MineIt.merge(e));
-        return r;
-    }
-
-    @Nullable
-    public ArrayList<Location> getLastSelectedBlocksAndRemove(String name) {
-        Stack<ArrayList<Location>> b = this.selectedBlocksHistory.get(name);
-        if (b == null || b.empty()) return null;
-        return b.pop();
-    }
-
-    @Nullable
-    public ArrayList<Location> removeSelectionBlocks(String name) {
-        return MineIt.merge(this.selectedBlocksHistory.remove(name));
+        });
     }
 
     @Nullable
@@ -227,9 +204,5 @@ public class MineIt extends RogerPlugin {
             r.addAll(loc);
         }
         return r;
-    }
-
-    public boolean isSelected(Location loc) {
-        return this.getAllSelectedBlocks().contains(loc);
     }
 }

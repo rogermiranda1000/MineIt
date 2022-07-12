@@ -2,6 +2,8 @@ package com.rogermiranda1000.mineit;
 
 import com.rogermiranda1000.helper.CustomCommand;
 import com.rogermiranda1000.helper.MatchCommandNotifier;
+import com.rogermiranda1000.mineit.blocks.Mines;
+import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
@@ -36,7 +38,7 @@ public class CustomMineItCommand extends CustomCommand {
     public void searchSpecialText(Collection<String> results, String[] splittedCmd, String[] partialUsage, int index) {
         if (partialUsage[index].equalsIgnoreCase("[mine]")) {
             // add all matching mines
-            for (Mine m : Mine.getMines()) {
+            for (Mine m : Mines.getInstance().getAllValues()) {
                 String name = m.getName();
                 if (CustomCommand.partiallyMatches(splittedCmd[index], name)) results.add(name);
             }
@@ -99,7 +101,7 @@ public class CustomMineItCommand extends CustomCommand {
             }),
             new CustomMineItCommand("mineit list", null, true, "mineit list", "see all the created mines", (sender, cmd) -> {
                 StringBuilder sb = new StringBuilder();
-                for (Mine m : Mine.getMines()) {
+                for (Mine m : Mines.getInstance().getAllValues()) {
                     sb.append(m.getName());
                     sb.append(", ");
                 }
@@ -114,20 +116,21 @@ public class CustomMineItCommand extends CustomCommand {
                     player.sendMessage(MineIt.instance.errorPrefix +"You're using a reserved name!");
                     return;
                 }
-                if(Mine.getMine(args[1]) != null) {
+                if(Mines.getInstance().getMine(args[1]) != null) {
                     player.sendMessage(MineIt.instance.errorPrefix +"There's already a mine named '"+args[1]+"'.");
                     return;
                 }
 
-                ArrayList<Location> locations = MineIt.instance.getSelectedBlocks(player.getName());
-                if (locations == null || locations.size() == 0) {
+                final ArrayList<Location> locations = new ArrayList<>();
+                SelectedBlocks.getInstance().getAllBlocksByValue(player, e -> locations.add(e.getValue()));
+                if (locations.size() == 0) {
                     player.sendMessage(MineIt.instance.errorPrefix +"Please, select the mine's blocks first.");
                     return;
                 }
 
                 Mine m = new Mine(args[1], locations);
-                Mine.addMine(m);
-                MineIt.instance.removeSelectionBlocks(player.getName());
+                Mines.getInstance().addMine(m);
+                SelectedBlocks.getInstance().removeBlocksArtificiallyByValue(player);
                 locations.forEach(l -> l.getBlock().setType(Mine.STATE_ZERO));
 
                 player.sendMessage(MineIt.instance.clearPrefix + "Mine created successfully.");
@@ -144,20 +147,20 @@ public class CustomMineItCommand extends CustomCommand {
                 player.spigot().sendMessage(new TextComponent(MineIt.instance.clearPrefix+ChatColor.RED+"The mine it's stopped. Configure it with "), edit, new TextComponent(ChatColor.RED + " and then enable it with "), enable);
             }),
             new CustomMineItCommand("mineit remove \\S+", "mineit.remove", true, "mineit remove [mine]", null, (sender, cmd) -> {
-                Mine m = Mine.getMine(cmd[1]);
+                Mine m = Mines.getInstance().getMine(cmd[1]);
                 if(m == null) {
                     sender.sendMessage(MineIt.instance.errorPrefix +"The mine '"+cmd[1]+"' doesn't exist.");
                     return;
                 }
 
-                Mine.removeMine(m);
+                Mines.getInstance().removeMine(m);
                 try {
                     FileManager.removeMine(m);
                 } catch (Exception ignored) {}
                 sender.sendMessage(MineIt.instance.clearPrefix+"Mine '"+cmd[1]+"' removed.");
             }),
             new CustomMineItCommand("mineit start \\S+", "mineit.state", true, "mineit start [mine]", null, (sender, cmd) -> {
-                Mine m = Mine.getMine(cmd[1]);
+                Mine m = Mines.getInstance().getMine(cmd[1]);
                 if(m == null) {
                     sender.sendMessage(MineIt.instance.errorPrefix +"The mine '"+cmd[1]+"' doesn't exist.");
                     return;
@@ -167,7 +170,7 @@ public class CustomMineItCommand extends CustomCommand {
                 sender.sendMessage(MineIt.instance.clearPrefix + "Mine '" + cmd[1] + "' started.");
             }),
             new CustomMineItCommand("mineit stop \\S+", "mineit.state", true, "mineit stop [mine]", null, (sender, cmd) -> {
-                Mine m = Mine.getMine(cmd[1]);
+                Mine m = Mines.getInstance().getMine(cmd[1]);
                 if(m == null) {
                     sender.sendMessage(MineIt.instance.errorPrefix +"The mine '"+cmd[1]+"' doesn't exist.");
                     return;
@@ -186,7 +189,7 @@ public class CustomMineItCommand extends CustomCommand {
                 mineInv.openInventory((Player)sender);
             }),
             new CustomMineItCommand("mineit edit time \\S+ \\d+", "mineit.time", true, "mineit edit time [mine] [time]", "it changes the time that must pass to change to the next stage", (sender, cmd) -> {
-                Mine m = Mine.getMine(cmd[2]);
+                Mine m = Mines.getInstance().getMine(cmd[2]);
                 if (m == null) {
                     sender.sendMessage(MineIt.instance.errorPrefix + "Mine '" + cmd[2] + "' not found.");
                     return;
@@ -208,7 +211,7 @@ public class CustomMineItCommand extends CustomCommand {
                 sender.sendMessage(MineIt.instance.clearPrefix + "Set " + cmd[2] + "'s time to " + cmd[3] + ".");
             }),
             new CustomMineItCommand("mineit edit stagelimit \\S+ \\d+ \\d+", "mineit.stagelimit", true, "mineit edit stagelimit [mine] [stage_number] [limit_blocks_number]", null, (sender, cmd) -> {
-                Mine m = Mine.getMine(cmd[2]);
+                Mine m = Mines.getInstance().getMine(cmd[2]);
                 if (m == null) {
                     sender.sendMessage(MineIt.instance.errorPrefix + "Mine '" + cmd[2] + "' not found.");
                     return;
@@ -247,7 +250,7 @@ public class CustomMineItCommand extends CustomCommand {
                 sender.sendMessage(MineIt.instance.clearPrefix + "Set " + cmd[2] + "'s stage " + cmd[3] + " limit to " + cmd[4] + ".");
             }),
             new CustomMineItCommand("mineit reset \\S+", "mineit.reset", true, "mineit reset [mine]", "it sets all the mine's block to " + Mine.STATE_ZERO.toString().toLowerCase(), (sender, cmd) -> {
-                Mine m = Mine.getMine(cmd[1]);
+                Mine m = Mines.getInstance().getMine(cmd[1]);
                 if (m == null) {
                     sender.sendMessage(MineIt.instance.errorPrefix +"Mine '"+cmd[1]+"' not found.");
                     return;
@@ -257,8 +260,9 @@ public class CustomMineItCommand extends CustomCommand {
                 sender.sendMessage(MineIt.instance.clearPrefix + "Mine '" + cmd[1] + "' restarted.");
             }),
             new CustomMineItCommand("mineit select unselect", "mineit.select", false, "mineit select unselect", "unselects all the selected blocks by the user", (sender, cmd) -> {
-                ArrayList<Location> r = MineIt.instance.removeSelectionBlocks(((Player)sender).getName());
-                if (r == null) {
+                ArrayList<Location> r = new ArrayList<>();
+                SelectedBlocks.getInstance().removeBlocksArtificiallyByValue((Player)sender, (e)->r.add(e.getValue()));
+                if (r.size() == 0) {
                     sender.sendMessage(MineIt.instance.errorPrefix + "First you need to have some blocks selected!");
                     return;
                 }
@@ -267,8 +271,9 @@ public class CustomMineItCommand extends CustomCommand {
                 sender.sendMessage(MineIt.instance.clearPrefix + "Selected blocks restarted.");
             }),
             new CustomMineItCommand("mineit select back", "mineit.select", false, "mineit select back", "unselects the previous selected blocks by the user", (sender, cmd) -> {
-                ArrayList<Location> r = MineIt.instance.getLastSelectedBlocksAndRemove(((Player)sender).getName());
-                if (r == null) {
+                ArrayList<Location> r = new ArrayList<>();
+                SelectedBlocks.getInstance().removeBlocksArtificiallyByValue((Player)sender, e->r.add(e.getValue()));
+                if (r.size() == 0) {
                     sender.sendMessage(MineIt.instance.errorPrefix + "First you need to have some blocks selected!");
                     return;
                 }

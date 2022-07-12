@@ -4,6 +4,7 @@ import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.MinesChangedEvent;
 import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.mineit.blocks.Mines;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -53,7 +54,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     public SelectMineInventory() {
         this(new HashMap<>(), 0, null);
 
-        Mine.addMinesListener(this); // only the first menu will listen, the other ones will be called from the first
+        Mines.getInstance().addMinesListener(this); // only the first menu will listen, the other ones will be called from the first
     }
 
     public Collection<BasicInventory> getMinesInventories() {
@@ -144,7 +145,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
             else this.next.onMinesChanged();
         }
 
-        int l = (int)Math.ceil((Mine.getMinesLength()-this.offset)/9.0);
+        int l = (int)Math.ceil((Mines.getInstance().getDifferentValuesNum()-this.offset)/9.0);
         if(l==0) {
             newInventory = Bukkit.createInventory(null, 18, SelectMineInventory.INVENTORY_NAME);
 
@@ -163,7 +164,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
 
             newInventory = Bukkit.createInventory(null, l * 9, SelectMineInventory.INVENTORY_NAME);
             int pos = 0, backPos = (l - 1) * 9;
-            for (Mine mine : Mine.getMines(this.offset, SelectMineInventory.MAX_MINES_PER_INV)) {
+            for (Mine mine : SelectMineInventory.getListWithOffset(new ArrayList<>(Mines.getInstance().getAllValues()), this.offset, SelectMineInventory.MAX_MINES_PER_INV)) {
                 ItemStack mina = new ItemStack(Mine.SELECT_BLOCK); // TODO mine block
                 ItemMeta meta = mina.getItemMeta();
                 meta.setDisplayName(mine.getName());
@@ -184,6 +185,10 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
 
         if (this.inv != null) this.newInventory(newInventory); // only if it's not the first time
         this.inv = newInventory;
+    }
+
+    private static <T> List<T> getListWithOffset(List<T> list, int offset, int maxLenght) {
+        return list.subList(offset, Math.min(list.size(), offset+maxLenght));
     }
 
     @Override
