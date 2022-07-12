@@ -1,10 +1,7 @@
 package com.rogermiranda1000.mineit;
 
-import com.bekvon.bukkit.residence.listeners.ResidenceBlockListener;
 import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.helper.RogerPlugin;
-import com.rogermiranda1000.helper.reflection.OnServerEvent;
-import com.rogermiranda1000.helper.reflection.SpigotEventOverrider;
 import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.events.InteractEvent;
@@ -12,18 +9,13 @@ import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
-import com.sk89q.worldguard.bukkit.listener.EventAbstractionListener;
-import com.sk89q.worldguard.bukkit.listener.WorldGuardBlockListener;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,8 +28,6 @@ public class MineIt extends RogerPlugin {
     //Inv
     public BasicInventory mainInventory;
     public BasicInventory selectMineInventory;
-
-    public ArrayList<OnServerEvent<BlockBreakEvent>> protectionOverrider;
 
     public int rango;
     public boolean limit;
@@ -103,25 +93,6 @@ public class MineIt extends RogerPlugin {
         } catch (ClassCastException ex) {
             this.printConsoleErrorMessage("The air stage material '" + airStage + "' does not exist!");
         }
-
-        // Protections [done by a higher priority]
-        // TODO allow more event types
-        // TODO save priorities (sorted list) & ignoreCancelled
-        PluginManager pm = getServer().getPluginManager();
-        this.protectionOverrider = new ArrayList<>();
-        Plugin residence = pm.getPlugin("Residence");
-        if (residence != null) {
-            this.getLogger().info("Residence plugin detected.");
-            this.protectionOverrider.add(SpigotEventOverrider.overrideListener(residence, ResidenceBlockListener.class, BlockBreakEvent.class));
-        }
-
-        Plugin worldguard = pm.getPlugin("WorldGuard");
-        if (worldguard != null) {
-            this.getLogger().info("WorldGuard plugin detected.");
-            this.protectionOverrider.add(SpigotEventOverrider.overrideListener(worldguard, WorldGuardBlockListener.class, BlockBreakEvent.class));
-            this.protectionOverrider.add(SpigotEventOverrider.overrideListener(worldguard, EventAbstractionListener.class, BlockBreakEvent.class));
-        }
-
 
         // Create tool
         // @pre before inventory creation

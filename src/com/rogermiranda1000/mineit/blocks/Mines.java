@@ -39,7 +39,7 @@ public class Mines extends CachedCustomBlock<Mine> {
     private final ArrayList<MinesChangedEvent> globalEvents;
 
     public Mines(RogerPlugin plugin) {
-        super(plugin, Mines.id, e -> e instanceof BlockBreakEvent, new StoreMine());
+        super(plugin, Mines.id, e -> e instanceof BlockBreakEvent, true, false, new StoreMine());
         this.globalEvents = new ArrayList<>();
     }
 
@@ -97,31 +97,17 @@ public class Mines extends CachedCustomBlock<Mine> {
         return null; // never reached
     }
 
-    /*
-        TODO override permissions
-        // no mine; launch other's protections
-        for (int n = 0; n < MineIt.instance.protectionOverrider.size() && !e.isCancelled(); n++) {
-            OnServerEvent<BlockBreakEvent> prot = MineIt.instance.protectionOverrider.get(n);
-            // launch other protection event
-            boolean err = prot.onEvent(e);
-            if (err) {
-                MineIt.instance.printConsoleErrorMessage("Protection override failure, removing from list. Notice this may involve players being able to remove protected regions, so report this error immediately.");
-                MineIt.instance.protectionOverrider.remove(n);
-                n--; // the n++ will leave the same index on the next iteration
-            }
-        }
-     */
-
     @Override
-    public void onCustomBlockBreak(BlockBreakEvent e, Mine m) {
+    public boolean onCustomBlockBreak(BlockBreakEvent e, Mine m) {
         Player ply = e.getPlayer();
         if(!ply.hasPermission("mineit.mine.all") && !ply.hasPermission("mineit.mine."+m.getName())) {
             ply.sendMessage(MineIt.instance.errorPrefix + "You can't mine here!");
             e.setCancelled(true);
-            return;
+            return true;
         }
 
         e.setCancelled(this.breakBlock(ply, m, e.getBlock()));
+        return true;
     }
 
     /**

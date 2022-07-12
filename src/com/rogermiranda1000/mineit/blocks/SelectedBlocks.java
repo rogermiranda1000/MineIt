@@ -12,7 +12,7 @@ public class SelectedBlocks extends CachedCustomBlock<OfflinePlayer> {
     private static SelectedBlocks instance = null;
 
     public SelectedBlocks(RogerPlugin plugin) {
-        super(plugin, SelectedBlocks.id, e -> e instanceof BlockBreakEvent, null);
+        super(plugin, SelectedBlocks.id, e -> e instanceof BlockBreakEvent, false, false, null);
     }
 
     public static SelectedBlocks getInstance() {
@@ -32,7 +32,8 @@ public class SelectedBlocks extends CachedCustomBlock<OfflinePlayer> {
     }
 
     @Override
-    public void onCustomBlockBreak(BlockBreakEvent blockBreakEvent, OfflinePlayer offlinePlayer) {
+    public boolean onCustomBlockBreak(BlockBreakEvent blockBreakEvent, OfflinePlayer offlinePlayer) {
         blockBreakEvent.setCancelled(true); // anyone can break a selected block
+        return true;
     }
 }
