@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit;
 
 import com.bekvon.bukkit.residence.listeners.ResidenceBlockListener;
+import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.helper.RogerPlugin;
 import com.rogermiranda1000.helper.reflection.OnServerEvent;
 import com.rogermiranda1000.helper.reflection.SpigotEventOverrider;
@@ -9,7 +10,6 @@ import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.file.InvalidLocationException;
-import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.sk89q.worldguard.bukkit.listener.EventAbstractionListener;
@@ -167,8 +167,8 @@ public class MineIt extends RogerPlugin {
             this.printConsoleErrorMessage( "MineIt needs Gson in order to work.");
         }
 
-        this.mainInventory.registerEvent(this);
-        this.selectMineInventory.registerEvent(this);
+        this.mainInventory.registerEvent();
+        this.selectMineInventory.registerEvent();
     }
 
     @Override

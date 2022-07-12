@@ -1,11 +1,11 @@
 package com.rogermiranda1000.mineit;
 
+import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.helper.CustomCommand;
 import com.rogermiranda1000.helper.MatchCommandNotifier;
 import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.file.FileManager;
-import com.rogermiranda1000.mineit.inventories.BasicInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;

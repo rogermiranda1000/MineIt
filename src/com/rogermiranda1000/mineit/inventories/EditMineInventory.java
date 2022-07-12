@@ -1,5 +1,6 @@
 package com.rogermiranda1000.mineit.inventories;
 
+import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineChangedEvent;
 import com.rogermiranda1000.mineit.MineIt;
@@ -15,8 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -49,9 +48,9 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
     }
 
     public EditMineInventory(@NotNull Mine m) {
-        super();
+        super(MineIt.instance, true);
 
-        this.registerEvent(MineIt.instance); // listener
+        this.registerEvent(); // listener
 
         this.listening = m;
         m.addMineListener(this);
@@ -61,13 +60,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         this.onMineChanged(); // force to create the inventory
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onClick(InventoryClickEvent e) {
-        if (!e.getInventory().equals(this.inv)) return;
-        if (!this.inv.equals(e.getClickedInventory())) return;
-
-        e.setCancelled(true);
-
+    public void inventoryClickedEvent(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
         // permisions
         if(!player.hasPermission("mineit.open")) {
@@ -102,14 +95,14 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                 player.sendMessage(MineIt.instance.clearPrefix+"Starting mine '" + this.listening.getName() + "'...");
                 this.listening.setStart(true);
             }
-            this.inv.setItem(this.getFurnaceIndex(), this.status());
+            this.getInventory().setItem(this.getFurnaceIndex(), this.status());
         }
         else if (clicked.equals(this.time)) {
             // TODO
         }
         else {
             int x = e.getSlot();
-            if (this.inv.getItem(x) == null || x >= this.getLastRowIndex()) return; // en ese slot no hay nada o estan en la última fila (no deberia pasar)
+            if (this.getInventory().getItem(x) == null || x >= this.getLastRowIndex()) return; // en ese slot no hay nada o estan en la última fila (no deberia pasar)
 
             ItemStack item = VersionController.get().cloneItemStack(player.getItemOnCursor());
             if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
@@ -151,7 +144,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                             }
 
                             // change existing stage
-                            BlockType overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x).getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : this.inv.getItem(x));
+                            BlockType overridingStageMaterial = VersionController.get().getObject(this.getInventory().getItem(x).getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : this.getInventory().getItem(x));
                             Stage overridingStage = this.listening.getStage(overridingStageMaterial);
                             overridingStage.setBlock(stageMaterial, isBreakable);
 
@@ -184,7 +177,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     str.add("On break, go to stage " + realItem.getFriendlyName());
                     m.setLore(str);
                     item.setItemMeta(m);
-                    this.inv.setItem(x, item);
+                    this.getInventory().setItem(x, item);
                     break;
 
                 default:
@@ -266,8 +259,8 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         newInventory.setItem(this.getFurnaceIndex(), this.status());
         newInventory.setItem(this.getRemoveIndex(), EditMineInventory.REMOVE_ITEM);
 
-        if (this.inv != null) this.newInventory(newInventory); // only if it's not the first time
-        this.inv = newInventory;
+        if (this.getInventory() != null) this.newInventory(newInventory); // only if it's not the first time
+        this.setInventory(newInventory);
     }
 
     @Override
