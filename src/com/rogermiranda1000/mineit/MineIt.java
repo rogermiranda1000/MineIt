@@ -6,7 +6,6 @@ import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
-import com.rogermiranda1000.mineit.file.InvalidLocationException;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import net.md_5.bungee.api.ChatColor;
@@ -48,8 +47,7 @@ public class MineIt extends RogerPlugin {
     @Override
     @SuppressWarnings("ConstantConditions")
     public void onEnable() {
-        super.onEnable();
-
+        // we need first the configuration
         MineIt.instance = this;
 
         //Config
@@ -117,26 +115,22 @@ public class MineIt extends RogerPlugin {
         this.mainInventory = new MainInventory();
         this.selectMineInventory = new SelectMineInventory();
 
-        //Minas
-        try {
-            Class.forName("com.google.gson.JsonSyntaxException");
-            for (File archivo : getDataFolder().listFiles()) {
-                if (archivo.getName().equalsIgnoreCase("config.yml")) continue;
+        // mines
+        for (File archivo : getDataFolder().listFiles()) {
+            if (archivo.getName().equalsIgnoreCase("config.yml")) continue;
 
-                String mineName = archivo.getName().replaceAll("\\.yml$", "");
-                try {
-                    getLogger().info("Loading mine " + mineName + "..."); // TODO .json
-                    Mine mine = FileManager.loadMine(archivo);
-                    Mines.getInstance().addMine(mine);
-                } catch (IOException | IllegalArgumentException ex) {
-                    this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
-                } catch (InvalidLocationException ex) {
-                    this.printConsoleErrorMessage("Error, the mine '" + mineName + "' can't be loaded. " + ex.getMessage());
-                }
+            String mineName = archivo.getName().replaceAll("\\.yml$", "");
+            try {
+                getLogger().info("Loading mine " + mineName + "...");
+                Mine mine = FileManager.loadMine(archivo);
+                Mines.getInstance().addMine(mine);
+            } catch (IOException ex) {
+                this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
             }
-        } catch (ClassNotFoundException ex) {
-            this.printConsoleErrorMessage( "MineIt needs Gson in order to work.");
         }
+
+        super.onEnable();
+        Mines.getInstance().getAllBlocks(e -> e.getKey().add(e.getValue()));
 
         this.mainInventory.registerEvent();
         this.selectMineInventory.registerEvent();

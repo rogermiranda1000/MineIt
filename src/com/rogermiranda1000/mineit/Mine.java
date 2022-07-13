@@ -15,6 +15,7 @@ public class Mine implements Runnable {
     @Nullable public static Material AIR_STAGE;
     public static final Material SELECT_BLOCK = Material.STONE;
     public static final Material STATE_ZERO = Material.BEDROCK;
+    public static final Material DEFAULT_IDENTIFIER = Material.STONE;
 
     /**
      * Default seconds to chenge the stage
@@ -31,23 +32,33 @@ public class Mine implements Runnable {
     private int currentTime;
     private final ArrayList<Stage> stages;
     private final String mineName;
+    private BlockType mineBlockIdentifier;
+    @Nullable Location tp;
     private boolean started;
     private int scheduleID;
 
-    public Mine(String name, boolean started, ArrayList<Location> blocks, ArrayList<Stage> stages, int delay) {
+    public Mine(String name, BlockType identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
         this.currentTime = 0;
         this.events = new ArrayList<>();
 
         this.mineName = name;
-        this.blocks = blocks;
+        this.mineBlockIdentifier = identifier;
+        this.tp = tp;
         this.stages = stages;
         this.setDelay(delay);
 
         this.setStart(started);
+
+        this.blocks = new ArrayList<>();
+    }
+
+    public Mine(String name, String identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
+        this(name, VersionController.get().getMaterial(identifier), started, stages, delay, tp);
     }
 
     public Mine(String name, ArrayList<Location> blocks) {
-        this(name, false, blocks, Mine.getDefaultStages(), DEFAULT_DELAY);
+        this(name, Mine.DEFAULT_IDENTIFIER.name(), false, Mine.getDefaultStages(), DEFAULT_DELAY, null);
+        this.blocks.addAll(blocks);
     }
 
     public void setStart(boolean value) {
@@ -58,6 +69,23 @@ public class Mine implements Runnable {
         else Bukkit.getServer().getScheduler().cancelTask(this.scheduleID);
 
         this.notifyMineListeners();
+    }
+
+    @Nullable
+    public Location getTp() {
+        return this.tp;
+    }
+
+    public void setTp(@Nullable Location tp) {
+        this.tp = tp;
+    }
+
+    public BlockType getMineBlockIdentifier() {
+        return this.mineBlockIdentifier;
+    }
+
+    public void setMineBlockIdentifier(BlockType mineBlockIdentifier) {
+        this.mineBlockIdentifier = mineBlockIdentifier;
     }
 
     public boolean getStart() {
@@ -76,19 +104,19 @@ public class Mine implements Runnable {
         return this.started;
     }
 
-    public void add(Location loc) {
+    synchronized public void add(Location loc) {
         this.blocks.add(loc);
     }
 
-    public ArrayList<Location> getMineBlocks() {
+    synchronized public ArrayList<Location> getMineBlocks() {
         return this.blocks;
     }
 
-    public int getTotalBlocks() {
+    synchronized public int getTotalBlocks() {
         return this.blocks.size();
     }
 
-    public Location getRandomBlockInMine() {
+    synchronized public Location getRandomBlockInMine() {
         return this.blocks.get(new Random().nextInt(this.blocks.size()));
     }
 
