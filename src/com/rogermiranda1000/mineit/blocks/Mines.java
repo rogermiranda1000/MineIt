@@ -63,12 +63,14 @@ public class Mines extends CachedCustomBlock<Mine> {
     public void addMine(Mine m) {
         m.updateStages();
 
-        for (MinesChangedEvent e : this.globalEvents) e.onMineAdded(m);
-
         for (Location loc : m.getMineBlocks()) Mines.getInstance().placeBlockArtificially(m, loc);
+
+        for (MinesChangedEvent e : this.globalEvents) e.onMineAdded(m);
     }
 
     public void removeMine(Mine m) {
+        for (Location loc : m.getMineBlocks()) Mines.getInstance().removeBlockArtificially(loc);
+
         for (MinesChangedEvent e : new ArrayList<>(this.globalEvents)) e.onMineRemoved(m);
 
         // notify & unsubscribe
@@ -76,8 +78,6 @@ public class Mines extends CachedCustomBlock<Mine> {
             e.onMineRemoved();
             m.getEvents().remove(e);
         }
-
-        for (Location loc : m.getMineBlocks()) Mines.getInstance().removeBlockArtificially(loc);
 
         m.setStart(false); // stop the mine
     }
