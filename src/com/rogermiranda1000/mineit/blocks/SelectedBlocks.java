@@ -12,7 +12,7 @@ public class SelectedBlocks extends CachedCustomBlock<OfflinePlayer> {
     private static SelectedBlocks instance = null;
 
     public SelectedBlocks(RogerPlugin plugin) {
-        super(plugin, SelectedBlocks.id, e -> e instanceof BlockBreakEvent, false, false, null);
+        super(plugin, SelectedBlocks.id, e -> e instanceof BlockBreakEvent, false, false, null, false);
     }
 
     public static SelectedBlocks getInstance() {

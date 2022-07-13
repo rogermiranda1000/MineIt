@@ -7,7 +7,6 @@ import com.rogermiranda1000.mineit.*;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
@@ -39,7 +38,7 @@ public class Mines extends CachedCustomBlock<Mine> {
     private final ArrayList<MinesChangedEvent> globalEvents;
 
     public Mines(RogerPlugin plugin) {
-        super(plugin, Mines.id, e -> e instanceof BlockBreakEvent, true, false, new StoreMine());
+        super(plugin, Mines.id, e -> e instanceof BlockBreakEvent, true, false, new StoreMine(), true);
         this.globalEvents = new ArrayList<>();
     }
 
@@ -61,15 +60,16 @@ public class Mines extends CachedCustomBlock<Mine> {
     }
 
     public void addMine(Mine m) {
-        m.updateStages();
+        this.addObject(m);
 
-        for (Location loc : m.getMineBlocks()) Mines.getInstance().placeBlockArtificially(m, loc);
+        m.updateStages();
 
         for (MinesChangedEvent e : this.globalEvents) e.onMineAdded(m);
     }
 
     public void removeMine(Mine m) {
-        for (Location loc : m.getMineBlocks()) Mines.getInstance().removeBlockArtificially(loc);
+        this.removeBlocksArtificiallyByValue(m);
+        this.removeObject(m);
 
         for (MinesChangedEvent e : new ArrayList<>(this.globalEvents)) e.onMineRemoved(m);
 

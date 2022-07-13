@@ -128,7 +128,7 @@ public class CustomMineItCommand extends CustomCommand {
                     return;
                 }
 
-                Mine m = new Mine(args[1], locations);
+                Mine m = new Mine(Mines.getInstance(), args[1], locations);
                 Mines.getInstance().addMine(m);
                 SelectedBlocks.getInstance().removeBlocksArtificiallyByValue(player);
                 locations.forEach(l -> l.getBlock().setType(Mine.STATE_ZERO));

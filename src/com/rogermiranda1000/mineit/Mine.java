@@ -1,5 +1,6 @@
 package com.rogermiranda1000.mineit;
 
+import com.rogermiranda1000.helper.blocks.CachedCustomBlock;
 import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
@@ -9,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Mine implements Runnable {
@@ -28,7 +30,7 @@ public class Mine implements Runnable {
     private int delay;
     private final ArrayList<MineChangedEvent> events;
 
-    private final ArrayList<Location> blocks;
+    private final CachedCustomBlock<Mine> blocks;
     private int currentTime;
     private final ArrayList<Stage> stages;
     private final String mineName;
@@ -37,10 +39,11 @@ public class Mine implements Runnable {
     private boolean started;
     private int scheduleID;
 
-    public Mine(String name, BlockType identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
+    public Mine(CachedCustomBlock<Mine> blocks, String name, BlockType identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
         this.currentTime = 0;
         this.events = new ArrayList<>();
 
+        this.blocks = blocks;
         this.mineName = name;
         this.mineBlockIdentifier = identifier;
         this.tp = tp;
@@ -48,17 +51,15 @@ public class Mine implements Runnable {
         this.setDelay(delay);
 
         this.setStart(started);
-
-        this.blocks = new ArrayList<>();
     }
 
-    public Mine(String name, String identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
-        this(name, VersionController.get().getMaterial(identifier), started, stages, delay, tp);
+    public Mine(CachedCustomBlock<Mine> blocks, String name, String identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
+        this(blocks, name, VersionController.get().getMaterial(identifier), started, stages, delay, tp);
     }
 
-    public Mine(String name, ArrayList<Location> blocks) {
-        this(name, Mine.DEFAULT_IDENTIFIER.name(), false, Mine.getDefaultStages(), DEFAULT_DELAY, null);
-        this.blocks.addAll(blocks);
+    public Mine(CachedCustomBlock<Mine> blocks, String name, ArrayList<Location> list) {
+        this(blocks, name, Mine.DEFAULT_IDENTIFIER.name(), false, Mine.getDefaultStages(), DEFAULT_DELAY, null);
+        this.blocks.placeBlocksArtificially(this, list);
     }
 
     public void setStart(boolean value) {
@@ -104,20 +105,25 @@ public class Mine implements Runnable {
         return this.started;
     }
 
-    synchronized public void add(Location loc) {
-        this.blocks.add(loc);
+    public void add(Location loc) {
+        this.blocks.placeBlockArtificially(this, loc);
     }
 
-    synchronized public ArrayList<Location> getMineBlocks() {
-        return this.blocks;
+    private List<Location> _getMineBlocks() {
+        List<Location> r = this.blocks.getAllBlocksByValue(this);
+        return (r == null) ? new ArrayList<>() : r;
     }
 
-    synchronized public int getTotalBlocks() {
-        return this.blocks.size();
+    public Location []getMineBlocks() {
+        return this._getMineBlocks().toArray(new Location[0]);
     }
 
-    synchronized public Location getRandomBlockInMine() {
-        return this.blocks.get(new Random().nextInt(this.blocks.size()));
+    public int getTotalBlocks() {
+        return this._getMineBlocks().size();
+    }
+
+    public Location getRandomBlockInMine() {
+        return this._getMineBlocks().get(new Random().nextInt(this.getTotalBlocks()));
     }
 
     public ArrayList<Stage> getStages() {
@@ -175,7 +181,7 @@ public class Mine implements Runnable {
      * Sets all the blocks of the mine to STATE_ZERO
      */
     public void resetBlocksMine() {
-        for (Location l: this.blocks) {
+        for (Location l: this._getMineBlocks()) {
             if (l.getBlock().getType()!=Mine.STATE_ZERO) l.getBlock().setType(Mine.STATE_ZERO);
         }
     }
@@ -206,7 +212,7 @@ public class Mine implements Runnable {
     public void updateStages() {
         this.resetStagesCount();
 
-        for(Location loc: this.getMineBlocks()) {
+        for(Location loc: this._getMineBlocks()) {
             Stage match = this.getStage(VersionController.get().getObject(loc.getBlock()));
             if (match != null) match.incrementStageBlocks();
         }
