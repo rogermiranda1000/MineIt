@@ -11,14 +11,15 @@ import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MineIt extends RogerPlugin {
     public static ItemStack item, mimicBlock;
@@ -116,16 +117,19 @@ public class MineIt extends RogerPlugin {
         this.selectMineInventory = new SelectMineInventory();
 
         // mines
-        for (File archivo : getDataFolder().listFiles()) {
-            if (archivo.getName().equalsIgnoreCase("config.yml")) continue;
+        File minesDirectory = new File(getDataFolder().getPath() + File.separatorChar + "Mines");
+        if (minesDirectory.exists()) {
+            for (File archivo : minesDirectory.listFiles()) {
+                if (archivo.getName().equalsIgnoreCase("config.yml") || archivo.isDirectory()) continue;
 
-            String mineName = archivo.getName().replaceAll("\\.yml$", "");
-            try {
-                getLogger().info("Loading mine " + mineName + "...");
-                Mine mine = FileManager.loadMine(archivo);
-                Mines.getInstance().addMine(mine);
-            } catch (IOException ex) {
-                this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
+                String mineName = archivo.getName().replaceAll("\\.json$", "");
+                try {
+                    getLogger().info("Loading mine " + mineName + "...");
+                    Mine mine = FileManager.loadMine(archivo);
+                    Mines.getInstance().addMine(mine);
+                } catch (IOException ex) {
+                    this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
+                }
             }
         }
 
@@ -149,25 +153,15 @@ public class MineIt extends RogerPlugin {
         SelectedBlocks.getInstance().getAllBlocks(e -> e.getValue().getBlock().setType(Mine.SELECT_BLOCK));
 
         // save mines
-        Mines.getInstance().getAllBlocks(e -> {
-            Mine m = e.getKey();
+        File minesDirectory = new File(getDataFolder().getPath() + File.separatorChar + "Mines");
+        if (!minesDirectory.exists()) minesDirectory.mkdir();
+        for (Mine m : Mines.getInstance().getAllValues()) {
             try {
-                File file = new File(getDataFolder(), m.getName() +".yml");
+                File file = new File(minesDirectory, m.getName() +".json");
                 FileManager.saveMine(file, m);
             } catch(IOException ex){
                 ex.printStackTrace();
             }
-        });
-    }
-
-    @Nullable
-    private static <T> ArrayList<T> merge(@Nullable Stack<ArrayList<T>> list) {
-        if (list == null) return null;
-
-        ArrayList<T> r = new ArrayList<>();
-        for (List<T> loc : list) {
-            r.addAll(loc);
         }
-        return r;
     }
 }
