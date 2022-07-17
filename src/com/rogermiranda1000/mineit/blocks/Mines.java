@@ -65,6 +65,8 @@ public class Mines extends CachedCustomBlock<Mine> {
         m.updateStages();
 
         for (MinesChangedEvent e : this.globalEvents) e.onMineAdded(m);
+
+        m.setStart(true); // start the mine
     }
 
     public void removeMine(Mine m) {
