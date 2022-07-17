@@ -1,9 +1,10 @@
 package com.rogermiranda1000.mineit;
 
+import com.rogermiranda1000.mineit.blocks.Mines;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * MineIt API. Use it to access to the plugin's functions.
@@ -37,14 +38,14 @@ public class MineItApi {
      * @return Block's mine, or null (if any mine)
      */
     public Mine getMine(Location loc) {
-        return Mine.getMine(loc);
+        return Mines.getInstance().getBlock(loc);
     }
 
     public int getMineCount() {
-        return Mine.getMinesLength();
+        return Mines.getInstance().getDifferentValuesNum();
     }
 
-    public List<Mine> getMines() {
-        return Mine.getMines();
+    public Set<Mine> getMines() {
+        return Mines.getInstance().getAllValues();
     }
 }

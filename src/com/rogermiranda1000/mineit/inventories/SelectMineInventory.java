@@ -1,21 +1,20 @@
 package com.rogermiranda1000.mineit.inventories;
 
+import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.MinesChangedEvent;
 import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.mineit.blocks.Mines;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 
@@ -31,11 +30,10 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     private final int offset;
     private final HashMap<Mine,BasicInventory> editMineInventory;
     private SelectMineInventory next, pre;
-    private Plugin eventSubscriptor;
 
     @SuppressWarnings("ConstantConditions")
     public SelectMineInventory(HashMap<Mine,BasicInventory> minesInventories, int offset, SelectMineInventory pre) {
-        super();
+        super(MineIt.instance, true);
 
         this.offset = offset;
         this.editMineInventory = minesInventories;
@@ -53,20 +51,14 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     public SelectMineInventory() {
         this(new HashMap<>(), 0, null);
 
-        Mine.addMinesListener(this); // only the first menu will listen, the other ones will be called from the first
+        Mines.getInstance().addMinesListener(this); // only the first menu will listen, the other ones will be called from the first
     }
 
     public Collection<BasicInventory> getMinesInventories() {
         return this.editMineInventory.values();
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onClick(InventoryClickEvent e) {
-        if (!e.getInventory().equals(this.inv)) return;
-        if (!this.inv.equals(e.getClickedInventory())) return;
-
-        e.setCancelled(true);
-
+    public void inventoryClickedEvent(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
         // permisions
         if(!player.hasPermission("mineit.open")) {
@@ -102,7 +94,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
             this.next_item = null;
         }
         else {
-            if (this.eventSubscriptor != null) next.registerEvent(this.eventSubscriptor);
+            next.registerEvent();
 
             this.next_item = new ItemStack(Material.EMERALD_BLOCK);
             ItemMeta m = this.next_item.getItemMeta();
@@ -125,10 +117,9 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
     }
 
     @Override
-    public void registerEvent(Plugin p) {
-        super.registerEvent(p);
-        this.eventSubscriptor = p;
-        if (this.next != null) this.next.registerEvent(p);
+    public void registerEvent() {
+        super.registerEvent();
+        if (this.next != null) this.next.registerEvent();
     }
 
     @Override
@@ -144,7 +135,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
             else this.next.onMinesChanged();
         }
 
-        int l = (int)Math.ceil((Mine.getMinesLength()-this.offset)/9.0);
+        int l = (int)Math.ceil((Mines.getInstance().getDifferentValuesNum()-this.offset)/9.0);
         if(l==0) {
             newInventory = Bukkit.createInventory(null, 18, SelectMineInventory.INVENTORY_NAME);
 
@@ -163,7 +154,7 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
 
             newInventory = Bukkit.createInventory(null, l * 9, SelectMineInventory.INVENTORY_NAME);
             int pos = 0, backPos = (l - 1) * 9;
-            for (Mine mine : Mine.getMines(this.offset, SelectMineInventory.MAX_MINES_PER_INV)) {
+            for (Mine mine : SelectMineInventory.getListWithOffset(new ArrayList<>(Mines.getInstance().getAllValues()), this.offset, SelectMineInventory.MAX_MINES_PER_INV)) {
                 ItemStack mina = new ItemStack(Mine.SELECT_BLOCK); // TODO mine block
                 ItemMeta meta = mina.getItemMeta();
                 meta.setDisplayName(mine.getName());
@@ -182,8 +173,12 @@ public class SelectMineInventory extends BasicInventory implements MinesChangedE
             if (this.next_item != null) newInventory.setItem(backPos+8, this.next_item);
         }
 
-        if (this.inv != null) this.newInventory(newInventory); // only if it's not the first time
-        this.inv = newInventory;
+        if (this.getInventory() != null) this.newInventory(newInventory); // only if it's not the first time
+        this.setInventory(newInventory);
+    }
+
+    private static <T> List<T> getListWithOffset(List<T> list, int offset, int maxLenght) {
+        return list.subList(offset, Math.min(list.size(), offset+maxLenght));
     }
 
     @Override

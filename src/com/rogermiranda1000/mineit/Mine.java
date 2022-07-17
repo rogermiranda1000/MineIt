@@ -1,26 +1,23 @@
 package com.rogermiranda1000.mineit;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-
-import com.github.davidmoten.rtreemulti.Entry;
-import com.github.davidmoten.rtreemulti.RTree;
-import com.github.davidmoten.rtreemulti.geometry.Point;
+import com.rogermiranda1000.helper.blocks.CachedCustomBlock;
+import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
-import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class Mine implements Runnable {
     @Nullable public static Material AIR_STAGE;
     public static final Material SELECT_BLOCK = Material.STONE;
     public static final Material STATE_ZERO = Material.BEDROCK;
-    public static final ArrayList<MinesChangedEvent> globalEvents = new ArrayList<>();
+    public static final Material DEFAULT_IDENTIFIER = Material.STONE;
 
     /**
      * Default seconds to chenge the stage
@@ -28,42 +25,41 @@ public class Mine implements Runnable {
     private static final int DEFAULT_DELAY = 30;
 
     /**
-     * Used for optimize search
-     */
-    private static RTree<Mine, Point> tree = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
-
-    /**
-     * All the active mines
-     */
-    private static final ArrayList<Mine> mines = new ArrayList<>();
-
-    /**
      * Ticks per block (seconds per block * 20)
      */
     private int delay;
     private final ArrayList<MineChangedEvent> events;
 
-    private final ArrayList<Location> blocks;
+    private final CachedCustomBlock<Mine> blocks;
     private int currentTime;
     private final ArrayList<Stage> stages;
     private final String mineName;
+    private BlockType mineBlockIdentifier;
+    @Nullable Location tp;
     private boolean started;
     private int scheduleID;
 
-    public Mine(String name, boolean started, ArrayList<Location> blocks, ArrayList<Stage> stages, int delay) {
+    public Mine(CachedCustomBlock<Mine> blocks, String name, BlockType identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
         this.currentTime = 0;
         this.events = new ArrayList<>();
 
-        this.mineName = name;
         this.blocks = blocks;
+        this.mineName = name;
+        this.mineBlockIdentifier = identifier;
+        this.tp = tp;
         this.stages = stages;
         this.setDelay(delay);
 
         this.setStart(started);
     }
 
-    public Mine(String name, ArrayList<Location> blocks) {
-        this(name, false, blocks, Mine.getDefaultStages(), DEFAULT_DELAY);
+    public Mine(CachedCustomBlock<Mine> blocks, String name, String identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
+        this(blocks, name, VersionController.get().getMaterial(identifier), started, stages, delay, tp);
+    }
+
+    public Mine(CachedCustomBlock<Mine> blocks, String name, ArrayList<Location> list) {
+        this(blocks, name, Mine.DEFAULT_IDENTIFIER.name(), false, Mine.getDefaultStages(), DEFAULT_DELAY, null);
+        this.blocks.placeBlocksArtificially(this, list);
     }
 
     public void setStart(boolean value) {
@@ -76,8 +72,29 @@ public class Mine implements Runnable {
         this.notifyMineListeners();
     }
 
+    @Nullable
+    public Location getTp() {
+        return this.tp;
+    }
+
+    public void setTp(@Nullable Location tp) {
+        this.tp = tp;
+    }
+
+    public BlockType getMineBlockIdentifier() {
+        return this.mineBlockIdentifier;
+    }
+
+    public void setMineBlockIdentifier(BlockType mineBlockIdentifier) {
+        this.mineBlockIdentifier = mineBlockIdentifier;
+    }
+
     public boolean getStart() {
         return this.started;
+    }
+
+    public ArrayList<MineChangedEvent> getEvents() {
+        return this.events;
     }
 
     public String getName() {
@@ -89,19 +106,24 @@ public class Mine implements Runnable {
     }
 
     public void add(Location loc) {
-        this.blocks.add(loc);
+        this.blocks.placeBlockArtificially(this, loc);
     }
 
-    public ArrayList<Location> getMineBlocks() {
-        return this.blocks;
+    private List<Location> _getMineBlocks() {
+        List<Location> r = this.blocks.getAllBlocksByValue(this);
+        return (r == null) ? new ArrayList<>() : r;
+    }
+
+    public Location []getMineBlocks() {
+        return this._getMineBlocks().toArray(new Location[0]);
     }
 
     public int getTotalBlocks() {
-        return this.blocks.size();
+        return this._getMineBlocks().size();
     }
 
     public Location getRandomBlockInMine() {
-        return this.blocks.get(new Random().nextInt(this.blocks.size()));
+        return this._getMineBlocks().get(new Random().nextInt(this.getTotalBlocks()));
     }
 
     public ArrayList<Stage> getStages() {
@@ -111,7 +133,7 @@ public class Mine implements Runnable {
     public void setStageLimit(int index, int limit) {
         this.stages.get(index).setStageLimit(limit);
 
-        Mine.notifyMinesListeners();
+        Mines.getInstance().notifyMinesListeners();
         this.notifyMineListeners();
     }
 
@@ -139,7 +161,7 @@ public class Mine implements Runnable {
         this.updateStages();
         // TODO quitar bloques del estado eliminado?
 
-        Mine.notifyMinesListeners();
+        Mines.getInstance().notifyMinesListeners();
         this.notifyMineListeners();
     }
 
@@ -151,7 +173,7 @@ public class Mine implements Runnable {
         this.stages.add(stage);
         this.updateStages();
 
-        Mine.notifyMinesListeners();
+        Mines.getInstance().notifyMinesListeners();
         this.notifyMineListeners();
     }
 
@@ -159,7 +181,7 @@ public class Mine implements Runnable {
      * Sets all the blocks of the mine to STATE_ZERO
      */
     public void resetBlocksMine() {
-        for (Location l: this.blocks) {
+        for (Location l: this._getMineBlocks()) {
             if (l.getBlock().getType()!=Mine.STATE_ZERO) l.getBlock().setType(Mine.STATE_ZERO);
         }
     }
@@ -190,7 +212,7 @@ public class Mine implements Runnable {
     public void updateStages() {
         this.resetStagesCount();
 
-        for(Location loc: this.getMineBlocks()) {
+        for(Location loc: this._getMineBlocks()) {
             Stage match = this.getStage(VersionController.get().getObject(loc.getBlock()));
             if (match != null) match.incrementStageBlocks();
         }
@@ -221,52 +243,6 @@ public class Mine implements Runnable {
         return this.stages.stream().filter( e -> e.getStageMaterial().equals(search) ).findAny().orElse(null);
     }
 
-    @Nullable
-    synchronized public static Mine getMine(String search) {
-        return Mine.mines.stream().filter( e -> e.mineName.equalsIgnoreCase(search) ).findAny().orElse(null);
-    }
-
-    private static Point getPoint(Location loc) {
-        if (loc.getWorld() == null) return Point.create(0,0,loc.getX(), loc.getY(), loc.getZ());
-
-        return Point.create(Double.longBitsToDouble(loc.getWorld().getUID().getMostSignificantBits()),
-                Double.longBitsToDouble(loc.getWorld().getUID().getLeastSignificantBits()),
-                loc.getX(), loc.getY(), loc.getZ());
-    }
-
-    /**
-     * It gets the mine that the location belongs
-     * @param loc Location to get the mine
-     * @return Mine that contains 'loc', null if any
-     */
-    @Nullable
-    synchronized public static Mine getMine(Location loc) {
-        Iterator<Entry<Mine, Point>> results = Mine.tree.search(Mine.getPoint(loc)).iterator();
-
-        if (!results.hasNext()) return null;
-        return results.next().value();
-    }
-
-    synchronized public static int getMinesLength() {
-        return Mine.mines.size();
-    }
-
-    public static List<Mine> getMines() {
-        return Mine.mines;
-    }
-
-    public static List<Mine> getMines(int offset, int max_lenght) {
-        return Mine.mines.subList(offset, Math.min(Mine.mines.size(), offset+max_lenght));
-    }
-
-    public static void addMinesListener(MinesChangedEvent e) {
-        Mine.globalEvents.add(e);
-    }
-
-    private static void notifyMinesListeners() {
-        for (MinesChangedEvent e : Mine.globalEvents) e.onMinesChanged();
-    }
-
     public void addMineListener(MineChangedEvent e) {
         this.events.add(e);
     }
@@ -277,35 +253,6 @@ public class Mine implements Runnable {
 
     private void notifyMineListeners() {
         for (MineChangedEvent e : this.events) e.onMineChanged();
-    }
-
-    synchronized public static void removeMine(Mine m) {
-        Mine.mines.remove(m);
-
-        for (MinesChangedEvent e : new ArrayList<>(Mine.globalEvents)) e.onMineRemoved(m);
-
-        // notify & unsubscribe
-        for (MineChangedEvent e : new ArrayList<>(m.events)) {
-            e.onMineRemoved();
-            m.events.remove(e);
-        }
-
-        for (Location loc : m.blocks) Mine.tree = Mine.tree.delete(m, Mine.getPoint(loc));
-
-        m.setStart(false); // stop the mine
-    }
-
-    /**
-     * Updates the mine stages and add it into the internal list. It also adds them into the optimized search list.
-     * @param m Mine to add
-     */
-    synchronized public static void addMine(Mine m) {
-        m.updateStages();
-
-        Mine.mines.add(m);
-        for (MinesChangedEvent e : Mine.globalEvents) e.onMineAdded(m);
-
-        for (Location loc : m.blocks) Mine.tree = Mine.tree.add(m, Mine.getPoint(loc));
     }
 
     @Override

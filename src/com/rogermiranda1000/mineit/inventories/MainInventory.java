@@ -1,16 +1,15 @@
 package com.rogermiranda1000.mineit.inventories;
 
+import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.mineit.MineIt;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +22,9 @@ public class MainInventory extends BasicInventory {
     // create the inventory
     @SuppressWarnings("ConstantConditions")
     public MainInventory() {
-        super();
+        super(MineIt.instance, true);
 
-        this.inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
+        Inventory inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
 
         this.mineCreatorTool = MineIt.item.clone();
         ItemMeta meta = this.mineCreatorTool.getItemMeta();
@@ -52,15 +51,11 @@ public class MainInventory extends BasicInventory {
         meta.setLore(l);
         this.editMine.setItemMeta(meta);
         inv.setItem(8, this.editMine);
+
+        this.setInventory(inv);
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onClick(InventoryClickEvent e) {
-        if (!e.getInventory().equals(this.inv)) return;
-        if (!this.inv.equals(e.getClickedInventory())) return;
-
-        e.setCancelled(true);
-
+    public void inventoryClickedEvent(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
         // permisions
         if(!player.hasPermission("mineit.open")) {
