@@ -116,6 +116,8 @@ public class MineIt extends RogerPlugin {
         this.mainInventory = new MainInventory();
         this.selectMineInventory = new SelectMineInventory();
 
+        this.clearCustomBlocks();
+
         // mines
         File minesDirectory = new File(getDataFolder().getPath() + File.separatorChar + "Mines");
         if (minesDirectory.exists()) {
@@ -134,7 +136,6 @@ public class MineIt extends RogerPlugin {
         }
 
         super.onEnable();
-        Mines.getInstance().getAllBlocks(e -> e.getKey().add(e.getValue()));
 
         this.mainInventory.registerEvent();
         this.selectMineInventory.registerEvent();
