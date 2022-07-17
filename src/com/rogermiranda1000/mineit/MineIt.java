@@ -141,6 +141,13 @@ public class MineIt extends RogerPlugin {
         this.selectMineInventory.registerEvent();
     }
 
+    /**
+     * @pre dir must be a directory
+     */
+    private static void removeDirectoryContents(File dir) {
+        for (File file: dir.listFiles()) file.delete();
+    }
+
     @Override
     public void onDisable() {
         super.onDisable();
@@ -156,6 +163,8 @@ public class MineIt extends RogerPlugin {
         // save mines
         File minesDirectory = new File(getDataFolder().getPath() + File.separatorChar + "Mines");
         if (!minesDirectory.exists()) minesDirectory.mkdir();
+        else MineIt.removeDirectoryContents(minesDirectory);
+
         for (Mine m : Mines.getInstance().getAllValues()) {
             try {
                 File file = new File(minesDirectory, m.getName() +".json");
