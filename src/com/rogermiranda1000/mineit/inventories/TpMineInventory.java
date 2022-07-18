@@ -6,8 +6,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 public class TpMineInventory extends MinesInventory {
+    private static final String INVENTORY_NAME = "§bTp mine";
     public TpMineInventory() {
-        super();
+        super(TpMineInventory.INVENTORY_NAME);
     }
 
     @Override
@@ -30,6 +31,6 @@ public class TpMineInventory extends MinesInventory {
     }
 
     public TpMineInventory(int offset, MinesInventory pre) {
-        super(offset, pre);
+        super(TpMineInventory.INVENTORY_NAME, offset, pre);
     }
 }

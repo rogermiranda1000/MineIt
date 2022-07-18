@@ -10,15 +10,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SelectMineInventory extends MinesInventory {
+    private static final String INVENTORY_NAME = "§cEdit mine";
     private final HashMap<Mine,BasicInventory> editMineInventory;
 
     public SelectMineInventory() {
-        super();
+        super(SelectMineInventory.INVENTORY_NAME);
         this.editMineInventory = new HashMap<>();
     }
 
     public SelectMineInventory(HashMap<Mine,BasicInventory> minesInventories, int offset, MinesInventory pre) {
-        super(offset, pre);
+        super(SelectMineInventory.INVENTORY_NAME, offset, pre);
         this.editMineInventory = minesInventories;
     }
 

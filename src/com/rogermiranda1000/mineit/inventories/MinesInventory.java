@@ -19,9 +19,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.*;
 
 abstract public class MinesInventory extends BasicInventory implements MinesChangedEvent, CreateMinesInventory {
-    private static final String INVENTORY_NAME = "§cEdit mine";
     protected static final int MAX_MINES_PER_INV = 45;
     private final ItemStack back;
+    private final String inventoryName;
     @Nullable private ItemStack next_item, pre_item;
 
     /**
@@ -31,8 +31,10 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
     protected MinesInventory next, pre;
 
     @SuppressWarnings("ConstantConditions")
-    public MinesInventory(int offset, MinesInventory pre) {
+    public MinesInventory(String inventoryName, int offset, MinesInventory pre) {
         super(MineIt.instance, true);
+
+        this.inventoryName = inventoryName;
 
         this.offset = offset;
         this.setPre(pre);
@@ -46,8 +48,8 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
         this.onMinesChanged(); // create the inventory for the first time
     }
 
-    public MinesInventory() {
-        this(0, null);
+    public MinesInventory(String name) {
+        this(name, 0, null);
 
         Mines.getInstance().addMinesListener(this); // only the first menu will listen, the other ones will be called from the first
     }
@@ -126,7 +128,7 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
 
         int l = (int)Math.ceil((Mines.getInstance().getDifferentValuesNum()-this.offset)/9.0);
         if(l==0) {
-            newInventory = Bukkit.createInventory(null, 18, MinesInventory.INVENTORY_NAME);
+            newInventory = Bukkit.createInventory(null, 18, this.inventoryName);
 
             // fill the first row with "null" mines
             ItemStack none = new ItemStack(Material.COBBLESTONE);
@@ -141,7 +143,7 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
             l++; // the last row is for the back button
             if (l > 6) l = 6; // just show the first mines
 
-            newInventory = Bukkit.createInventory(null, l * 9, MinesInventory.INVENTORY_NAME);
+            newInventory = Bukkit.createInventory(null, l * 9, this.inventoryName);
             int pos = 0, backPos = (l - 1) * 9;
             for (Mine mine : MinesInventory.getListWithOffset(new ArrayList<>(Mines.getInstance().getAllValues()), this.offset, MinesInventory.MAX_MINES_PER_INV)) {
                 ItemStack mina = new ItemStack(Mine.SELECT_BLOCK); // TODO mine block
