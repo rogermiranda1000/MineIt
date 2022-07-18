@@ -2,7 +2,10 @@ package com.rogermiranda1000.mineit.inventories;
 
 import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.versioncontroller.VersionController;
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.Collection;
@@ -25,9 +28,16 @@ public class SelectMineInventory extends MinesInventory {
 
     @Override
     void mineClicked(InventoryClickEvent e, Mine m) {
-        // TODO change mine type
-        BasicInventory inv = this.editMineInventory.get(m);
-        if (inv != null) inv.openInventory(e.getWhoClicked());
+        Player player = (Player) e.getWhoClicked();
+        if (!player.getItemOnCursor().getType().equals(Material.AIR)) {
+            // change mine type
+            m.setMineBlockIdentifier(VersionController.get().getObject(player.getItemOnCursor()));
+        }
+        else {
+            // edit mine
+            BasicInventory inv = this.editMineInventory.get(m);
+            if (inv != null) inv.openInventory(player);
+        }
     }
 
     public Collection<BasicInventory> getMinesInventories() {

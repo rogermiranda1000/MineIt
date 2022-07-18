@@ -146,7 +146,7 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
             newInventory = Bukkit.createInventory(null, l * 9, this.inventoryName);
             int pos = 0, backPos = (l - 1) * 9;
             for (Mine mine : MinesInventory.getListWithOffset(new ArrayList<>(Mines.getInstance().getAllValues()), this.offset, MinesInventory.MAX_MINES_PER_INV)) {
-                ItemStack mina = new ItemStack(Mine.SELECT_BLOCK); // TODO mine block
+                ItemStack mina = new ItemStack(mine.getMineBlockIdentifier().getItemStack(false));
                 ItemMeta meta = mina.getItemMeta();
                 meta.setDisplayName(mine.getName());
                 ArrayList<String> lore = new ArrayList<>();

@@ -89,6 +89,9 @@ public class Mine implements Runnable {
 
     public void setMineBlockIdentifier(BlockType mineBlockIdentifier) {
         this.mineBlockIdentifier = mineBlockIdentifier;
+
+        Mines.getInstance().notifyMinesListeners();
+        this.notifyMineListeners();
     }
 
     public boolean getStart() {
