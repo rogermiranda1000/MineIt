@@ -173,6 +173,12 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
     }
 
     @Override
+    public void closeInventories() {
+        super.closeInventories();
+        if (this.next != null) this.next.closeInventories();
+    }
+
+    @Override
     public void onMineRemoved(Mine m) {
         this.onMinesChanged();
     }
