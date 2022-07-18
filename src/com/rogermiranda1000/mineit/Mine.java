@@ -38,6 +38,7 @@ public class Mine implements Runnable {
     @Nullable Location tp;
     private boolean started;
     private int scheduleID;
+    private final int hashCode;
 
     public Mine(CachedCustomBlock<Mine> blocks, String name, BlockType identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
         this.currentTime = 0;
@@ -49,6 +50,7 @@ public class Mine implements Runnable {
         this.tp = tp;
         this.stages = stages;
         this.setDelay(delay);
+        this.hashCode = name.hashCode();
 
         this.setStart(started);
     }
@@ -225,7 +227,10 @@ public class Mine implements Runnable {
      */
     public void setDelay(int delay) {
         if (delay < 1) delay = DEFAULT_DELAY;
-        this.delay = delay * 20;
+        synchronized (this) {
+            this.delay = delay * 20;
+            this.currentTime = 0;
+        }
 
         this.notifyMineListeners();
     }
@@ -234,7 +239,7 @@ public class Mine implements Runnable {
      * Get the mine delay
      * @return Seconds to change the stage
      */
-    public int getDelay() {
+    synchronized public int getDelay() {
         return this.delay / 20;
     }
 
@@ -263,7 +268,7 @@ public class Mine implements Runnable {
     @Override
     public void run() {
         this.currentTime++;
-        int changedBlocks = (this.currentTime * this.getTotalBlocks()) / this.delay;
+        int changedBlocks = (this.currentTime * this.getTotalBlocks()) / this.getDelay();
         if (changedBlocks == 0) return;
 
         this.currentTime = 0;
@@ -279,5 +284,18 @@ public class Mine implements Runnable {
                 next.getStageMaterial().setType(loc.getBlock());
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Mine)) return false;
+        Mine that = (Mine) o;
+        return this.getName().equals(that.getName());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hashCode;
     }
 }
