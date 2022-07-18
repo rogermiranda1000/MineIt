@@ -2,6 +2,7 @@ package com.rogermiranda1000.mineit.events;
 
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
+import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -11,11 +12,10 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class InteractEvent implements Listener {
     private static final Material SELECTED_BLOCK = Material.EMERALD_BLOCK;
@@ -37,16 +37,16 @@ public class InteractEvent implements Listener {
 
         e.setCancelled(true);
         if(!e.getClickedBlock().getType().equals(Mine.SELECT_BLOCK)) {
-            ply.sendMessage(MineIt.errorPrefix+"You can only hit stone with the Mine Creator!");
+            ply.sendMessage(MineIt.instance.errorPrefix+"You can only hit stone with the Mine Creator!");
             return;
         }
 
         if(!ply.hasPermission("mineit.select")) {
-            ply.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
+            ply.sendMessage(MineIt.instance.errorPrefix + "You don't have the permissions to do that.");
             return;
         }
 
-        MineIt.instance.addSelectionBlocks(ply.getName(), InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation()));
+        for (Location loc : InteractEvent.getSurroundingBlocks(e.getClickedBlock().getLocation())) SelectedBlocks.getInstance().placeBlockArtificially(ply, loc);
     }
 
 
@@ -56,22 +56,21 @@ public class InteractEvent implements Listener {
      * @param loc Initial block
      * @return All the converted blocks
      */
-    private static ArrayList<Location> getSurroundingBlocks(Location loc) {
+    private static Set<Location> getSurroundingBlocks(Location loc) {
         try {
-            return InteractEvent.getSurroundingBlocks(loc, loc);
+            return InteractEvent.getSurroundingBlocks(new HashSet<>(), loc, loc);
         } catch (StackOverflowError err) {
             MineIt.instance.printConsoleErrorMessage("Reduce the mine_creator_range value on the config.yml!");
-            return new ArrayList<>();
+            return new HashSet<>();
         }
     }
 
-    private static ArrayList<Location> getSurroundingBlocks(Location loc, Location origin) {
-        ArrayList<Location> b = new ArrayList<>();
-        if(loc.getBlock().getType() != Mine.SELECT_BLOCK) return b;
-        if(InteractEvent.isDistanceGreater(origin, loc, MineIt.instance.rango)) return b;
+    private static Set<Location> getSurroundingBlocks(Set<Location> out, Location loc, Location origin) {
+        if(loc.getBlock().getType() != Mine.SELECT_BLOCK) return out;
+        if(InteractEvent.isDistanceGreater(origin, loc, MineIt.instance.rango)) return out;
 
-        if (!InteractEvent.airNear(loc)) return b;
-        b.add(loc);
+        if (!InteractEvent.airNear(loc)) return out;
+        if (!out.add(loc)) return out; // already added
         loc.getBlock().setType(InteractEvent.SELECTED_BLOCK); // convert block visually
 
         for(int x = -1; x <= 1; x++) {
@@ -79,12 +78,12 @@ public class InteractEvent implements Listener {
                 for (int z = -1; z <= 1; z++) {
                     if(x==0 && y==0 && z==0) continue; // same block
                     Location next = new Location(loc.getWorld(), loc.getX() + x, loc.getY() + y, loc.getZ() + z);
-                    b.addAll(getSurroundingBlocks(next, origin));
+                    getSurroundingBlocks(out, next, origin);
                 }
             }
         }
 
-        return b;
+        return out;
     }
 
     private static boolean isDistanceGreater(Location l1, Location l2, int threshold) {

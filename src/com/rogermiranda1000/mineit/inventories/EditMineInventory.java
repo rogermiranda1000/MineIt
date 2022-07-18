@@ -1,22 +1,21 @@
 package com.rogermiranda1000.mineit.inventories;
 
+import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineChangedEvent;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import net.md_5.bungee.api.ChatColor;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -49,9 +48,9 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
     }
 
     public EditMineInventory(@NotNull Mine m) {
-        super();
+        super(MineIt.instance, true);
 
-        this.registerEvent(MineIt.instance); // listener
+        this.registerEvent(); // listener
 
         this.listening = m;
         m.addMineListener(this);
@@ -61,18 +60,12 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         this.onMineChanged(); // force to create the inventory
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onClick(InventoryClickEvent e) {
-        if (!e.getInventory().equals(this.inv)) return;
-        if (!this.inv.equals(e.getClickedInventory())) return;
-
-        e.setCancelled(true);
-
+    public void inventoryClickedEvent(InventoryClickEvent e) {
         Player player = (Player) e.getWhoClicked();
         // permisions
         if(!player.hasPermission("mineit.open")) {
             player.closeInventory();
-            player.sendMessage(MineIt.errorPrefix + "You can't use this menu.");
+            player.sendMessage(MineIt.instance.errorPrefix + "You can't use this menu.");
             return;
         }
 
@@ -82,34 +75,34 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         if(clicked.equals(EditMineInventory.BACK_ITEM)) MineIt.instance.selectMineInventory.openInventory(player);
         else if(clicked.equals(EditMineInventory.REMOVE_ITEM)) {
             if(!player.hasPermission("mineit.remove")) {
-                player.sendMessage(MineIt.errorPrefix + "You don't have the permissions to do that.");
+                player.sendMessage(MineIt.instance.errorPrefix + "You don't have the permissions to do that.");
                 return;
             }
 
-            Mine.removeMine(this.listening);
+            Mines.getInstance().removeMine(this.listening);
             try {
                 FileManager.removeMine(this.listening);
             } catch (Exception ignored) {}
-            player.sendMessage(MineIt.clearPrefix+"Mine '" + this.listening.getName() + "' removed.");
+            player.sendMessage(MineIt.instance.clearPrefix+"Mine '" + this.listening.getName() + "' removed.");
             // onMineRemoved event closes the inventories
         }
         else if(clicked.getType()==Material.FURNACE) {
             if(this.listening.getStart()) {
-                player.sendMessage(MineIt.clearPrefix+"Mine '" + this.listening.getName() + "' stopped.");
+                player.sendMessage(MineIt.instance.clearPrefix+"Mine '" + this.listening.getName() + "' stopped.");
                 this.listening.setStart(false);
             }
             else {
-                player.sendMessage(MineIt.clearPrefix+"Starting mine '" + this.listening.getName() + "'...");
+                player.sendMessage(MineIt.instance.clearPrefix+"Starting mine '" + this.listening.getName() + "'...");
                 this.listening.setStart(true);
             }
-            this.inv.setItem(this.getFurnaceIndex(), this.status());
+            this.getInventory().setItem(this.getFurnaceIndex(), this.status());
         }
         else if (clicked.equals(this.time)) {
             // TODO
         }
         else {
             int x = e.getSlot();
-            if (this.inv.getItem(x) == null || x >= this.getLastRowIndex()) return; // en ese slot no hay nada o estan en la última fila (no deberia pasar)
+            if (this.getInventory().getItem(x) == null || x >= this.getLastRowIndex()) return; // en ese slot no hay nada o estan en la última fila (no deberia pasar)
 
             ItemStack item = VersionController.get().cloneItemStack(player.getItemOnCursor());
             if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
@@ -124,11 +117,11 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
 
                         // remove stage
                         if (this.listening.getStageCount() == 1) {
-                            player.sendMessage(MineIt.errorPrefix + "There can't be a mine without stages!");
+                            player.sendMessage(MineIt.instance.errorPrefix + "There can't be a mine without stages!");
                             return;
                         }
                         if (stageNum == 0) {
-                            player.sendMessage(MineIt.errorPrefix + StringUtils.capitalize(Mine.STATE_ZERO.name()) + " stage can't be deleted.");
+                            player.sendMessage(MineIt.instance.errorPrefix + StringUtils.capitalize(Mine.STATE_ZERO.name()) + " stage can't be deleted.");
                             return;
                         }
 
@@ -139,19 +132,19 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                         boolean isBreakable = player.getItemOnCursor().getEnchantmentLevel(Enchantment.DURABILITY) != 1 && !item.getType().equals(Mine.AIR_STAGE); // unbreakable not set, and not air
                         // already exists?
                         if (this.listening.getStage(stageMaterial) != null) {
-                            player.sendMessage(MineIt.errorPrefix+"There's already a " + stageMaterial.getName().toLowerCase() + " stage!");
+                            player.sendMessage(MineIt.instance.errorPrefix+"There's already a " + stageMaterial.getName().toLowerCase() + " stage!");
                             return;
                         }
 
                         if (stageNum < this.listening.getStageCount()) {
                             if (x == 0 && isBreakable) {
                                 // updating bedrock stage with a breakable stage
-                                player.sendMessage(MineIt.errorPrefix + "The bedrock stage must be unbreakable!");
+                                player.sendMessage(MineIt.instance.errorPrefix + "The bedrock stage must be unbreakable!");
                                 return;
                             }
 
                             // change existing stage
-                            BlockType overridingStageMaterial = VersionController.get().getObject(this.inv.getItem(x).getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : this.inv.getItem(x));
+                            BlockType overridingStageMaterial = VersionController.get().getObject(this.getInventory().getItem(x).getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : this.getInventory().getItem(x));
                             Stage overridingStage = this.listening.getStage(overridingStageMaterial);
                             overridingStage.setBlock(stageMaterial, isBreakable);
 
@@ -172,7 +165,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     BlockType realItem = VersionController.get().getObject(item.getType().equals(Mine.AIR_STAGE) ? new ItemStack(Material.AIR) : player.getItemOnCursor());
                     Stage match = this.listening.getStage(realItem);
                     if(match == null) {
-                        player.sendMessage(MineIt.errorPrefix+realItem.getFriendlyName()+" stage doesn't exists in this mine!");
+                        player.sendMessage(MineIt.instance.errorPrefix+realItem.getFriendlyName()+" stage doesn't exists in this mine!");
                         return;
                     }
 
@@ -184,7 +177,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
                     str.add("On break, go to stage " + realItem.getFriendlyName());
                     m.setLore(str);
                     item.setItemMeta(m);
-                    this.inv.setItem(x, item);
+                    this.getInventory().setItem(x, item);
                     break;
 
                 default:
@@ -266,8 +259,8 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
         newInventory.setItem(this.getFurnaceIndex(), this.status());
         newInventory.setItem(this.getRemoveIndex(), EditMineInventory.REMOVE_ITEM);
 
-        if (this.inv != null) this.newInventory(newInventory); // only if it's not the first time
-        this.inv = newInventory;
+        if (this.getInventory() != null) this.newInventory(newInventory); // only if it's not the first time
+        this.setInventory(newInventory);
     }
 
     @Override
