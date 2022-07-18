@@ -249,6 +249,16 @@ public class CustomMineItCommand extends CustomCommand {
                 m.setStageLimit(num, lim);
                 sender.sendMessage(MineIt.instance.clearPrefix + "Set " + cmd[2] + "'s stage " + cmd[3] + " limit to " + cmd[4] + ".");
             }),
+            new CustomMineItCommand("mineit edit tp \\S+", "mineit.tpset", false, "mineit edit tp [mine]", "it stablishes the current location as the tp to the mine", (sender, cmd) -> {
+                Mine m = Mines.getInstance().getMine(cmd[2]);
+                if (m == null) {
+                    sender.sendMessage(MineIt.instance.errorPrefix + "Mine '" + cmd[2] + "' not found.");
+                    return;
+                }
+
+                m.setTp(((Player)sender).getLocation());
+                sender.sendMessage(MineIt.instance.clearPrefix + "Set " + cmd[2] + "'s teleport position to yours.");
+            }),
             new CustomMineItCommand("mineit reset \\S+", "mineit.reset", true, "mineit reset [mine]", "it sets all the mine's block to " + Mine.STATE_ZERO.toString().toLowerCase(), (sender, cmd) -> {
                 Mine m = Mines.getInstance().getMine(cmd[1]);
                 if (m == null) {
@@ -269,9 +279,27 @@ public class CustomMineItCommand extends CustomCommand {
 
                 for (Location loc : r) loc.getBlock().setType(Mine.SELECT_BLOCK); // unselect
                 sender.sendMessage(MineIt.instance.clearPrefix + "Selected blocks restarted.");
-            })/*,
+            }),
+            new CustomMineItCommand("mineit tp \\S+", "mineit.tp", false, "mineit tp [mine]", "teleport to the mine", (sender, cmd) -> {
+                Player p = (Player)sender;
+                Mine m = Mines.getInstance().getMine(cmd[1]);
+                if (m == null) {
+                    p.sendMessage(MineIt.instance.errorPrefix + "Mine '" + cmd[1] + "' not found.");
+                    return;
+                }
+                if (m.getTp() == null) {
+                    p.sendMessage(MineIt.instance.errorPrefix + "The mine '" + cmd[1] + "' doesn't have a tp established yet.");
+                    return;
+                }
+
+                p.teleport(m.getTp());
+                p.sendMessage(MineIt.instance.clearPrefix + "Teleporting to mine " + cmd[1] + "...");
+            }),
+            new CustomMineItCommand("mineit tp", "mineit.tp", false, "mineit tp", "opens the teleport mine menu", (sender, cmd) -> {
+                MineIt.instance.tpInventory.openInventory((Player)sender);
+            })
             // TODO implement with new block object
-            new CustomMineItCommand("mineit select back", "mineit.select", false, "mineit select back", "unselects the previous selected blocks by the user", (sender, cmd) -> {
+            /*new CustomMineItCommand("mineit select back", "mineit.select", false, "mineit select back", "unselects the previous selected blocks by the user", (sender, cmd) -> {
                 ArrayList<Location> r = new ArrayList<>();
                 SelectedBlocks.getInstance().removeBlocksArtificiallyByValue((Player)sender, e->r.add(e.getValue()));
                 if (r.size() == 0) {
