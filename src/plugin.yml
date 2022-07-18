@@ -24,11 +24,17 @@ permissions:
   mineit.stagelimit:
     description: Change the mine's stage limit
     default: op
+  mineit.tpset:
+    description: Change the mine's tp
+    default: op
   mineit.time:
     description: Change the mine's time
     default: op
   mineit.mine.all:
     description: Mine in all the mines
+    default: true
+  mineit.tp:
+    description: Teleport to the mines
     default: true
   mineit.unbreakable:
     description: Break unbreakable stages

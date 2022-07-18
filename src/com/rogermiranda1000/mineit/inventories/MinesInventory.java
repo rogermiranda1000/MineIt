@@ -20,23 +20,21 @@ import java.util.*;
 
 abstract public class MinesInventory extends BasicInventory implements MinesChangedEvent, CreateMinesInventory {
     private static final String INVENTORY_NAME = "§cEdit mine";
-    private static final int MAX_MINES_PER_INV = 45;
+    protected static final int MAX_MINES_PER_INV = 45;
     private final ItemStack back;
     @Nullable private ItemStack next_item, pre_item;
 
     /**
-     * editMineInventory's offset
+     * minesInventory's offset
      */
-    private final int offset;
-    protected final HashMap<Mine,BasicInventory> editMineInventory;
-    private MinesInventory next, pre;
+    protected final int offset;
+    protected MinesInventory next, pre;
 
     @SuppressWarnings("ConstantConditions")
-    public MinesInventory(HashMap<Mine,BasicInventory> minesInventories, int offset, MinesInventory pre) {
+    public MinesInventory(int offset, MinesInventory pre) {
         super(MineIt.instance, true);
 
         this.offset = offset;
-        this.editMineInventory = minesInventories;
         this.setPre(pre);
         this.setNext(null);
 
@@ -49,13 +47,9 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
     }
 
     public MinesInventory() {
-        this(new HashMap<>(), 0, null);
+        this(0, null);
 
         Mines.getInstance().addMinesListener(this); // only the first menu will listen, the other ones will be called from the first
-    }
-
-    public Collection<BasicInventory> getMinesInventories() {
-        return this.editMineInventory.values();
     }
 
     public void inventoryClickedEvent(InventoryClickEvent e) {
@@ -74,23 +68,15 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
         else if (clicked.equals(this.next_item)) this.next.openInventory(player);
         else if (clicked.equals(this.pre_item)) this.pre.openInventory(player);
         else {
-            final String clickedMineName = clicked.getItemMeta().getDisplayName();
-            Mine m = this.editMineInventory.keySet().stream().filter(mine -> mine.getName().equals(clickedMineName)).findFirst().orElse(null);
+            String clickedMineName = clicked.getItemMeta().getDisplayName();
+            Mine m = Mines.getInstance().getMine(clickedMineName);
             if (m != null) this.mineClicked(e, m);
         }
     }
 
     abstract void mineClicked(InventoryClickEvent e, Mine m);
 
-    @Nullable
-    public BasicInventory searchMine(String title) {
-        for (Map.Entry<Mine,BasicInventory> m : this.editMineInventory.entrySet()) {
-            if (m.getKey().getName().equalsIgnoreCase(title)) return m.getValue();
-        }
-        return null; // not found
-    }
-
-    private void setNext(MinesInventory next) {
+    protected void setNext(MinesInventory next) {
         if (next == null) {
             if (this.next != null) this.next.closeInventories();
 
@@ -131,10 +117,10 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
         Inventory newInventory;
 
         if (this.next == null) {
-            if (this.editMineInventory.size() - this.offset > MinesInventory.MAX_MINES_PER_INV) this.setNext(this.create(this.editMineInventory, this.offset + MinesInventory.MAX_MINES_PER_INV, this)); // we need more
+            if (Mines.getInstance().getDifferentValuesNum() - this.offset > MinesInventory.MAX_MINES_PER_INV) this.setNext(this.create(this.offset + MinesInventory.MAX_MINES_PER_INV, this)); // we need more
         }
         else {
-            if (this.editMineInventory.size() - this.offset <= MinesInventory.MAX_MINES_PER_INV) this.setNext(null); // we don't need it anymore
+            if (Mines.getInstance().getDifferentValuesNum() - this.offset <= MinesInventory.MAX_MINES_PER_INV) this.setNext(null); // we don't need it anymore
             else this.next.onMinesChanged();
         }
 
@@ -186,13 +172,11 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
 
     @Override
     public void onMineRemoved(Mine m) {
-        this.editMineInventory.remove(m);
         this.onMinesChanged();
     }
 
     @Override
     public void onMineAdded(Mine m) {
-        this.editMineInventory.put(m, new EditMineInventory(m));
         this.onMinesChanged();
     }
 }

@@ -9,6 +9,7 @@ import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.MinesInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
+import com.rogermiranda1000.mineit.inventories.TpMineInventory;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,7 +29,8 @@ public class MineIt extends RogerPlugin {
 
     //Inv
     public BasicInventory mainInventory;
-    public BasicInventory selectMineInventory;
+    public MinesInventory selectMineInventory,
+                        tpInventory;
 
     public int rango;
     public boolean limit;
@@ -116,6 +118,7 @@ public class MineIt extends RogerPlugin {
         // @pre before mine import
         this.mainInventory = new MainInventory();
         this.selectMineInventory = new SelectMineInventory();
+        this.tpInventory = new TpMineInventory();
 
         this.clearCustomBlocks();
 
@@ -140,6 +143,7 @@ public class MineIt extends RogerPlugin {
 
         this.mainInventory.registerEvent();
         this.selectMineInventory.registerEvent();
+        this.tpInventory.registerEvent();
     }
 
     /**
@@ -156,7 +160,8 @@ public class MineIt extends RogerPlugin {
         // close inventories (if it's a reboot the players may be able to keep the items)
         this.mainInventory.closeInventories();
         this.selectMineInventory.closeInventories();
-        for (BasicInventory mine : ((MinesInventory)this.selectMineInventory).getMinesInventories()) mine.closeInventories();
+        this.tpInventory.closeInventories();
+        for (BasicInventory mine : ((SelectMineInventory)this.selectMineInventory).getMinesInventories()) mine.closeInventories();
 
         // undo selected blocks
         SelectedBlocks.getInstance().getAllBlocks(e -> e.getValue().getBlock().setType(Mine.SELECT_BLOCK));
