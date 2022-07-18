@@ -6,7 +6,7 @@ import com.rogermiranda1000.helper.MatchCommandNotifier;
 import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.file.FileManager;
-import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
+import com.rogermiranda1000.mineit.inventories.MinesInventory;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -180,7 +180,7 @@ public class CustomMineItCommand extends CustomCommand {
                 sender.sendMessage(MineIt.instance.clearPrefix + "Mine '" + cmd[1] + "' stopped.");
             }),
             new CustomMineItCommand("mineit edit mine \\S+", "mineit.open", false, "mineit edit mine [mine]", null, (sender, cmd) -> {
-                BasicInventory mineInv = ((SelectMineInventory)MineIt.instance.selectMineInventory).searchMine(cmd[2]);
+                BasicInventory mineInv = ((MinesInventory)MineIt.instance.selectMineInventory).searchMine(cmd[2]);
                 if (mineInv == null) {
                     sender.sendMessage(MineIt.instance.errorPrefix +"Mine '"+cmd[2]+"' not found.");
                     return;
