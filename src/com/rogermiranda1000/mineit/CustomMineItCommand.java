@@ -269,7 +269,8 @@ public class CustomMineItCommand extends CustomCommand {
 
                 for (Location loc : r) loc.getBlock().setType(Mine.SELECT_BLOCK); // unselect
                 sender.sendMessage(MineIt.instance.clearPrefix + "Selected blocks restarted.");
-            }),
+            })/*,
+            // TODO implement with new block object
             new CustomMineItCommand("mineit select back", "mineit.select", false, "mineit select back", "unselects the previous selected blocks by the user", (sender, cmd) -> {
                 ArrayList<Location> r = new ArrayList<>();
                 SelectedBlocks.getInstance().removeBlocksArtificiallyByValue((Player)sender, e->r.add(e.getValue()));
@@ -280,6 +281,6 @@ public class CustomMineItCommand extends CustomCommand {
 
                 for (Location loc : r) loc.getBlock().setType(Mine.SELECT_BLOCK); // unselect
                 sender.sendMessage(MineIt.instance.clearPrefix + "Last selected blocks restarted.");
-            })
+            })*/
     };
 }
