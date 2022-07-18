@@ -282,18 +282,18 @@ public class CustomMineItCommand extends CustomCommand {
             }),
             new CustomMineItCommand("mineit tp \\S+", "mineit.tp", false, "mineit tp [mine]", "teleport to the mine", (sender, cmd) -> {
                 Player p = (Player)sender;
-                Mine m = Mines.getInstance().getMine(cmd[2]);
+                Mine m = Mines.getInstance().getMine(cmd[1]);
                 if (m == null) {
-                    p.sendMessage(MineIt.instance.errorPrefix + "Mine '" + cmd[2] + "' not found.");
+                    p.sendMessage(MineIt.instance.errorPrefix + "Mine '" + cmd[1] + "' not found.");
                     return;
                 }
                 if (m.getTp() == null) {
-                    p.sendMessage(MineIt.instance.errorPrefix + "The mine '" + m.getName() + "' doesn't have a tp established yet.");
+                    p.sendMessage(MineIt.instance.errorPrefix + "The mine '" + cmd[1] + "' doesn't have a tp established yet.");
                     return;
                 }
 
                 p.teleport(m.getTp());
-                p.sendMessage(MineIt.instance.clearPrefix + "Teleporting to mine " + m.getName() + "...");
+                p.sendMessage(MineIt.instance.clearPrefix + "Teleporting to mine " + cmd[1] + "...");
             }),
             new CustomMineItCommand("mineit tp", "mineit.tp", false, "mineit tp", "opens the teleport mine menu", (sender, cmd) -> {
                 MineIt.instance.tpInventory.openInventory((Player)sender);
