@@ -50,16 +50,11 @@ public class MineIt extends RogerPlugin {
 
     public MineIt() {
         super(CustomMineItCommand.commands, new Metrics.CustomChart[]{
-                new Metrics.MultiLineChart("mines", ()->{
-                    Map<String, Integer> minesAndBlocks = new HashMap<>();
-
-                    minesAndBlocks.put("mines", MineItApi.getInstance().getMineCount());
-
+                new Metrics.SingleLineChart("mines", ()->MineItApi.getInstance().getMineCount()),
+                new Metrics.SingleLineChart("blocks", ()->{
                     int blocks = 0;
                     for (Mine mine : MineItApi.getInstance().getMines()) blocks += mine.getTotalBlocks();
-                    minesAndBlocks.put("blocks", blocks);
-
-                    return minesAndBlocks;
+                    return blocks;
                 }),
                 new Metrics.SimplePie("protections", ()->{
                     if (MineIt.instance.overrideProtection) return "None";
