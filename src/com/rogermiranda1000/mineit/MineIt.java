@@ -12,6 +12,7 @@ import com.rogermiranda1000.mineit.inventories.MinesInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.inventories.TpMineInventory;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
@@ -57,9 +58,9 @@ public class MineIt extends RogerPlugin {
                     return blocks;
                 }),
                 new Metrics.SimplePie("protections", ()->{
-                    if (MineIt.instance.overrideProtection) return "None";
+                    if (!MineIt.instance.overrideProtection) return "Disabled";
 
-                    PluginManager pm = MineIt.instance.getServer().getPluginManager();
+                    PluginManager pm = Bukkit.getPluginManager();
                     boolean residence = (pm.getPlugin("Residence") != null),
                             worldguard = (pm.getPlugin("WorldGuard") != null);
 
