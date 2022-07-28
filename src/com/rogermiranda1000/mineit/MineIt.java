@@ -2,6 +2,7 @@ package com.rogermiranda1000.mineit;
 
 import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.helper.RogerPlugin;
+import com.rogermiranda1000.helper.metrics.Metrics;
 import com.rogermiranda1000.mineit.blocks.Mines;
 import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.events.InteractEvent;
@@ -16,6 +17,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.PluginManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,8 +43,38 @@ public class MineIt extends RogerPlugin {
         return "69161";
     }
 
+    @Override
+    public Integer getMetricsID() {
+        return 15679;
+    }
+
     public MineIt() {
-        super(CustomMineItCommand.commands, new InteractEvent());
+        super(CustomMineItCommand.commands, new Metrics.CustomChart[]{
+                new Metrics.MultiLineChart("mines", ()->{
+                    Map<String, Integer> minesAndBlocks = new HashMap<>();
+
+                    minesAndBlocks.put("mines", MineItApi.getInstance().getMineCount());
+
+                    int blocks = 0;
+                    for (Mine mine : MineItApi.getInstance().getMines()) blocks += mine.getTotalBlocks();
+                    minesAndBlocks.put("blocks", blocks);
+
+                    return minesAndBlocks;
+                }),
+                new Metrics.SimplePie("protections", ()->{
+                    if (MineIt.instance.overrideProtection) return "None";
+
+                    PluginManager pm = MineIt.instance.getServer().getPluginManager();
+                    boolean residence = (pm.getPlugin("Residence") != null),
+                            worldguard = (pm.getPlugin("WorldGuard") != null);
+
+                    if (residence) {
+                        return (worldguard) ? "Residence & WorldGuard" : "Residence";
+                    }
+                    if (worldguard) return "WorldGuard";
+                    return "None";
+                })
+        },new InteractEvent());
 
         this.addCustomBlock(Mines.setInstance(new Mines(this)));
         this.addCustomBlock(SelectedBlocks.setInstance(new SelectedBlocks(this)));
