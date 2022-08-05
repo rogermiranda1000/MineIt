@@ -156,8 +156,6 @@ public class MineIt extends RogerPlugin {
         this.selectMineInventory = new SelectMineInventory();
         this.tpInventory = new TpMineInventory();
 
-        this.clearCustomBlocks();
-
         // mines
         File minesDirectory = new File(getDataFolder().getPath() + File.separatorChar + "Mines");
         if (minesDirectory.exists()) {
