@@ -45,3 +45,6 @@ permissions:
   mineit.select:
     description: Select blocks for the mine
     default: op
+  mineit.report:
+    description: Send reports
+    default: op

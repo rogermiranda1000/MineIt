@@ -11,11 +11,13 @@ import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.MinesInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.inventories.TpMineInventory;
+import me.Mohamad82.MineableGems.Core.CustomAttribute;
 import me.Mohamad82.MineableGems.Main;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -50,6 +52,11 @@ public class MineIt extends RogerPlugin {
         return 15679;
     }
 
+    @Nullable
+    public String getSentryDsn() {
+        return "https://d9d4e80c95d14929b764e0368ed63010@o1339981.ingest.sentry.io/6625896";
+    }
+
     public MineIt() {
         super(CustomMineItCommand.commands, new Metrics.CustomChart[]{
                 new Metrics.SingleLineChart("mines", ()->MineItApi.getInstance().getMineCount()),
@@ -70,7 +77,8 @@ public class MineIt extends RogerPlugin {
                     }
                     if (worldguard) return "WorldGuard";
                     return "None";
-                })
+                }),
+                new Metrics.SimplePie("mineablegems", ()->String.valueOf(Bukkit.getPluginManager().isPluginEnabled("MineableGems")))
         },new InteractEvent());
 
         this.addCustomBlock(Mines.setInstance(new Mines(this)));
@@ -176,7 +184,7 @@ public class MineIt extends RogerPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("MineableGems")) {
             getLogger().info("Found MineableGems, loading mine drops...");
             // @pre After loading mines
-            Main.getInstance().addCustomAttributes(new MineableGemsMine());
+            Main.getInstance().addCustomAttributes((CustomAttribute)new MineableGemsMine());
         }
     }
 
@@ -188,9 +196,7 @@ public class MineIt extends RogerPlugin {
     }
 
     @Override
-    public void onDisable() {
-        super.onDisable();
-
+    public void postOnDisable() {
         // close inventories (if it's a reboot the players may be able to keep the items)
         this.mainInventory.closeInventories();
         this.selectMineInventory.closeInventories();
