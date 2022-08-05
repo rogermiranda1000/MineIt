@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit.inventories;
 
 import com.rogermiranda1000.helper.BasicInventory;
+import com.rogermiranda1000.helper.RogerPlugin;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineChangedEvent;
 import com.rogermiranda1000.mineit.MineIt;
@@ -48,7 +49,7 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
     }
 
     public EditMineInventory(@NotNull Mine m) {
-        super(MineIt.instance, true);
+        super((RogerPlugin) MineIt.instance, true);
 
         this.registerEvent(); // listener
 

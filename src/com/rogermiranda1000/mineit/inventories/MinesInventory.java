@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit.inventories;
 
 import com.rogermiranda1000.helper.BasicInventory;
+import com.rogermiranda1000.helper.RogerPlugin;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.MinesChangedEvent;
@@ -32,7 +33,7 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
 
     @SuppressWarnings("ConstantConditions")
     public MinesInventory(String inventoryName, int offset, MinesInventory pre) {
-        super(MineIt.instance, true);
+        super((RogerPlugin) MineIt.instance, true);
 
         this.inventoryName = inventoryName;
 

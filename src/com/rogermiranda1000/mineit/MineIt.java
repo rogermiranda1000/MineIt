@@ -11,6 +11,7 @@ import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.MinesInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.inventories.TpMineInventory;
+import io.sentry.Attachment;
 import me.Mohamad82.MineableGems.Core.CustomAttribute;
 import me.Mohamad82.MineableGems.Main;
 import net.md_5.bungee.api.ChatColor;
@@ -168,7 +169,7 @@ public class MineIt extends RogerPlugin {
                     Mine mine = FileManager.loadMine(archivo);
                     Mines.getInstance().addMine(mine);
                 } catch (IOException ex) {
-                    this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
+                    this.reportException("Invalid file format, the mine '" + mineName + "' can't be loaded.", new Attachment(archivo.getPath()));
                 }
             }
         }
