@@ -11,6 +11,7 @@ import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.MinesInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.inventories.TpMineInventory;
+import me.Mohamad82.MineableGems.Main;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -77,13 +78,12 @@ public class MineIt extends RogerPlugin {
     }
 
     @Override
-    @SuppressWarnings("ConstantConditions")
-    public void onEnable() {
+    public void preOnEnable() {
         // we need first the configuration
         MineIt.instance = this;
 
         //Config
-        HashMap<String,Object> c = new HashMap<>();
+        HashMap<String, Object> c = new HashMap<>();
         c.put("mine_creator_range", 5);
         c.put("limit_blocks_per_stage", false);
         c.put("air_stage", Material.STONE_BUTTON.name());
@@ -101,15 +101,15 @@ public class MineIt extends RogerPlugin {
                 need = true;
             }
 
-            for(Map.Entry<String, Object> entry : c.entrySet()) {
+            for (Map.Entry<String, Object> entry : c.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if(!getConfig().isSet(key)) {
-                    getConfig().set(key,value);
+                if (!getConfig().isSet(key)) {
+                    getConfig().set(key, value);
                     need = true;
                 }
             }
-            if(need) saveConfig();
+            if (need) saveConfig();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -128,13 +128,13 @@ public class MineIt extends RogerPlugin {
         // @pre before inventory creation
         item = new ItemStack(Material.STICK);
         ItemMeta m = item.getItemMeta();
-        m.setDisplayName(ChatColor.GOLD.toString()+ChatColor.BOLD+"Mine creator");
+        m.setDisplayName(ChatColor.GOLD.toString() + ChatColor.BOLD + "Mine creator");
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
         mimicBlock = new ItemStack(Material.STONE);
         m = mimicBlock.getItemMeta();
-        m.setDisplayName(ChatColor.GOLD+"Mimic block");
+        m.setDisplayName(ChatColor.GOLD + "Mimic block");
         ArrayList<String> l = new ArrayList<>();
         l.add("Click the right mouse button");
         l.add("while holding this block and");
@@ -166,12 +166,18 @@ public class MineIt extends RogerPlugin {
                 }
             }
         }
-
-        super.onEnable();
-
+    }
+    @Override
+    public void postOnEnable() {
         this.mainInventory.registerEvent();
         this.selectMineInventory.registerEvent();
         this.tpInventory.registerEvent();
+
+        if (Bukkit.getPluginManager().isPluginEnabled("MineableGems")) {
+            getLogger().info("Found MineableGems, loading mine drops...");
+            // @pre After loading mines
+            Main.getInstance().addCustomAttributes(new MineableGemsMine());
+        }
     }
 
     /**

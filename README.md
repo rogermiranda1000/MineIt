@@ -5,3 +5,4 @@
 - spigot 1.16.5
 - [VersionController](https://github.com/rogermiranda1000/Spigot-VersionController) (link library with .jar)
 - Maven's `org.jetbrains:annotations:LATEST`
+- [MineableGems](https://www.spigotmc.org/resources/mineablegems-1-8-8-1-18-create-and-customize-your-own-drops.83807/)
