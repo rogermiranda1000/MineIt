@@ -4,9 +4,9 @@ import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
