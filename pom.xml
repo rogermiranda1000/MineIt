@@ -57,6 +57,8 @@
     </dependencies>
 
     <build>
+        <finalName>MineIt</finalName>
+
         <pluginManagement>
             <plugins>
                 <plugin>

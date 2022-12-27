@@ -1,0 +1,20 @@
+server-type:
+  - Spigot:
+      - "1.19"
+      - "1.13"
+
+users:
+  - "MinecraftGamer_Z"
+
+maps:
+  - "world": "./src/test/main/resources/world.zip"
+
+config-files:
+  - "MineableGems": "./src/test/main/resources/MineableGems/config.yaml"
+  - "MineIt": "./src/test/main/resources/MineIt.zip"
+
+plugin: "./target/MineIt.jar"
+extra-plugins:
+  - "https://rogermiranda1000.com/MineIt-MineableGems/v1.1.jar"
+  - "./src/test/main/resources/MineableGems-1.11.3-precompiled.jar"
+  - "https://www.spigotmc.org/resources/gson-for-1-8-3-or-older.30852/"
