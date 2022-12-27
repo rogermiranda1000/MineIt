@@ -2,11 +2,9 @@ package com.rogermiranda1000.mineit;
 
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
-import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.locks.Condition;
+import org.jetbrains.annotations.Nullable;
 
 public class Stage {
     private BlockType block;
