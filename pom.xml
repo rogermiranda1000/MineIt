@@ -43,8 +43,8 @@
             <groupId>com.rogermiranda1000</groupId>
             <artifactId>versioncontroller</artifactId>
             <version>LATEST</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/VersionController.jar</systemPath>
+            <scope>compile</scope>
+            <!-- path provided in plugin/install-file -->
         </dependency>
 
         <dependency>
@@ -85,6 +85,53 @@
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <groupId>com.rogermiranda1000</groupId>
+                    <artifactId>versioncontroller</artifactId>
+                    <version>LATEST</version>
+                    <packaging>jar</packaging>
+                    <file>${basedir}/lib/VersionController.jar</file>
+                    <generatePom>true</generatePom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install-jar-lib</id>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- attach VersionController -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.rogermiranda1000</groupId>
+                                    <artifactId>versioncontroller</artifactId>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
 
