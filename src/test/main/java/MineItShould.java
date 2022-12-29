@@ -17,16 +17,19 @@ public class MineItShould extends AbstractTest {
         return "src/test/main/resources/config.yaml";
     }
 
+    /**
+     * We want to set the user position and give him a pickaxe and the MineIt tool
+     */
     @Override
     public void beforeAll(ExtensionContext extensionContext) throws IOException {
         super.beforeAll(extensionContext); // start the servers & clients
 
         // move the player to its desired location & give him a tool and the MineIt tool
-        super.provideArguments(extensionContext).map(TesterConnector.class::cast).forEach(server -> {
+        super.provideArguments(extensionContext).map(arg -> (TesterConnector)arg.get()[0]).forEach(server -> {
             try {
                 String username = server.getClients()[0];
 
-                server.server.tp(username, new Position("world", 1000,100,1000));
+                server.server.tp(username, new Position("world", 1000.5,100,1000.5));
                 server.server.giveItem(username, new Item(ItemType.DIAMOND_PICKAXE));
 
                 server.getClientPetition(0).runCommand("mineit tool");

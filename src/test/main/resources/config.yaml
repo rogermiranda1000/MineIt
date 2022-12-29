@@ -10,7 +10,7 @@ maps:
   - "world": "./src/test/main/resources/world.zip"
 
 config-files:
-  - "MineableGems": "./src/test/main/resources/MineableGems/config.yaml"
+  - "MineableGems": "./src/test/main/resources/MineableGems/config.yml"
   - "MineIt": "./src/test/main/resources/MineIt.zip"
 
 plugin: "./target/MineIt.jar"
