@@ -182,8 +182,13 @@ public class MineIt extends RogerPlugin {
 
         if (Bukkit.getPluginManager().isPluginEnabled("MineableGems")) {
             getLogger().info("Found MineableGems, loading mine drops...");
-            // @pre After loading mines
-            Main.getInstance().addCustomAttributes((CustomAttribute)new MineableGemsMine());
+            try {
+                // @pre After loading mines
+                Main.getInstance().addCustomAttributes((CustomAttribute) new MineableGemsMine());
+            } catch (Throwable ex) {
+                this.printConsoleErrorMessage("Error while loading MineableGems");
+                this.reportException(ex);
+            }
         }
     }
 
