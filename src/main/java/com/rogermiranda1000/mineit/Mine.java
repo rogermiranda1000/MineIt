@@ -7,14 +7,15 @@ import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Mine implements Runnable {
-    @Nullable public static Material AIR_STAGE;
+    @Nullable
+    public static Material AIR_STAGE;
     public static final Material SELECT_BLOCK = Material.STONE;
     public static final Material STATE_ZERO = Material.BEDROCK;
     public static final Material DEFAULT_IDENTIFIER = Material.STONE;

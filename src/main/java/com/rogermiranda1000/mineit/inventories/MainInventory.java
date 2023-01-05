@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit.inventories;
 
 import com.rogermiranda1000.helper.BasicInventory;
+import com.rogermiranda1000.helper.RogerPlugin;
 import com.rogermiranda1000.mineit.MineIt;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -22,7 +23,7 @@ public class MainInventory extends BasicInventory {
     // create the inventory
     @SuppressWarnings("ConstantConditions")
     public MainInventory() {
-        super(MineIt.instance, true);
+        super((RogerPlugin) MineIt.instance, true);
 
         Inventory inv = Bukkit.createInventory(null, 9, "§6§lMineIt");
 

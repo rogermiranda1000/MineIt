@@ -15,11 +15,11 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -297,6 +297,21 @@ public class CustomMineItCommand extends CustomCommand {
             }),
             new CustomMineItCommand("mineit tp", "mineit.tp", false, "mineit tp", "opens the teleport mine menu", (sender, cmd) -> {
                 MineIt.instance.tpInventory.openInventory((Player)sender);
+            }),
+            new CustomMineItCommand("mineit report \\S+ .+", "mineit.report", true, "mineit report [contact] [report]",
+                    "Send information about a problem. In the 'contact' zone set your email or discord so I can contact with you (if you don't want to set '-')", (sender, args) -> {
+                String contact = args[1];
+                if (!contact.equals("-") && !contact.contains("@") && !contact.contains("#")) {
+                    sender.sendMessage(MineIt.instance.errorPrefix + "You need to put an email (something@website) or Discord (user#id) to contact. If you don't want to, then set '-'.");
+                    return;
+                }
+
+                StringBuilder msg = new StringBuilder();
+                for (int n = 2; n < args.length; n++) msg.append(args[n]).append(' ');
+                msg.setLength(msg.length()-1); // remove last ' '
+
+                MineIt.instance.userReport(contact.equals("-") ? null : contact, (sender instanceof Player) ? ((Player)sender).getName() : null, msg.toString());
+                sender.sendMessage(MineIt.instance.clearPrefix + "Report sent! Thanks for helping.");
             })
             // TODO implement with new block object
             /*new CustomMineItCommand("mineit select back", "mineit.select", false, "mineit select back", "unselects the previous selected blocks by the user", (sender, cmd) -> {

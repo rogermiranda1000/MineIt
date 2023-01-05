@@ -1,0 +1,30 @@
+#  __  __ _                  _     _       _____                    
+# |  \/  (_)                | |   | |     / ____|                   
+# | \  / |_ _ __   ___  __ _| |__ | | ___| |  __  ___ _ __ ___  ___ 
+# | |\/| | | '_ \ / _ \/ _` | '_ \| |/ _ \ | |_ |/ _ \ '_ ` _ \/ __|
+# | |  | | | | | |  __/ (_| | |_) | |  __/ |__| |  __/ | | | | \__ \
+# |_|  |_|_|_| |_|\___|\__,_|_.__/|_|\___|\_____|\___|_| |_| |_|___/
+#
+#
+Prefix: "&8[&bMineable&cGems&8] &r"
+Update-Notifications: true
+
+messages:
+  #Reload permission: mineablegems.reload
+  command-help: "&cCommands: /mineablegems <reload/debug>"
+  no-permission: "&cYou don't have permission to perform this command!"
+
+Blocks:
+  STONE:                               # Block drop to override
+    1:
+        Material: ICE                   # Drop on break STONE
+        Mine: "3"                       # Mine where ICE is dropped
+        Chance: 100                     # Probability of the drop
+        Name: "&cSoft diamond"          # Drop custom name
+        Find-In: Everywhere
+        Biome-Filter: []
+        Filter-as-Blacklist: true
+        Fortune-Enchantment: false
+        Prevent-Drops-If-Placed: false
+        Vanilla-Drops: half
+        Auto-Inventory: false

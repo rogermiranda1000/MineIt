@@ -11,13 +11,18 @@ import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.MinesInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.inventories.TpMineInventory;
+import io.sentry.Attachment;
+import me.Mohamad82.MineableGems.Core.CustomAttribute;
+import me.Mohamad82.MineableGems.Main;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.PluginManager;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,23 +53,23 @@ public class MineIt extends RogerPlugin {
         return 15679;
     }
 
+    @Nullable
+    public String getSentryDsn() {
+        return "https://d9d4e80c95d14929b764e0368ed63010@o1339981.ingest.sentry.io/6625896";
+    }
+
     public MineIt() {
         super(CustomMineItCommand.commands, new Metrics.CustomChart[]{
-                new Metrics.MultiLineChart("mines", ()->{
-                    Map<String, Integer> minesAndBlocks = new HashMap<>();
-
-                    minesAndBlocks.put("mines", MineItApi.getInstance().getMineCount());
-
+                new Metrics.SingleLineChart("mines", ()->MineItApi.getInstance().getMineCount()),
+                new Metrics.SingleLineChart("blocks", ()->{
                     int blocks = 0;
                     for (Mine mine : MineItApi.getInstance().getMines()) blocks += mine.getTotalBlocks();
-                    minesAndBlocks.put("blocks", blocks);
-
-                    return minesAndBlocks;
+                    return blocks;
                 }),
                 new Metrics.SimplePie("protections", ()->{
-                    if (MineIt.instance.overrideProtection) return "None";
+                    if (!MineIt.instance.overrideProtection) return "Disabled";
 
-                    PluginManager pm = MineIt.instance.getServer().getPluginManager();
+                    PluginManager pm = Bukkit.getPluginManager();
                     boolean residence = (pm.getPlugin("Residence") != null),
                             worldguard = (pm.getPlugin("WorldGuard") != null);
 
@@ -73,7 +78,8 @@ public class MineIt extends RogerPlugin {
                     }
                     if (worldguard) return "WorldGuard";
                     return "None";
-                })
+                }),
+                new Metrics.SimplePie("mineablegems", ()->String.valueOf(Bukkit.getPluginManager().isPluginEnabled("MineableGems")))
         },new InteractEvent());
 
         this.addCustomBlock(Mines.setInstance(new Mines(this)));
@@ -81,13 +87,12 @@ public class MineIt extends RogerPlugin {
     }
 
     @Override
-    @SuppressWarnings("ConstantConditions")
-    public void onEnable() {
+    public void preOnEnable() {
         // we need first the configuration
         MineIt.instance = this;
 
         //Config
-        HashMap<String,Object> c = new HashMap<>();
+        HashMap<String, Object> c = new HashMap<>();
         c.put("mine_creator_range", 5);
         c.put("limit_blocks_per_stage", false);
         c.put("air_stage", Material.STONE_BUTTON.name());
@@ -105,15 +110,15 @@ public class MineIt extends RogerPlugin {
                 need = true;
             }
 
-            for(Map.Entry<String, Object> entry : c.entrySet()) {
+            for (Map.Entry<String, Object> entry : c.entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-                if(!getConfig().isSet(key)) {
-                    getConfig().set(key,value);
+                if (!getConfig().isSet(key)) {
+                    getConfig().set(key, value);
                     need = true;
                 }
             }
-            if(need) saveConfig();
+            if (need) saveConfig();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,13 +137,13 @@ public class MineIt extends RogerPlugin {
         // @pre before inventory creation
         item = new ItemStack(Material.STICK);
         ItemMeta m = item.getItemMeta();
-        m.setDisplayName(ChatColor.GOLD.toString()+ChatColor.BOLD+"Mine creator");
+        m.setDisplayName(ChatColor.GOLD.toString() + ChatColor.BOLD + "Mine creator");
         item.setItemMeta(m);
         item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 
         mimicBlock = new ItemStack(Material.STONE);
         m = mimicBlock.getItemMeta();
-        m.setDisplayName(ChatColor.GOLD+"Mimic block");
+        m.setDisplayName(ChatColor.GOLD + "Mimic block");
         ArrayList<String> l = new ArrayList<>();
         l.add("Click the right mouse button");
         l.add("while holding this block and");
@@ -152,8 +157,6 @@ public class MineIt extends RogerPlugin {
         this.selectMineInventory = new SelectMineInventory();
         this.tpInventory = new TpMineInventory();
 
-        this.clearCustomBlocks();
-
         // mines
         File minesDirectory = new File(getDataFolder().getPath() + File.separatorChar + "Mines");
         if (minesDirectory.exists()) {
@@ -166,16 +169,27 @@ public class MineIt extends RogerPlugin {
                     Mine mine = FileManager.loadMine(archivo);
                     Mines.getInstance().addMine(mine);
                 } catch (IOException ex) {
-                    this.printConsoleErrorMessage("Invalid file format, the mine '" + mineName + "' can't be loaded. If you have updated the plugin delete the file and create the mine again.");
+                    this.reportException("Invalid file format, the mine '" + mineName + "' can't be loaded.", new Attachment(archivo.getPath()));
                 }
             }
         }
-
-        super.onEnable();
-
+    }
+    @Override
+    public void postOnEnable() {
         this.mainInventory.registerEvent();
         this.selectMineInventory.registerEvent();
         this.tpInventory.registerEvent();
+
+        if (Bukkit.getPluginManager().isPluginEnabled("MineableGems")) {
+            getLogger().info("Found MineableGems, loading mine drops...");
+            try {
+                // @pre After loading mines
+                Main.getInstance().addCustomAttributes((CustomAttribute) new MineableGemsMine());
+            } catch (Throwable ex) {
+                this.printConsoleErrorMessage("Error while loading MineableGems");
+                this.reportException(ex);
+            }
+        }
     }
 
     /**
@@ -186,9 +200,7 @@ public class MineIt extends RogerPlugin {
     }
 
     @Override
-    public void onDisable() {
-        super.onDisable();
-
+    public void postOnDisable() {
         // close inventories (if it's a reboot the players may be able to keep the items)
         this.mainInventory.closeInventories();
         this.selectMineInventory.closeInventories();

@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit.inventories;
 
 import com.rogermiranda1000.helper.BasicInventory;
+import com.rogermiranda1000.helper.RogerPlugin;
 import com.rogermiranda1000.mineit.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.mineit.MinesChangedEvent;
@@ -9,12 +10,12 @@ import com.rogermiranda1000.mineit.blocks.Mines;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -22,7 +23,8 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
     protected static final int MAX_MINES_PER_INV = 45;
     private final ItemStack back;
     private final String inventoryName;
-    @Nullable private ItemStack next_item, pre_item;
+    @Nullable
+    private ItemStack next_item, pre_item;
 
     /**
      * minesInventory's offset
@@ -32,7 +34,7 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
 
     @SuppressWarnings("ConstantConditions")
     public MinesInventory(String inventoryName, int offset, MinesInventory pre) {
-        super(MineIt.instance, true);
+        super((RogerPlugin) MineIt.instance, true);
 
         this.inventoryName = inventoryName;
 
