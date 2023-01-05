@@ -27,7 +27,8 @@
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
-            <scope>compile</scope>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/spigot-1.16.5.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -43,8 +44,8 @@
             <groupId>com.rogermiranda1000</groupId>
             <artifactId>versioncontroller</artifactId>
             <version>LATEST</version>
-            <scope>compile</scope>
-            <!-- path provided in plugin/install-file -->
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/VersionController.jar</systemPath>
         </dependency>
 
         <dependency>
