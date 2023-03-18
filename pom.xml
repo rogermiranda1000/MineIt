@@ -19,7 +19,7 @@
         <dependency>
             <groupId>com.github.rogermiranda1000</groupId>
             <artifactId>WatchWolf-Tester</artifactId>
-            <version>0.1.5</version>
+            <version>0.1.12</version>
             <scope>compile</scope>
         </dependency>
 

@@ -127,7 +127,7 @@ public class MineItShould extends AbstractTest {
         MineItShould.equipTool(client);
 
         client.lookAt(CONSECUTIVE_BLOCKS[0]);
-        //client.hit(); TODO
+        client.use();
 
         assertEquals(Blocks.EMERALD_BLOCK, connector.server.getBlock(CONSECUTIVE_BLOCKS[2]));
     }
