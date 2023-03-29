@@ -76,7 +76,12 @@ public class Mine implements Runnable {
             this.updateStages(); // maybe its blocks has been changed while being stopped
             this.scheduleID = Bukkit.getScheduler().scheduleSyncRepeatingTask(MineIt.instance, this, 1, 1);
         }
-        else Bukkit.getServer().getScheduler().cancelTask(this.scheduleID);
+        else {
+            if (this.scheduleID != null) {
+                Bukkit.getServer().getScheduler().cancelTask(this.scheduleID);
+                this.scheduleID = null;
+            }
+        }
 
         this.notifyMineListeners();
     }
