@@ -59,11 +59,12 @@ public class Mines extends CachedCustomBlock<Mine> {
         return null;
     }
 
+    /**
+     * Adds a mine in 'stop' state
+     * @param m Mine to add
+     */
     public void addMine(Mine m) {
         this.addObject(m);
-
-        m.updateStages();
-
         for (MinesChangedEvent e : this.globalEvents) e.onMineAdded(m);
     }
 
