@@ -38,7 +38,7 @@ public class Mine implements Runnable {
     private BlockType mineBlockIdentifier;
     @Nullable Location tp;
     private boolean started;
-    private int scheduleID;
+    private Integer scheduleID;
     private final int hashCode;
 
     public Mine(CachedCustomBlock<Mine> blocks, String name, BlockType identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
@@ -53,7 +53,10 @@ public class Mine implements Runnable {
         this.setDelay(delay);
         this.hashCode = name.hashCode();
 
-        this.setStart(started);
+        // if we start it before setting the stagelimit we'll get wrong results; the mine is started at `Mines#addMine()`
+        //this.setStart(started);
+        this.started = started;
+        this.scheduleID = null;
     }
 
     public Mine(CachedCustomBlock<Mine> blocks, String name, String identifier, boolean started, ArrayList<Stage> stages, int delay, @Nullable Location tp) {
@@ -66,10 +69,13 @@ public class Mine implements Runnable {
     }
 
     public void setStart(boolean value) {
-        if (this.started == value) return;
+        if (this.started == value && this.scheduleID != null) return;
 
         this.started = value;
-        if (value) this.scheduleID = Bukkit.getScheduler().scheduleSyncRepeatingTask(MineIt.instance, this, 1, 1);
+        if (value) {
+            this.updateStages(); // maybe its blocks has been changed while being stopped
+            this.scheduleID = Bukkit.getScheduler().scheduleSyncRepeatingTask(MineIt.instance, this, 1, 1);
+        }
         else Bukkit.getServer().getScheduler().cancelTask(this.scheduleID);
 
         this.notifyMineListeners();
@@ -271,15 +277,18 @@ public class Mine implements Runnable {
 
     @Override
     public void run() {
-        this.currentTime++;
-        int changedBlocks = (this.currentTime * this.getTotalBlocks()) / this.getDelay();
-        if (changedBlocks == 0) return;
+        int changedBlocks;
+        synchronized (this) {
+            this.currentTime++;
+            changedBlocks = (this.currentTime * this.getTotalBlocks()) / this.getDelay();
+            if (changedBlocks == 0) return;
 
-        this.currentTime = 0;
+            this.currentTime = 0;
+        }
         // we need to change 'changedBlocks' blocks
         for (int x = 0; x < changedBlocks; x++) {
             Location loc = this.getRandomBlockInMine();
-            Stage current = this.getStage(VersionController.get().getObject(loc.getBlock()));
+            Stage current = this.getStage(VersionController.get().getObject(loc.getBlock())); // TODO I think there's here a synchronization problem with stage
             if (current == null) continue; // ?
             Stage next = current.getNextStage();
             if (next != null && next.fitsOneBlock()) {
