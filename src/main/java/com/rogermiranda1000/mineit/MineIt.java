@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MineIt extends RogerPlugin {
@@ -42,6 +43,9 @@ public class MineIt extends RogerPlugin {
     public int rango;
     public boolean limit;
     public boolean overrideProtection;
+
+
+    private List<Mine> tmp;
 
     @Override
     public String getPluginID() {
@@ -158,6 +162,7 @@ public class MineIt extends RogerPlugin {
         this.tpInventory = new TpMineInventory();
 
         // mines
+        this.tmp = new ArrayList<>();
         File minesDirectory = new File(getDataFolder().getPath() + File.separatorChar + "Mines");
         if (minesDirectory.exists()) {
             for (File archivo : minesDirectory.listFiles()) {
@@ -168,6 +173,7 @@ public class MineIt extends RogerPlugin {
                     getLogger().info("Loading mine " + mineName + "...");
                     Mine mine = FileManager.loadMine(archivo);
                     Mines.getInstance().addMine(mine);
+                    this.tmp.add(mine); // before enabling it we need to update the stages, but we first need the mines blocks
                 } catch (IOException ex) {
                     this.reportException("Invalid file format, the mine '" + mineName + "' can't be loaded.", new Attachment(archivo.getPath()));
                 }
@@ -176,6 +182,12 @@ public class MineIt extends RogerPlugin {
     }
     @Override
     public void postOnEnable() {
+        // now we have the mine blocks
+        for (Mine m : this.tmp) {
+            m.setStart(m.isStarted());
+        }
+        this.tmp = null; // save resources!
+
         this.mainInventory.registerEvent();
         this.selectMineInventory.registerEvent();
         this.tpInventory.registerEvent();
