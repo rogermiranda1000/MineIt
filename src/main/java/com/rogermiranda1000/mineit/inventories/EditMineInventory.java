@@ -105,8 +105,10 @@ public class EditMineInventory extends BasicInventory implements MineChangedEven
             int x = e.getSlot();
             if (this.getInventory().getItem(x) == null || x >= this.getLastRowIndex()) return; // en ese slot no hay nada o estan en la última fila (no deberia pasar)
 
-            ItemStack item = VersionController.get().cloneItemStack(player.getItemOnCursor());
-            if(!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return;
+            ItemStack item = player.getItemOnCursor();
+            if (!item.getType().equals(Material.AIR) && !item.getType().isBlock()) return; // not a block
+            // don't reference the original object
+            item = (item.getType().equals(Material.AIR)) ? item : VersionController.get().cloneItemStack(item); // if it's air, keep it as air
 
             int line = x/18,
                 stageNum = line*9 + x%9; // we're editing the stage nºstageNum
