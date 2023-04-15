@@ -1,5 +1,5 @@
-# MineIt ![version](https://badges.spiget.org/resources/version/Version-green-69161.svg) ![downloads](https://badges.spiget.org/resources/downloads/Downloads-blue-69161.svg) ![rating](https://badges.spiget.org/resources/rating/Rating-blue-69161.svg)
-[Spigot plugin page](https://www.spigotmc.org/resources/mine-it.69161/) [![CodeFactor](https://www.codefactor.io/repository/github/rogermiranda1000/mineit/badge)](https://www.codefactor.io/repository/github/rogermiranda1000/mineit)
+# MineIt ![version](https://badges.spiget.org/resources/version/Version-green-69161.svg) ![downloads](https://badges.spiget.org/resources/downloads/Downloads-blue-69161.svg) ![rating](https://badges.spiget.org/resources/rating/Rating-blue-69161.svg) [![CodeFactor](https://www.codefactor.io/repository/github/rogermiranda1000/mineit/badge)](https://www.codefactor.io/repository/github/rogermiranda1000/mineit)
+[Spigot plugin page](https://www.spigotmc.org/resources/mine-it.69161/)
 
 ## Dependencies
 - spigot 1.16.5
