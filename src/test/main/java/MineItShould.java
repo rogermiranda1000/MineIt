@@ -57,21 +57,14 @@ public class MineItShould extends AbstractTest {
      * We want to set the user position and give him a pickaxe and the MineIt tool
      */
     @Override
-    public void beforeAll(ExtensionContext extensionContext) throws IOException {
-        super.beforeAll(extensionContext); // start the servers & clients
+    public void beforeAll(TesterConnector server) throws IOException {
+        String username = server.getClients()[0];
 
-        // move the player to its desired location & give him a tool and the MineIt tool
-        super.provideArguments(extensionContext).map(arg -> (TesterConnector)arg.get()[0]).forEach(server -> {
-            try {
-                String username = server.getClients()[0];
+        server.server.tp(username, PLAYER_POSITION);
+        server.server.giveItem(username, new Item(ItemType.DIAMOND_PICKAXE));
 
-                server.server.tp(username, PLAYER_POSITION);
-                server.server.giveItem(username, new Item(ItemType.DIAMOND_PICKAXE));
-
-                server.server.opPlayer(username); // we need the user to be admin if we want to add&remove mines
-                server.getClientPetition(0).runCommand("mineit tool");
-            } catch (IOException ignore) {}
-        });
+        server.server.opPlayer(username); // we need the user to be admin if we want to add&remove mines
+        server.getClientPetition(0).runCommand("mineit tool");
     }
 
     private static void equipPickaxe(ClientPetition client) throws IOException {
@@ -95,6 +88,9 @@ public class MineItShould extends AbstractTest {
         assertTrue(MineItShould.getItemAmounts(client.getInventory().getItems()).get(MineItShould.MINEIT_TOOL_ITEMTYPE) > 0);
     }
 
+    /**
+     * When you select a STONE block (to create a mine), you should also select the adjacent blocks
+     */
     @Order(2)
     @ParameterizedTest
     @ArgumentsSource(MineItShould.class)
@@ -102,9 +98,12 @@ public class MineItShould extends AbstractTest {
         ExtendedClientPetition client = connector.getClientPetition(0);
         MineItShould.equipTool(client);
 
-        client.lookAt(CONSECUTIVE_BLOCKS[0]);
-        System.out.println(client.getPitch());
-        System.out.println(client.getYaw());
+        int intents = 5; // TODO it should work the first time
+        do {
+            client.lookAt(CONSECUTIVE_BLOCKS[0]);
+            Thread.sleep(5000);
+        } while ((Math.abs(client.getYaw() - 150f) > 15f || Math.abs(client.getPitch() - 3f) > 10f) && (intents--) > 0); // this is the rotation needed to look at that block
+        if (intents == 0) System.out.println("Exhaused all lookAt intents; this test may fail.");
         client.use();
 
         assertEquals(Blocks.EMERALD_BLOCK, connector.server.getBlock(CONSECUTIVE_BLOCKS[2]));
@@ -116,7 +115,8 @@ public class MineItShould extends AbstractTest {
     public void createSelectedMine(TesterConnector connector) throws Exception {
         ExtendedClientPetition client = connector.getClientPetition(0);
 
-        System.out.println(client.runCommand("mineit create " + CREATED_MINE_IN_TESTS_NAME));
+        String createReturn = client.runCommand("mineit create " + CREATED_MINE_IN_TESTS_NAME);
+        assertTrue(createReturn.contains("Mine created successfully"), "Expected the 'mine created' message, got '" + createReturn + "' instead");
 
         // once the mine is created there should be a bedrock block
         assertEquals(MineItShould.MINEIT_DEFAULT_BASE_STAGE_BLOCK, connector.server.getBlock(CONSECUTIVE_BLOCKS[0]));
@@ -134,7 +134,8 @@ public class MineItShould extends AbstractTest {
     public void removeCreatedMine(TesterConnector connector) throws Exception {
         ExtendedClientPetition client = connector.getClientPetition(0);
 
-        System.out.println(client.runCommand("mineit remove " + CREATED_MINE_IN_TESTS_NAME));
+        String removeReturn = client.runCommand("mineit remove " + CREATED_MINE_IN_TESTS_NAME);
+        assertTrue(removeReturn.contains("removed"), "Expected a confirmation remove mine message, got '" + removeReturn + "' instead");
 
         String mines = client.runCommand("mineit list");
         assertFalse(mines.contains(MineItShould.CREATED_MINE_IN_TESTS_NAME), "Expected not to find '" + MineItShould.CREATED_MINE_IN_TESTS_NAME + "' in mines list. Return by MineIt: " + mines);
