@@ -94,22 +94,35 @@ public class MineItShould extends AbstractTest {
     @Order(2)
     @ParameterizedTest
     @ArgumentsSource(MineItShould.class)
-    public void convertAdjacentStoneIntoTargetedMinesOnMineItToolUsage(TesterConnector connector) throws Exception {
+    public void convertSelectedStoneIntoTargetedMinesOnMineItToolUsage(TesterConnector connector) throws Exception {
         ExtendedClientPetition client = connector.getClientPetition(0);
         MineItShould.equipTool(client);
 
+        Position converting = CONSECUTIVE_BLOCKS[0];
+
         int intents = 5; // TODO it should work the first time
         do {
-            client.lookAt(CONSECUTIVE_BLOCKS[0]);
+            client.lookAt(converting);
             Thread.sleep(5000);
         } while ((Math.abs(client.getYaw() - 150f) > 15f || Math.abs(client.getPitch() - 3f) > 10f) && (intents--) > 0); // this is the rotation needed to look at that block
         if (intents == 0) System.out.println("Exhaused all lookAt intents; this test may fail.");
         client.use();
 
+        assertEquals(Blocks.EMERALD_BLOCK, connector.server.getBlock(converting));
+    }
+
+    /**
+     * When you select a STONE block (to create a mine), you should also select the adjacent blocks
+     */
+    @Order(3) // @pre convertAdjacentStoneIntoTargetedMinesOnMineItToolUsage
+    @ParameterizedTest
+    @ArgumentsSource(MineItShould.class)
+    public void convertAdjacentStoneIntoTargetedMinesOnMineItToolUsage(TesterConnector connector) throws Exception {
+        // in the previous test we've changed the first block; let's check if the adjacent ones got changed too
         assertEquals(Blocks.EMERALD_BLOCK, connector.server.getBlock(CONSECUTIVE_BLOCKS[2]));
     }
 
-    @Order(3) // @pre convertAdjacentStoneIntoTargetedMinesOnMineItToolUsage
+    @Order(4) // @pre convertAdjacentStoneIntoTargetedMinesOnMineItToolUsage
     @ParameterizedTest
     @ArgumentsSource(MineItShould.class)
     public void createSelectedMine(TesterConnector connector) throws Exception {
@@ -128,7 +141,7 @@ public class MineItShould extends AbstractTest {
     /**
      * You should be able to create a mine with the MineIt tool
      */
-    @Order(4) // @pre convertAdjacentStoneIntoTargetedMinesOnMineItToolUsage & createMineWithRightClick
+    @Order(5) // @pre createMineWithRightClick
     @ParameterizedTest
     @ArgumentsSource(MineItShould.class)
     public void removeCreatedMine(TesterConnector connector) throws Exception {
@@ -144,7 +157,7 @@ public class MineItShould extends AbstractTest {
     /**
      * You should be able to create a mine with the MineIt tool
      */
-    @Order(5) // @pre convertAdjacentStoneIntoTargetedMinesOnMineItToolUsage & createMineWithRightClick & removeCreatedMine
+    @Order(6) // @pre removeCreatedMine
     @ParameterizedTest
     @ArgumentsSource(MineItShould.class)
     public void createMineWithLeftClick(TesterConnector connector) throws Exception {
