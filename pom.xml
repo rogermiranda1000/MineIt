@@ -16,12 +16,49 @@
     </properties>
 
     <dependencies>
-        <dependency>
+
+        <!-- TEST DEPENDENCIES -->
+
+        <!--<dependency>
             <groupId>com.github.rogermiranda1000</groupId>
             <artifactId>WatchWolf-Tester</artifactId>
-            <version>LATEST</version>
+            <version>0.1.19</version>
+            <scope>compile</scope>
+        </dependency>-->
+
+        <dependency>
+            <groupId>dev.watchwolf</groupId>
+            <artifactId>watchwolf-tester</artifactId>
+            <version>0.1.19</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/watchwolf-tester-0.1.19.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.1</version>
+            <type>jar</type>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.8.1</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.21</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <!-- END OF TEST DEPENDENCIES -->
 
         <dependency>
             <groupId>org.spigotmc</groupId>
