@@ -18,9 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MineItWithWorldGuardShould.class)
 public class MineItWithWorldGuardShould extends AbstractTest {
     /* WORLD INFORMATION ZONE */
-    private static final Position MINE_BLOCK_INSIDE_WG_REGION = new Position("world", 999.5, 101.5, 998.5);
-    private static final Position MINE_BLOCK_OUTSIDE_WG_REGION = new Position("world", 1000.5, 101.5, 998.5);
-    private static final Position BLOCK_INSIDE_WG_REGION = new Position("world", 999.5, 100.5, 998.5);
+    private static final Position MINE_BLOCK_INSIDE_WG_REGION = new Position("world", 999, 101, 998);
+    private static final Position MINE_BLOCK_OUTSIDE_WG_REGION = new Position("world", 1000, 101, 998);
+    private static final Position BLOCK_INSIDE_WG_REGION = new Position("world", 999, 100, 998);
 
     private static final Position PLAYER_POSITION = new Position("world", 1000.5,100,1000.5);
 
@@ -47,8 +47,7 @@ public class MineItWithWorldGuardShould extends AbstractTest {
         server.getClientPetition(0).runCommand("mineit tool");
 
         try {
-            // some tests report that the tool wasn't found (maybe this solves it?)
-            Thread.sleep(5000);
+            Thread.sleep(5000); // some tests report that the tool wasn't found; a delay is needed
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -57,9 +56,10 @@ public class MineItWithWorldGuardShould extends AbstractTest {
         try {
             new MineItShould().createMineWithLeftClick(server);
             server.runCommand("mineit start " + MineItShould.CREATED_MINE_IN_TESTS_NAME);
-            // set the blocks to the max. stage, so they don't change forwards
-            server.setBlock(MINE_BLOCK_INSIDE_WG_REGION, Blocks.DIAMOND_ORE);
-            server.setBlock(MINE_BLOCK_OUTSIDE_WG_REGION, Blocks.DIAMOND_ORE);
+            // wait for the mines to be ready for the test
+            while (server.server.getBlock(MINE_BLOCK_INSIDE_WG_REGION) != Blocks.DIAMOND_ORE
+                    || server.server.getBlock(MINE_BLOCK_OUTSIDE_WG_REGION) != Blocks.DIAMOND_ORE) Thread.sleep(500);
+            server.runCommand("mineit edit time " + MineItShould.CREATED_MINE_IN_TESTS_NAME + " 1000"); // slow mine
         } catch (Exception e) {
             System.err.println(e.toString());
         }
@@ -85,13 +85,13 @@ public class MineItWithWorldGuardShould extends AbstractTest {
 
         int tries = 6; // there's some chance that the stage goes immediately back to stone; we'll try a few times
         Block got = null;
-        while (tries > 0 && !Blocks.STONE.equals(got)) {
+        while (tries > 0 && !Blocks.OBSIDIAN.equals(got)) {
             userPetition.breakBlock(MINE_BLOCK_INSIDE_WG_REGION);
             got = connector.server.getBlock(MINE_BLOCK_INSIDE_WG_REGION);
             tries--;
         }
 
-        assertEquals(Blocks.STONE, got);
+        assertEquals(Blocks.OBSIDIAN, got);
     }
 
     @ParameterizedTest
@@ -103,13 +103,13 @@ public class MineItWithWorldGuardShould extends AbstractTest {
 
         int tries = 6; // there's some chance that the stage goes immediately back to stone; we'll try a few times
         Block got = null;
-        while (tries > 0 && !Blocks.STONE.equals(got)) {
+        while (tries > 0 && !Blocks.OBSIDIAN.equals(got)) {
             userPetition.breakBlock(MINE_BLOCK_OUTSIDE_WG_REGION);
             got = connector.server.getBlock(MINE_BLOCK_OUTSIDE_WG_REGION);
             tries--;
         }
 
-        assertEquals(Blocks.STONE, got);
+        assertEquals(Blocks.OBSIDIAN, got);
     }
 
     /**
