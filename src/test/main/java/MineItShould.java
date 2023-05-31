@@ -45,7 +45,7 @@ public class MineItShould extends AbstractTest {
     private static final ItemType MINEIT_TOOL_ITEMTYPE = ItemType.STICK;
     private static final Block MINEIT_DEFAULT_BASE_STAGE_BLOCK = Blocks.BEDROCK;
 
-    private static final String CREATED_MINE_IN_TESTS_NAME = "TestMine";
+    public static final String CREATED_MINE_IN_TESTS_NAME = "TestMine";
 
     /* CONFIG & SETUP ZONE */
     @Override
