@@ -1,0 +1,29 @@
+{
+  "stages": [
+    {
+      "name": "BEDROCK",
+      "previousState": "",
+      "nextStage": "STONE",
+      "stageLimit": 2147483647,
+      "isBreakable": false
+    },
+    {
+      "name": "STONE",
+      "previousState": "BEDROCK",
+      "nextStage": "DIAMOND_ORE",
+      "stageLimit": 2147483647,
+      "isBreakable": true
+    },
+    {
+      "name": "DIAMOND_ORE",
+      "previousState": "STONE",
+      "nextStage": "",
+      "stageLimit": 2147483647,
+      "isBreakable": true
+    }
+  ],
+  "mineName": "TestMine",
+  "identifier": "STONE",
+  "started": true,
+  "delay": 300
+}
