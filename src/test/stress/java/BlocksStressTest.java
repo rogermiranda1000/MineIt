@@ -64,6 +64,8 @@ public class BlocksStressTest extends AbstractTest {
     @ParameterizedTest
     @ArgumentsSource(MineItShould.class)
     public void runFor10Minutes(TesterConnector connector) throws Exception {
+        connector.whitelistPlayer("rogermiranda1000");
+        connector.opPlayer("rogermiranda1000");
         Thread.sleep(10*60*1000);
 
         // we'll automatically get the timings at the end of the test
