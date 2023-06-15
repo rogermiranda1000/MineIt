@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class TestWorldMinesGenerator {
@@ -50,7 +51,7 @@ public class TestWorldMinesGenerator {
         };
     }
 
-    public static void generateMinesJSON(File out, int blockLimit, Function<Position,String> blockToMineNameConverter) throws IOException {
+    public static void generateMinesJSON(File out, int blockLimit, BiFunction<Position,Integer,String> blockToMineNameConverter) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append('[');
 
@@ -69,7 +70,7 @@ public class TestWorldMinesGenerator {
                     .append(",\"z\":")
                     .append(current.getBlockZ())
                     .append(",\"object\":\"")
-                    .append(blockToMineNameConverter.apply(current))
+                    .append(blockToMineNameConverter.apply(current, index-1))
                     .append("\"},");
         }
 
