@@ -29,9 +29,9 @@
         <dependency>
             <groupId>dev.watchwolf</groupId>
             <artifactId>watchwolf-tester</artifactId>
-            <version>0.1.19</version>
+            <version>0.1.22</version>
             <scope>system</scope>
-            <systemPath>${basedir}/lib/watchwolf-tester-0.1.19.jar</systemPath>
+            <systemPath>${basedir}/lib/watchwolf-tester-0.1.22.jar</systemPath>
         </dependency>
 
         <dependency>
