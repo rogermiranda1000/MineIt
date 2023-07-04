@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -34,6 +35,7 @@ public class Mine implements Runnable {
     private final CachedCustomBlock<Mine> blocks;
     private int currentTime;
     private final ArrayList<Stage> stages;
+    private final HashMap<BlockType,Stage> blockToStage;
     private final String mineName;
     private BlockType mineBlockIdentifier;
     @Nullable Location tp;
@@ -50,6 +52,7 @@ public class Mine implements Runnable {
         this.mineBlockIdentifier = identifier;
         this.tp = tp;
         this.stages = stages;
+        this.blockToStage = new HashMap<>();
         this.setDelay(delay);
         this.hashCode = name.hashCode();
 
@@ -175,6 +178,7 @@ public class Mine implements Runnable {
         }
 
         this.stages.remove(index);
+        this.blockToStage.remove(remove.getStageMaterial());
         this.updateStages();
         // TODO quitar bloques del estado eliminado?
 
@@ -188,6 +192,7 @@ public class Mine implements Runnable {
         prev.setNextStage(stage);
 
         this.stages.add(stage);
+        this.blockToStage.put(stage.getStageMaterial(), stage);
         this.updateStages();
 
         Mines.getInstance().notifyMinesListeners();
@@ -260,7 +265,7 @@ public class Mine implements Runnable {
 
     @Nullable
     public Stage getStage(BlockType search) {
-        return this.stages.stream().filter( e -> e.getStageMaterial().equals(search) ).findAny().orElse(null);
+        return this.blockToStage.get(search);
     }
 
     public void addMineListener(MineChangedEvent e) {
