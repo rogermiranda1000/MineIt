@@ -17,6 +17,8 @@ users:
 maps:
   - "world": "./src/test/main/resources/world.zip"
 
+recordings-directory: "./src/test/main/resources/recordings"
+
 plugin: "./target/MineIt.jar"
 extra-plugins:
   - "WorldGuard"

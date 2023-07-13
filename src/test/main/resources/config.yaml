@@ -19,6 +19,8 @@ config-files:
   - "MineableGems": "./src/test/main/resources/MineableGems/config.yml"
   - "MineIt": "./src/test/main/resources/MineIt.zip"
 
+recordings-directory: "./src/test/main/resources/recordings"
+
 plugin: "./target/MineIt.jar"
 extra-plugins:
   - "https://rogermiranda1000.com/MineIt-MineableGems/v1.1.jar"
