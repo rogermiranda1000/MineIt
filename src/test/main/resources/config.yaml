@@ -19,6 +19,7 @@ config-files:
   - "MineableGems": "./src/test/main/resources/MineableGems/config.yml"
   - "MineIt": "./src/test/main/resources/MineIt.zip"
 
+difficulty: "PEACEFUL"
 recordings-directory: "./src/test/main/resources/recordings"
 
 plugin: "./target/MineIt.jar"

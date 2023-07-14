@@ -57,8 +57,10 @@ public class MineItWithWorldGuardShould extends AbstractTest {
             new MineItShould().createMineWithLeftClick(server);
             server.runCommand("mineit start " + MineItShould.CREATED_MINE_IN_TESTS_NAME);
             // wait for the mines to be ready for the test
-            while (server.server.getBlock(MINE_BLOCK_INSIDE_WG_REGION) != Blocks.DIAMOND_ORE
-                    || server.server.getBlock(MINE_BLOCK_OUTSIDE_WG_REGION) != Blocks.DIAMOND_ORE) Thread.sleep(500);
+            int tries = 20;
+            while ((server.server.getBlock(MINE_BLOCK_INSIDE_WG_REGION) != Blocks.DIAMOND_ORE
+                    || server.server.getBlock(MINE_BLOCK_OUTSIDE_WG_REGION) != Blocks.DIAMOND_ORE) && tries-- > 0) Thread.sleep(500);
+            if (tries == 0) throw new IOException("Failed to create the mine");
             server.runCommand("mineit edit time " + MineItShould.CREATED_MINE_IN_TESTS_NAME + " 1000"); // slow mine
         } catch (Exception e) {
             System.err.println(e.toString());
