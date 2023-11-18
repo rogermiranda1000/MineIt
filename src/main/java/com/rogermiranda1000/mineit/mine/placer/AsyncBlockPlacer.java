@@ -17,9 +17,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
-    public static final int MAX_BLOCKS_PER_TICK = 20000; // TODO move to config file
+    public static final int MAX_BLOCKS_PER_TICK = 2000; // TODO move to config file
 
     private RTree<BlockType, Point> todoBlocksInUnloadedChunks, todoBlocksInLoadedChunks;
 
@@ -47,11 +48,22 @@ public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
     }
 
     @Override
-    public synchronized void placeBlock(Location place, BlockType b) {
+    public synchronized void placeBlock(final Location place, BlockType b) {
         Point placeRTree = CustomBlock.getPoint(place);
         boolean loadedChunk = place.getWorld() != null && place.getWorld().isChunkLoaded(place.getBlockX() >> 4, place.getBlockZ() >> 4);
-        if (loadedChunk) this.todoBlocksInLoadedChunks = this.todoBlocksInLoadedChunks.add(b, placeRTree);
-        else this.todoBlocksInUnloadedChunks = this.todoBlocksInUnloadedChunks.add(b, placeRTree);
+        RTree<BlockType,Point> targetList = (loadedChunk) ? this.todoBlocksInLoadedChunks : this.todoBlocksInUnloadedChunks;
+
+        // duplicated key?
+        final AtomicReference<Entry<BlockType,Point>> toRemove = new AtomicReference<>(null);
+        targetList.search(placeRTree).forEach(e -> {
+            if (CustomBlock.getLocation(e.geometry()).equals(place)) toRemove.set(e); // duplicated
+        });
+        if (toRemove.get() != null) targetList = targetList.delete(toRemove.get());
+
+        // add new element
+        targetList = targetList.add(b, placeRTree);
+        if (loadedChunk) this.todoBlocksInLoadedChunks = targetList;
+        else this.todoBlocksInUnloadedChunks = targetList;
     }
 
     @Override
@@ -75,9 +87,6 @@ public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
 
     @Override
     public void run() {
-        this.todoBlocksInLoadedChunks.entries().forEach(e -> System.out.println("Need to place one " + e.value().getFriendlyName()));
-        this.todoBlocksInUnloadedChunks.entries().forEach(e -> System.out.println("Requested to place one " + e.value().getFriendlyName() + " when loaded"));
-
         // get a set of blocks
         final List<Entry<BlockType,Point>> entriesToProcess = new ArrayList<>();
         synchronized (this) {
