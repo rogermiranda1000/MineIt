@@ -1,4 +1,4 @@
-package com.rogermiranda1000.mineit.blocks;
+package com.rogermiranda1000.mineit.mine.blocks;
 
 import com.rogermiranda1000.helper.RogerPlugin;
 import com.rogermiranda1000.helper.blocks.CachedCustomBlock;

@@ -1,7 +1,9 @@
 package com.rogermiranda1000.mineit;
 
-import com.rogermiranda1000.mineit.blocks.Mines;
+import com.rogermiranda1000.mineit.mine.MineBlock;
+import com.rogermiranda1000.mineit.mine.blocks.Mines;
 //import me.Mohamad82.MineableGems.Core.CustomAttribute;
+import com.rogermiranda1000.mineit.mine.Mine;
 import me.Mohamad82.MineableGems.Core.CustomDrop;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -21,8 +23,8 @@ public class MineableGemsMine /*implements CustomAttribute*/ {
         String mineName = (String) customDrop.getCustomAttribute(MineableGemsMine.customAttributeName);
         if (mineName == null) return true; // no mine => any drop can happen
 
-        Mine miningInMine = Mines.getInstance().getBlock(blockBreakEvent.getBlock().getLocation());
-        if (miningInMine == null) return false; // mining outside a mine, but the drop is only for one mine
-        return miningInMine.getName().equals(mineName); // same mine => enable drop
+        MineBlock miningBlockInMine = Mines.getInstance().getBlock(blockBreakEvent.getBlock().getLocation());
+        if (miningBlockInMine == null) return false; // mining outside a mine, but the drop is only for one mine
+        return miningBlockInMine.getMine().getName().equals(mineName); // same mine => enable drop
     }
 }

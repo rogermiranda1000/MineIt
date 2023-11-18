@@ -2,11 +2,11 @@ package com.rogermiranda1000.mineit.inventories;
 
 import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.helper.RogerPlugin;
-import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.mine.Mine;
 import com.rogermiranda1000.mineit.MineChangedEvent;
 import com.rogermiranda1000.mineit.MineIt;
-import com.rogermiranda1000.mineit.Stage;
-import com.rogermiranda1000.mineit.blocks.Mines;
+import com.rogermiranda1000.mineit.mine.stage.Stage;
+import com.rogermiranda1000.mineit.mine.blocks.Mines;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.versioncontroller.Version;
 import com.rogermiranda1000.versioncontroller.VersionController;

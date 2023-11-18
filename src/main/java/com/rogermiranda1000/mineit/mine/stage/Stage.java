@@ -1,4 +1,4 @@
-package com.rogermiranda1000.mineit;
+package com.rogermiranda1000.mineit.mine.stage;
 
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class Stage {
+public class Stage implements StageProvider {
     private BlockType block;
 
     /**
@@ -129,5 +129,10 @@ public class Stage {
     @Override
     public String toString() {
         return this.getName();
+    }
+
+    @Override
+    public Stage getStage() {
+        return this;
     }
 }
