@@ -2,11 +2,11 @@ package com.rogermiranda1000.mineit.inventories;
 
 import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.helper.RogerPlugin;
-import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.mine.Mine;
 import com.rogermiranda1000.mineit.MineIt;
-import com.rogermiranda1000.mineit.MinesChangedEvent;
-import com.rogermiranda1000.mineit.Stage;
-import com.rogermiranda1000.mineit.blocks.Mines;
+import com.rogermiranda1000.mineit.mine.MinesChangedEvent;
+import com.rogermiranda1000.mineit.mine.stage.Stage;
+import com.rogermiranda1000.mineit.mine.blocks.Mines;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -147,7 +147,7 @@ abstract public class MinesInventory extends BasicInventory implements MinesChan
 
             newInventory = Bukkit.createInventory(null, l * 9, this.inventoryName);
             int pos = 0, backPos = (l - 1) * 9;
-            for (Mine mine : MinesInventory.getListWithOffset(new ArrayList<>(Mines.getInstance().getAllValues()), this.offset, MinesInventory.MAX_MINES_PER_INV)) {
+            for (Mine mine : MinesInventory.getListWithOffset(new ArrayList<>(Mines.getInstance().getAllCValues()), this.offset, MinesInventory.MAX_MINES_PER_INV)) {
                 ItemStack mina = new ItemStack(mine.getMineBlockIdentifier().getItemStack(false));
                 ItemMeta meta = mina.getItemMeta();
                 meta.setDisplayName(mine.getName());

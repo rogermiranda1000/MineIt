@@ -1,4 +1,6 @@
-package com.rogermiranda1000.mineit;
+package com.rogermiranda1000.mineit.mine;
+
+import com.rogermiranda1000.mineit.mine.Mine;
 
 public interface MinesChangedEvent {
     void onMinesChanged();

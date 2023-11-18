@@ -1,7 +1,7 @@
 package com.rogermiranda1000.mineit.inventories;
 
 import com.rogermiranda1000.helper.BasicInventory;
-import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.mine.Mine;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

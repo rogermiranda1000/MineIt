@@ -1,9 +1,9 @@
 package com.rogermiranda1000.mineit.file;
 
 import com.rogermiranda1000.helper.blocks.file.BasicLocation;
-import com.rogermiranda1000.mineit.Mine;
-import com.rogermiranda1000.mineit.Stage;
-import com.rogermiranda1000.mineit.blocks.Mines;
+import com.rogermiranda1000.mineit.mine.Mine;
+import com.rogermiranda1000.mineit.mine.stage.Stage;
+import com.rogermiranda1000.mineit.mine.blocks.Mines;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
