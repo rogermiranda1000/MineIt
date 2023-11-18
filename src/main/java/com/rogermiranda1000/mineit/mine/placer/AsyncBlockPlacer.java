@@ -12,7 +12,6 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -22,13 +21,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
     public static final int MAX_BLOCKS_PER_TICK = 20000; // TODO move to config file
 
-    private RTree<Boolean, Rectangle> loadedRegions;
     private RTree<BlockType, Point> todoBlocksInUnloadedChunks, todoBlocksInLoadedChunks;
 
     private AsyncBlockPlacer() {
         this.todoBlocksInUnloadedChunks = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
         this.todoBlocksInLoadedChunks = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
-        this.loadedRegions = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
     }
 
     @EventHandler
@@ -40,8 +37,6 @@ public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
         area = RectangleDouble.create(area.mins(), maxs);
 
         synchronized (this) {
-            this.loadedRegions = this.loadedRegions.add(true, area);
-
             List<Entry<BlockType,Point>> toRemove = new ArrayList<>();
             this.todoBlocksInUnloadedChunks.search(area).forEach(e -> {
                 this.todoBlocksInLoadedChunks = this.todoBlocksInLoadedChunks.add(e);
@@ -51,15 +46,10 @@ public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
         }
     }
 
-    @EventHandler
-    public void onChunkUnload(ChunkUnloadEvent event) {
-        System.out.println("Unloaded chunk " + event.getChunk().getX() + "," + event.getChunk().getZ());
-    }
-
     @Override
     public synchronized void placeBlock(Location place, BlockType b) {
         Point placeRTree = CustomBlock.getPoint(place);
-        boolean loadedChunk = this.loadedRegions.search(placeRTree).iterator().hasNext();
+        boolean loadedChunk = place.getWorld() != null && place.getWorld().isChunkLoaded(place.getBlockX() >> 4, place.getBlockZ() >> 4);
         if (loadedChunk) this.todoBlocksInLoadedChunks = this.todoBlocksInLoadedChunks.add(b, placeRTree);
         else this.todoBlocksInUnloadedChunks = this.todoBlocksInUnloadedChunks.add(b, placeRTree);
     }
