@@ -319,7 +319,7 @@ public class Mine implements Runnable {
                 current.decrementStageBlocks();
                 next.incrementStageBlocks();
                 block.setStage(next); // notify mine block that its stage is updated
-                next.getStageMaterial().setType(block.getBlockLocation().getBlock());
+                Mines.blockPlacer.placeBlock(block.getBlockLocation(), next.getStageMaterial());
             }
         }
     }

@@ -6,6 +6,8 @@ import com.rogermiranda1000.mineit.*;
 import com.rogermiranda1000.mineit.mine.Mine;
 import com.rogermiranda1000.mineit.mine.MineBlock;
 import com.rogermiranda1000.mineit.mine.MinesChangedEvent;
+import com.rogermiranda1000.mineit.mine.placer.AsyncBlockPlacer;
+import com.rogermiranda1000.mineit.mine.placer.BlockPlacer;
 import com.rogermiranda1000.mineit.mine.stage.Stage;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.Bukkit;
@@ -38,6 +40,7 @@ public class Mines extends ComplexCachedCustomBlock<MineBlock,Mine> {
 
     private static final String id = "Mines";
     private static Mines instance = null;
+    public static final BlockPlacer blockPlacer = AsyncBlockPlacer.getInstance();
 
     private final ArrayList<MinesChangedEvent> globalEvents;
 
@@ -128,6 +131,8 @@ public class Mines extends ComplexCachedCustomBlock<MineBlock,Mine> {
 
         if (s != null && !s.isBreakable() && (ply == null || !ply.hasPermission("mineit.unbreakable"))) return true; // cancel
         // if he have the permission, it will enter in the next if (there's no previous stage)
+
+        if (Mines.blockPlacer.isPending(block.getBlockLocation())) return true; // desync; cancel
 
         if (s == null || (prev = s.getPreviousStage()) == null) {
             // unstaged block in mine or first stage mined

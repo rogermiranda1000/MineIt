@@ -5,6 +5,7 @@ import com.rogermiranda1000.helper.RogerPlugin;
 import com.rogermiranda1000.helper.metrics.charts.CustomChart;
 import com.rogermiranda1000.helper.metrics.charts.SimplePie;
 import com.rogermiranda1000.helper.metrics.charts.SingleLineChart;
+import com.rogermiranda1000.mineit.mine.placer.AsyncBlockPlacer;
 import com.rogermiranda1000.mineit.mine.blocks.Mines;
 import com.rogermiranda1000.mineit.mine.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.events.InteractEvent;
@@ -46,6 +47,7 @@ public class MineIt extends RogerPlugin {
     public int rango;
     public boolean limit;
     public boolean overrideProtection;
+    private int blockPlacerThread;
 
 
     private List<Mine> tmp;
@@ -87,7 +89,7 @@ public class MineIt extends RogerPlugin {
                     return "None";
                 }),
                 new SimplePie("mineablegems", ()->String.valueOf(Bukkit.getPluginManager().isPluginEnabled("MineableGems")))
-        },new InteractEvent());
+        }, new InteractEvent(), AsyncBlockPlacer.getInstance());
 
         this.addCustomBlock(Mines.setInstance(new Mines(this)));
         this.addCustomBlock(SelectedBlocks.setInstance(new SelectedBlocks(this)));
@@ -205,6 +207,8 @@ public class MineIt extends RogerPlugin {
                 this.reportException(ex);
             }
         }
+
+        this.blockPlacerThread = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, AsyncBlockPlacer.getInstance(), 1, 1);
     }
 
     /**
@@ -238,5 +242,7 @@ public class MineIt extends RogerPlugin {
                 ex.printStackTrace();
             }
         }
+
+        Bukkit.getServer().getScheduler().cancelTask(this.blockPlacerThread);
     }
 }
