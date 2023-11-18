@@ -57,10 +57,13 @@ public class Mine implements Runnable {
         this.mineName = name;
         this.mineBlockIdentifier = identifier;
         this.tp = tp;
-        this.stages = stages;
-        this.blockToStage = new HashMap<>();
         this.setDelay(delay);
         this.hashCode = name.hashCode();
+
+        // stages & convertors
+        this.stages = stages;
+        this.blockToStage = new HashMap<>();
+        for (Stage s : stages) this.blockToStage.put(s.getStageMaterial(), s);
 
         // if we start it before setting the stagelimit we'll get wrong results; the mine is started at `Mines#addMine()`
         //this.setStart(started);

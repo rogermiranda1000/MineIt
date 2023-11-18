@@ -1,5 +1,6 @@
 package com.rogermiranda1000.mineit.mine.stage;
 
+import com.rogermiranda1000.mineit.MineIt;
 import com.rogermiranda1000.versioncontroller.VersionController;
 import com.rogermiranda1000.versioncontroller.blocks.BlockType;
 import org.bukkit.inventory.ItemStack;
@@ -78,7 +79,8 @@ public class Stage implements StageProvider {
     }
 
     public void decrementStageBlocks() {
-        this.stageBlocks--;
+        if (this.stageBlocks > 0) this.stageBlocks--;
+        // TODO warning if equals to 0
     }
 
     public void resetStageCount() {
