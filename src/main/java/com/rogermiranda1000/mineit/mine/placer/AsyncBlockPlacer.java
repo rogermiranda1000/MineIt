@@ -12,6 +12,7 @@ import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,11 +22,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
     public static final int MAX_BLOCKS_PER_TICK = 20000; // TODO move to config file
 
+    private RTree<Boolean, Rectangle> loadedRegions;
     private RTree<BlockType, Point> todoBlocksInUnloadedChunks, todoBlocksInLoadedChunks;
 
     private AsyncBlockPlacer() {
         this.todoBlocksInUnloadedChunks = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
         this.todoBlocksInLoadedChunks = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
+        this.loadedRegions = RTree.star().dimensions(5).create(); // MSB[world], LSB[world], x, y, z
     }
 
     @EventHandler
@@ -33,10 +36,12 @@ public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
         // search blocks from `todoBlocks` in the chunk and add them into `todoBlocksInLoadedChunks`
         Rectangle area = CustomBlock.getPointWithMargin(new Location(event.getWorld(), event.getChunk().getX() << 4, -64, event.getChunk().getZ() << 4));
         double []maxs = area.maxes().clone();
-        maxs[2] += 15; maxs[4] += 15; // grab a whole chunk
+        maxs[2] += 15; maxs[3] += 500; maxs[4] += 15; // grab a whole chunk
         area = RectangleDouble.create(area.mins(), maxs);
 
         synchronized (this) {
+            this.loadedRegions = this.loadedRegions.add(true, area);
+
             List<Entry<BlockType,Point>> toRemove = new ArrayList<>();
             this.todoBlocksInUnloadedChunks.search(area).forEach(e -> {
                 this.todoBlocksInLoadedChunks = this.todoBlocksInLoadedChunks.add(e);
@@ -46,10 +51,17 @@ public class AsyncBlockPlacer implements Listener, Runnable, BlockPlacer {
         }
     }
 
+    @EventHandler
+    public void onChunkUnload(ChunkUnloadEvent event) {
+        System.out.println("Unloaded chunk " + event.getChunk().getX() + "," + event.getChunk().getZ());
+    }
+
     @Override
     public synchronized void placeBlock(Location place, BlockType b) {
-        if (place.getChunk().isLoaded()) this.todoBlocksInLoadedChunks = this.todoBlocksInLoadedChunks.add(b, CustomBlock.getPoint(place));
-        else this.todoBlocksInUnloadedChunks = this.todoBlocksInUnloadedChunks.add(b, CustomBlock.getPoint(place));
+        Point placeRTree = CustomBlock.getPoint(place);
+        boolean loadedChunk = this.loadedRegions.search(placeRTree).iterator().hasNext();
+        if (loadedChunk) this.todoBlocksInLoadedChunks = this.todoBlocksInLoadedChunks.add(b, placeRTree);
+        else this.todoBlocksInUnloadedChunks = this.todoBlocksInUnloadedChunks.add(b, placeRTree);
     }
 
     @Override
