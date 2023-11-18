@@ -2,7 +2,7 @@
 
 server-type:
   - Spigot:
-      - "1.19"
+#      - "1.19"
       - "1.13"
 #      - "1.12"
 #      - "1.8.8"
@@ -12,7 +12,6 @@ server-type:
 users:
   - "MinecraftGamer_Z"
 
-# TODO world compatible with 1.8
 maps:
   - "world": "./src/test/main/resources/world.zip"
 

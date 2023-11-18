@@ -1,0 +1,36 @@
+{
+  "stages": [
+    {
+      "name": "minecraft:bedrock",
+      "previousState": "",
+      "nextStage": "minecraft:stone",
+      "stageLimit": 2147483647,
+      "isBreakable": false
+    },
+    {
+      "name": "minecraft:stone",
+      "previousState": "minecraft:bedrock",
+      "nextStage": "minecraft:redstone_ore[lit\u003dfalse]",
+      "stageLimit": 2147483647,
+      "isBreakable": true
+    },
+    {
+      "name": "minecraft:redstone_ore[lit\u003dfalse]",
+      "previousState": "minecraft:stone",
+      "nextStage": "minecraft:redstone_ore[lit\u003dtrue]",
+      "stageLimit": 2147483647,
+      "isBreakable": true
+    },
+    {
+      "name": "minecraft:redstone_ore[lit\u003dtrue]",
+      "previousState": "minecraft:redstone_ore[lit\u003dfalse]",
+      "nextStage": "",
+      "stageLimit": 2147483647,
+      "isBreakable": true
+    }
+  ],
+  "mineName": "TestMine",
+  "identifier": "minecraft:stone",
+  "started": true,
+  "delay": 300
+}

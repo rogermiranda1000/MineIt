@@ -1,0 +1,29 @@
+{
+  "stages": [
+    {
+      "name": "minecraft:bedrock",
+      "previousState": "",
+      "nextStage": "minecraft:stone",
+      "stageLimit": 2147483647,
+      "isBreakable": false
+    },
+    {
+      "name": "minecraft:stone",
+      "previousState": "minecraft:bedrock",
+      "nextStage": "minecraft:emerald_ore",
+      "stageLimit": 2147483647,
+      "isBreakable": true
+    },
+    {
+      "name": "minecraft:emerald_ore",
+      "previousState": "minecraft:bedrock",
+      "nextStage": "",
+      "stageLimit": 1800,
+      "isBreakable": true
+    }
+  ],
+  "mineName": "Mine3",
+  "identifier": "minecraft:stone",
+  "started": true,
+  "delay": 120
+}

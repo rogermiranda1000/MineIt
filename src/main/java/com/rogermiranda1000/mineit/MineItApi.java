@@ -1,6 +1,7 @@
 package com.rogermiranda1000.mineit;
 
-import com.rogermiranda1000.mineit.blocks.Mines;
+import com.rogermiranda1000.mineit.mine.blocks.Mines;
+import com.rogermiranda1000.mineit.mine.Mine;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 
@@ -38,7 +39,7 @@ public class MineItApi {
      * @return Block's mine, or null (if any mine)
      */
     public Mine getMine(Location loc) {
-        return Mines.getInstance().getBlock(loc);
+        return Mines.getInstance().getBlock(loc).getMine();
     }
 
     public int getMineCount() {
@@ -46,6 +47,6 @@ public class MineItApi {
     }
 
     public Set<Mine> getMines() {
-        return Mines.getInstance().getAllValues();
+        return Mines.getInstance().getAllCValues();
     }
 }
