@@ -13,14 +13,17 @@ public class StageProxy implements StageProvider {
         this.stageProvider = new UncachedStage(stageBlockLoc, m);
     }
 
-    public Stage setStage(Stage s) {
+    public void setStage(Stage s) {
         this.stageProvider = s;
-        return s;
     }
 
     @Override
     public Stage getStage() {
-        // the first call will be uncached, so we'll save the result
-        return this.setStage(this.stageProvider.getStage());
+        Stage stage = this.stageProvider.getStage();
+        if (stage != null) {
+            // the first call will be uncached, so we'll save the result
+            this.setStage(stage);
+        }
+        return stage;
     }
 }
