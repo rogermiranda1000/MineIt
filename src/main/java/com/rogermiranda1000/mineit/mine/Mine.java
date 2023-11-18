@@ -148,7 +148,8 @@ public class Mine implements Runnable {
     }
 
     public int getTotalBlocks() {
-        return this._getMineBlocks().size();
+        List<CustomBlocksEntry<MineBlock>> r = this.blocks.getAllBlocksByValue(this);
+        return (r == null) ? 0 : r.size();
     }
 
     public MineBlock getRandomBlockInMine() {
@@ -304,7 +305,7 @@ public class Mine implements Runnable {
         int changedBlocks;
         synchronized (this) {
             this.currentTime++;
-            changedBlocks = (this.currentTime * this.getTotalBlocks()) / this.getDelay();
+            changedBlocks = (this.currentTime * this.getTotalBlocks()) / this.delay;
             if (changedBlocks == 0) return;
 
             this.currentTime = 0;
