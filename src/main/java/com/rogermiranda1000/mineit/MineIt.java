@@ -197,7 +197,8 @@ public class MineIt extends RogerPlugin {
         this.selectMineInventory.registerEvent();
         this.tpInventory.registerEvent();
 
-        if (Bukkit.getPluginManager().isPluginEnabled("MineableGems")) {
+        // TODO CustomAttribute were never implemented; that's why MineIt-MineableGems exists
+        /*if (Bukkit.getPluginManager().isPluginEnabled("MineableGems")) {
             getLogger().info("Found MineableGems, loading mine drops...");
             try {
                 // @pre After loading mines
@@ -206,7 +207,7 @@ public class MineIt extends RogerPlugin {
                 this.printConsoleErrorMessage("Error while loading MineableGems");
                 this.reportException(ex);
             }
-        }
+        }*/
 
         this.blockPlacerThread = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, AsyncBlockPlacer.getInstance(), 1, 1);
     }

@@ -6,7 +6,7 @@
 
     <groupId>com.rogermiranda1000</groupId>
     <artifactId>MineIt</artifactId>
-    <version>3.0</version>
+    <version>3.0.1</version>
     <packaging>jar</packaging>
 
     <properties>
