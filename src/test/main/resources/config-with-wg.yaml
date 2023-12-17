@@ -17,6 +17,9 @@ users:
 maps:
   - "world": "./src/test/main/resources/world.zip"
 
+difficulty: "PEACEFUL"
+recordings-directory: "./src/test/main/resources/recordings"
+
 plugin: "./target/MineIt.jar"
 extra-plugins:
   - "WorldGuard"

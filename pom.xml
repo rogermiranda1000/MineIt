@@ -12,7 +12,6 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <maven.test.skip>true</maven.test.skip>
     </properties>
 
     <dependencies>
@@ -97,6 +96,16 @@
     <build>
         <finalName>MineIt</finalName>
 
+        <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
+        <testSourceDirectory>${project.basedir}/src/test/main/java</testSourceDirectory>
+
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -112,6 +121,22 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.9.1</version>
+                </plugin>
+
+                <!-- tests -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.3</version>
+                    <configuration>
+                        <includes>
+                            <include>*Should.java</include>
+                        </includes>
+                        <excludes>
+                            <!-- ignore stress testing (for now) -->
+                            <exclude>*StressTest.java</exclude>
+                        </excludes>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -174,13 +199,6 @@
                 </executions>
             </plugin>
         </plugins>
-
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
     </build>
 
     <repositories>
