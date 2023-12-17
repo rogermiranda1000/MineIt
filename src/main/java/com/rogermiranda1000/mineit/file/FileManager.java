@@ -3,7 +3,7 @@ package com.rogermiranda1000.mineit.file;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
-import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.mine.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 
 import java.io.File;

@@ -2,15 +2,19 @@ package com.rogermiranda1000.mineit;
 
 import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.helper.RogerPlugin;
-import com.rogermiranda1000.helper.metrics.Metrics;
-import com.rogermiranda1000.mineit.blocks.Mines;
-import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
+import com.rogermiranda1000.helper.metrics.charts.CustomChart;
+import com.rogermiranda1000.helper.metrics.charts.SimplePie;
+import com.rogermiranda1000.helper.metrics.charts.SingleLineChart;
+import com.rogermiranda1000.mineit.mine.placer.AsyncBlockPlacer;
+import com.rogermiranda1000.mineit.mine.blocks.Mines;
+import com.rogermiranda1000.mineit.mine.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.events.InteractEvent;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.inventories.MainInventory;
 import com.rogermiranda1000.mineit.inventories.MinesInventory;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.inventories.TpMineInventory;
+import com.rogermiranda1000.mineit.mine.Mine;
 import io.sentry.Attachment;
 import me.Mohamad82.MineableGems.Core.CustomAttribute;
 import me.Mohamad82.MineableGems.Main;
@@ -43,6 +47,7 @@ public class MineIt extends RogerPlugin {
     public int rango;
     public boolean limit;
     public boolean overrideProtection;
+    private int blockPlacerThread;
 
 
     private List<Mine> tmp;
@@ -63,14 +68,14 @@ public class MineIt extends RogerPlugin {
     }
 
     public MineIt() {
-        super(CustomMineItCommand.commands, new Metrics.CustomChart[]{
-                new Metrics.SingleLineChart("mines", ()->MineItApi.getInstance().getMineCount()),
-                new Metrics.SingleLineChart("blocks", ()->{
+        super(CustomMineItCommand.commands, new CustomChart[]{
+                new SingleLineChart("mines", ()->MineItApi.getInstance().getMineCount()),
+                new SingleLineChart("blocks", ()->{
                     int blocks = 0;
                     for (Mine mine : MineItApi.getInstance().getMines()) blocks += mine.getTotalBlocks();
                     return blocks;
                 }),
-                new Metrics.SimplePie("protections", ()->{
+                new SimplePie("protections", ()->{
                     if (!MineIt.instance.overrideProtection) return "Disabled";
 
                     PluginManager pm = Bukkit.getPluginManager();
@@ -83,8 +88,8 @@ public class MineIt extends RogerPlugin {
                     if (worldguard) return "WorldGuard";
                     return "None";
                 }),
-                new Metrics.SimplePie("mineablegems", ()->String.valueOf(Bukkit.getPluginManager().isPluginEnabled("MineableGems")))
-        },new InteractEvent());
+                new SimplePie("mineablegems", ()->String.valueOf(Bukkit.getPluginManager().isPluginEnabled("MineableGems")))
+        }, new InteractEvent(), AsyncBlockPlacer.getInstance());
 
         this.addCustomBlock(Mines.setInstance(new Mines(this)));
         this.addCustomBlock(SelectedBlocks.setInstance(new SelectedBlocks(this)));
@@ -192,7 +197,8 @@ public class MineIt extends RogerPlugin {
         this.selectMineInventory.registerEvent();
         this.tpInventory.registerEvent();
 
-        if (Bukkit.getPluginManager().isPluginEnabled("MineableGems")) {
+        // TODO CustomAttribute were never implemented; that's why MineIt-MineableGems exists
+        /*if (Bukkit.getPluginManager().isPluginEnabled("MineableGems")) {
             getLogger().info("Found MineableGems, loading mine drops...");
             try {
                 // @pre After loading mines
@@ -201,7 +207,9 @@ public class MineIt extends RogerPlugin {
                 this.printConsoleErrorMessage("Error while loading MineableGems");
                 this.reportException(ex);
             }
-        }
+        }*/
+
+        this.blockPlacerThread = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, AsyncBlockPlacer.getInstance(), 1, 1);
     }
 
     /**
@@ -227,7 +235,7 @@ public class MineIt extends RogerPlugin {
         if (!minesDirectory.exists()) minesDirectory.mkdir();
         else MineIt.removeDirectoryContents(minesDirectory);
 
-        for (Mine m : Mines.getInstance().getAllValues()) {
+        for (Mine m : Mines.getInstance().getAllCValues()) {
             try {
                 File file = new File(minesDirectory, m.getName() +".json");
                 FileManager.saveMine(file, m);
@@ -235,5 +243,7 @@ public class MineIt extends RogerPlugin {
                 ex.printStackTrace();
             }
         }
+
+        Bukkit.getServer().getScheduler().cancelTask(this.blockPlacerThread);
     }
 }

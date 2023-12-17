@@ -1,6 +1,6 @@
 package com.rogermiranda1000.mineit.file;
 
-import com.rogermiranda1000.mineit.Stage;
+import com.rogermiranda1000.mineit.mine.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;

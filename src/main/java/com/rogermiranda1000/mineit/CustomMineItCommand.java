@@ -3,11 +3,13 @@ package com.rogermiranda1000.mineit;
 import com.rogermiranda1000.helper.BasicInventory;
 import com.rogermiranda1000.helper.CustomCommand;
 import com.rogermiranda1000.helper.MatchCommandNotifier;
-import com.rogermiranda1000.mineit.blocks.Mines;
-import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
+import com.rogermiranda1000.mineit.mine.blocks.Mines;
+import com.rogermiranda1000.mineit.mine.blocks.SelectedBlocks;
 import com.rogermiranda1000.mineit.file.FileManager;
 import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
+import com.rogermiranda1000.mineit.mine.Mine;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.entities.VCPlayer;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -38,7 +40,7 @@ public class CustomMineItCommand extends CustomCommand {
     public void searchSpecialText(Collection<String> results, String[] splittedCmd, String[] partialUsage, int index) {
         if (partialUsage[index].equalsIgnoreCase("[mine]")) {
             // add all matching mines
-            for (Mine m : Mines.getInstance().getAllValues()) {
+            for (Mine m : Mines.getInstance().getAllCValues()) {
                 String name = m.getName();
                 if (CustomCommand.partiallyMatches(splittedCmd[index], name)) results.add(name);
             }
@@ -65,7 +67,7 @@ public class CustomMineItCommand extends CustomCommand {
             }),
             new CustomMineItCommand("mineit unbreakable", "mineit.create", false, "mineit unbreakable", "set the current block as unbreakable, so the stage won't be mined", (sender, cmd) -> {
                 Player player = (Player) sender; // not for console usage
-                ItemStack[]hand = VersionController.get().getItemInHand(player);
+                ItemStack[]hand = new VCPlayer(player).getItemInHand();
                 if (hand[0].getType() == Material.AIR || !hand[0].getType().isBlock()) {
                     player.sendMessage(MineIt.instance.errorPrefix +"You need to hold a block while using this command.");
                     return;
@@ -101,7 +103,7 @@ public class CustomMineItCommand extends CustomCommand {
             }),
             new CustomMineItCommand("mineit list", null, true, "mineit list", "see all the created mines", (sender, cmd) -> {
                 StringBuilder sb = new StringBuilder();
-                for (Mine m : Mines.getInstance().getAllValues()) {
+                for (Mine m : Mines.getInstance().getAllCValues()) {
                     sb.append(m.getName());
                     sb.append(", ");
                 }

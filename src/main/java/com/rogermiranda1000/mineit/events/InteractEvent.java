@@ -1,9 +1,10 @@
 package com.rogermiranda1000.mineit.events;
 
-import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.mine.Mine;
 import com.rogermiranda1000.mineit.MineIt;
-import com.rogermiranda1000.mineit.blocks.SelectedBlocks;
+import com.rogermiranda1000.mineit.mine.blocks.SelectedBlocks;
 import com.rogermiranda1000.versioncontroller.VersionController;
+import com.rogermiranda1000.versioncontroller.entities.VCPlayer;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -23,14 +24,15 @@ public class InteractEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent e) {
         Player ply = e.getPlayer();
+        VCPlayer vcPlayer = new VCPlayer(ply);
         if(e.getAction() != Action.LEFT_CLICK_BLOCK && e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (!VersionController.get().hasItemInHand(ply, MineIt.item)) {
-            ItemStack hand = VersionController.get().getItemInHand(ply)[0];
+        if (!vcPlayer.hasItemInHand(MineIt.item)) {
+            ItemStack hand = vcPlayer.getItemInHand()[0];
             if (!VersionController.get().sameItem(hand, MineIt.mimicBlock) || e.getAction() == Action.LEFT_CLICK_BLOCK || e.getClickedBlock() == null) return;
 
             // mimic the block
             ItemStack mimic = VersionController.get().getObject(e.getClickedBlock()).getItemStack(true);
-            VersionController.get().setItemInHand(ply.getInventory(), mimic);
+            vcPlayer.setItemInHand(mimic, false);
             e.setCancelled(true);
             return;
         }

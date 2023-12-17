@@ -1,6 +1,6 @@
 package com.rogermiranda1000.mineit.inventories;
 
-import com.rogermiranda1000.mineit.Mine;
+import com.rogermiranda1000.mineit.mine.Mine;
 import com.rogermiranda1000.mineit.MineIt;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
