@@ -2,8 +2,9 @@ name: Tests
 run-name: Running integration tests on ${{ github.ref }}
 
 on:
+  push: # temporal debug
   pull_request:
-    branches: master
+    branches: dev
     types:
       - opened
 
