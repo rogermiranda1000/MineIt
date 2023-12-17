@@ -11,7 +11,7 @@
 - [WatchWolf Tester](https://github.com/rogermiranda1000/WatchWolf-Tester) and all its dependencies (`org.junit.jupiter:junit-jupiter-engine:5.8.1`, `org.junit.jupiter:junit-jupiter-params:5.8.1` and `org.yaml:snakeyaml:1.21`)
 
 ## Build
-Run `mvn package -DskipTests=true`
+Run `mvn clean install -DskipTests=true`
 
 ## Run integration tests
 
