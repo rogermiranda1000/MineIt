@@ -18,6 +18,14 @@ jobs:
         uses: actions/setup-java@v2
         with:
           java-version: '8'
+          distribution: 'adopt'
+
+      - name: Download private files
+        run: |
+          wget -O lib/VersionController.jar https://github.com/rogermiranda1000/Spigot-VersionController/releases/latest/download/VersionController.jar
+          wget -O lib/MineableGems.jar https://api.spiget.org/v2/resources/83807/download
+          wget -O lib/watchwolf-tester-0.2.jar https://watchwolf.dev/tester-versions/watchwolf-tester-0.2.jar
+          wget -O lib/spigot-1.16.5.jar https://cdn.getbukkit.org/spigot/spigot-1.16.5.jar
 
       - name: Build
         run: mvn --batch-mode -DskipTests=true package
