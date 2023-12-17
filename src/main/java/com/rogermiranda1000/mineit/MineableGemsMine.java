@@ -11,14 +11,14 @@ import org.bukkit.event.block.BlockBreakEvent;
 public class MineableGemsMine /*implements CustomAttribute*/ {
     private static final String customAttributeName = "mine";
 
-    //@Override
+    /*@Override
     public CustomDrop readCustomDrop(CustomDrop customDrop, ConfigurationSection configurationSection) {
         String mineName = configurationSection.getString("Mine", null);
         if (mineName != null) customDrop.addCustomAttribute(MineableGemsMine.customAttributeName, mineName);
         return customDrop;
     }
 
-    //@Override
+    @Override
     public boolean shouldPass(BlockBreakEvent blockBreakEvent, CustomDrop customDrop) {
         String mineName = (String) customDrop.getCustomAttribute(MineableGemsMine.customAttributeName);
         if (mineName == null) return true; // no mine => any drop can happen
@@ -26,5 +26,5 @@ public class MineableGemsMine /*implements CustomAttribute*/ {
         MineBlock miningBlockInMine = Mines.getInstance().getBlock(blockBreakEvent.getBlock().getLocation());
         if (miningBlockInMine == null) return false; // mining outside a mine, but the drop is only for one mine
         return miningBlockInMine.getMine().getName().equals(mineName); // same mine => enable drop
-    }
+    }*/
 }
