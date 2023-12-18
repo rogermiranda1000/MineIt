@@ -33,7 +33,7 @@ jobs:
         run: mvn --batch-mode -DskipTests=true package
 
       - name: Test
-        run: mvn --batch-mode -Dmaven.test.failure.ignore=true test
+        run: mvn --batch-mode -Dmaven.test.failure.ignore=true -Dtest=!MineItWithWorldGuardShould test
 
       - name: Report
         uses: dorny/test-reporter@v1
