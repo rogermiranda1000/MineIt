@@ -41,6 +41,7 @@ jobs:
         with:
           name: nightly
           path: ./src/test/main/resources/recordings/
+          retention-days: 4
 
       - name: Report
         uses: dorny/test-reporter@v1
