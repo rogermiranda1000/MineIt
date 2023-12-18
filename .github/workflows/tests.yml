@@ -35,6 +35,13 @@ jobs:
       - name: Test
         run: mvn --batch-mode -Dmaven.test.failure.ignore=true -Dtest=!MineItWithWorldGuardShould test
 
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly
+          path: ./src/test/main/resources/recordings/
+
       - name: Report
         uses: dorny/test-reporter@v1
         if: always()
