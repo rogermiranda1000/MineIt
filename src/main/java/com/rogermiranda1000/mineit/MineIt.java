@@ -16,8 +16,6 @@ import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.inventories.TpMineInventory;
 import com.rogermiranda1000.mineit.mine.Mine;
 import io.sentry.Attachment;
-import me.Mohamad82.MineableGems.Core.CustomAttribute;
-import me.Mohamad82.MineableGems.Main;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
