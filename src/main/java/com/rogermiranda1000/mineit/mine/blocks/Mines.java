@@ -45,7 +45,7 @@ public class Mines extends ComplexCachedCustomBlock<MineBlock,Mine> {
     private final ArrayList<MinesChangedEvent> globalEvents;
 
     public Mines(RogerPlugin plugin) {
-        super(plugin, Mines.id, e -> e instanceof BlockBreakEvent, true, false, new StoreMine(), true, MineBlock::getMine);
+        super(plugin, Mines.id, e -> e instanceof BlockBreakEvent, MineIt.instance.overrideProtection, false, new StoreMine(), true, MineBlock::getMine);
         this.globalEvents = new ArrayList<>();
     }
 
