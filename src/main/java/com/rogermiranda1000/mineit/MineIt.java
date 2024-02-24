@@ -16,8 +16,6 @@ import com.rogermiranda1000.mineit.inventories.SelectMineInventory;
 import com.rogermiranda1000.mineit.inventories.TpMineInventory;
 import com.rogermiranda1000.mineit.mine.Mine;
 import io.sentry.Attachment;
-import me.Mohamad82.MineableGems.Core.CustomAttribute;
-import me.Mohamad82.MineableGems.Main;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -91,12 +89,12 @@ public class MineIt extends RogerPlugin {
                 new SimplePie("mineablegems", ()->String.valueOf(Bukkit.getPluginManager().isPluginEnabled("MineableGems")))
         }, new InteractEvent(), AsyncBlockPlacer.getInstance());
 
-        this.addCustomBlock(Mines.setInstance(new Mines(this)));
+        // Mines added on `preOnEnable`, after reading the configuration (as I need the property "overrideProtections")
         this.addCustomBlock(SelectedBlocks.setInstance(new SelectedBlocks(this)));
     }
 
     @Override
-    public void preOnEnable() {
+    public void preCustomBlocks() {
         // we need first the configuration
         MineIt.instance = this;
 
@@ -107,7 +105,7 @@ public class MineIt extends RogerPlugin {
         c.put("air_stage", Material.STONE_BUTTON.name());
         c.put("override_protections", true);
         FileConfiguration config = getConfig();
-        //Create/actualize config file
+        //Create/update config file
         try {
             if (!getDataFolder().exists()) getDataFolder().mkdirs();
             File file = new File(getDataFolder(), "config.yml");
@@ -161,6 +159,12 @@ public class MineIt extends RogerPlugin {
         m.addEnchant(Enchantment.DURABILITY, 1, true);
         mimicBlock.setItemMeta(m);
 
+        // @pre `overrideProtection` variable set
+        this.addCustomBlock(Mines.setInstance(new Mines(this)));
+    }
+
+    @Override
+    public void preOnEnable() {
         // @pre before mine import
         this.mainInventory = new MainInventory();
         this.selectMineInventory = new SelectMineInventory();
